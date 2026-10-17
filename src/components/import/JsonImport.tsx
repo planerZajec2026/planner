@@ -1,6 +1,8 @@
 "use client";
 
+import { AnimatePresence } from "motion/react";
 import { useRef, useState, type DragEvent } from "react";
+import { Collapse, CollapseItem } from "@/components/motion/Collapse";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { znajdzKonflikty, type Konflikt } from "@/lib/conflicts";
@@ -151,81 +153,88 @@ export function JsonImport({ istniejace, onImport, ...ctx }: JsonImportProps) {
       </div>
 
       <div role="status" style={{ display: "contents" }}>
-        {zaimportowano && (
+        <Collapse show={zaimportowano}>
           <div className="success-banner" style={{ marginTop: 18 }}>
             <Icon name="check" />
             Zaimportowano (dane lokalne)
           </div>
-        )}
+        </Collapse>
       </div>
 
-      {wynik && "bledy" in wynik && (
-        <div className="import-result">
-          <div className="conflict-banner" role="alert">
-            <Icon name="alert" />
-            <div>
-              <strong>Nie udało się wczytać pliku „{wynik.plik}”</strong>
-              <ul>
-                {wynik.bledy.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="form-actions">
-            <Button variant="secondary" onClick={anuluj}>
-              Anuluj
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {wynik && "wiersze" in wynik && (
-        <div className="import-result" aria-labelledby="import-result-title">
-          <div className="import-result-head">
-            <div className="section-title" id="import-result-title">
-              Podgląd importu
-            </div>
-            <span>{wynik.plik}</span>
-          </div>
-          <div className="import-summary">
-            <Stat n={wiersze.length} label={pluralPl(wiersze.length, "zajęcia w pliku", "zajęcia w pliku", "zajęć w pliku")} />
-            <Stat n={doImportu.length} label={pluralPl(doImportu.length, "gotowe do importu", "gotowe do importu", "gotowych do importu")} />
-            <Stat n={zKonfliktem} label={pluralPl(zKonfliktem, "konflikt", "konflikty", "konfliktów")} danger />
-          </div>
-          {nierozwiazane > 0 && (
-            <div className="conflict-banner" role="alert">
-              <Icon name="alert" />
-              <div>
-                <strong>
-                  {nierozwiazane === 1 ? "Zajęcia kolidują z planem" : `${nierozwiazane} zajęć koliduje z planem`}
-                </strong>
-                <p>Wybierz „Pomiń” albo „Zastąp”. Zajęcia z nierozwiązanym konfliktem nie zostaną zaimportowane.</p>
+      {/* Keyed by file, so loading another file closes the old result and opens the new one. */}
+      <AnimatePresence initial={false}>
+        {wynik && "bledy" in wynik && (
+          <CollapseItem key={`bledy:${wynik.plik}`}>
+            <div className="import-result">
+              <div className="conflict-banner" role="alert">
+                <Icon name="alert" />
+                <div>
+                  <strong>Nie udało się wczytać pliku „{wynik.plik}”</strong>
+                  <ul>
+                    {wynik.bledy.map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="form-actions">
+                <Button variant="secondary" onClick={anuluj}>
+                  Anuluj
+                </Button>
               </div>
             </div>
-          )}
-          <div>
-            {wiersze.map((w, i) => (
-              <WierszImportu
-                key={w.z.id}
-                wiersz={w}
-                ctx={ctx}
-                onPomin={() => setStatus(i, "pominiete")}
-                onZastap={() => setStatus(i, "zastap")}
-                onCofnij={() => setStatus(i, w.konflikty.length ? "konflikt" : "gotowe")}
-              />
-            ))}
-          </div>
-          <div className="form-actions">
-            <Button onClick={importuj} disabled={doImportu.length === 0}>
-              Importuj {countPl(doImportu.length, "zajęcia", "zajęcia", "zajęć")}
-            </Button>
-            <Button variant="secondary" onClick={anuluj}>
-              Anuluj
-            </Button>
-          </div>
-        </div>
-      )}
+          </CollapseItem>
+        )}
+
+        {wynik && "wiersze" in wynik && (
+          <CollapseItem key={`wiersze:${wynik.plik}`}>
+            <div className="import-result" aria-labelledby="import-result-title">
+              <div className="import-result-head">
+                <div className="section-title" id="import-result-title">
+                  Podgląd importu
+                </div>
+                <span>{wynik.plik}</span>
+              </div>
+              <div className="import-summary">
+                <Stat n={wiersze.length} label={pluralPl(wiersze.length, "zajęcia w pliku", "zajęcia w pliku", "zajęć w pliku")} />
+                <Stat n={doImportu.length} label={pluralPl(doImportu.length, "gotowe do importu", "gotowe do importu", "gotowych do importu")} />
+                <Stat n={zKonfliktem} label={pluralPl(zKonfliktem, "konflikt", "konflikty", "konfliktów")} danger />
+              </div>
+              <Collapse show={nierozwiazane > 0}>
+                <div className="conflict-banner" role="alert">
+                  <Icon name="alert" />
+                  <div>
+                    <strong>
+                      {nierozwiazane === 1 ? "Zajęcia kolidują z planem" : `${nierozwiazane} zajęć koliduje z planem`}
+                    </strong>
+                    <p>Wybierz „Pomiń” albo „Zastąp”. Zajęcia z nierozwiązanym konfliktem nie zostaną zaimportowane.</p>
+                  </div>
+                </div>
+              </Collapse>
+              <div>
+                {wiersze.map((w, i) => (
+                  <WierszImportu
+                    key={w.z.id}
+                    wiersz={w}
+                    ctx={ctx}
+                    onPomin={() => setStatus(i, "pominiete")}
+                    onZastap={() => setStatus(i, "zastap")}
+                    onCofnij={() => setStatus(i, w.konflikty.length ? "konflikt" : "gotowe")}
+                  />
+                ))}
+              </div>
+              <div className="form-actions">
+                <Button onClick={importuj} disabled={doImportu.length === 0}>
+                  Importuj {countPl(doImportu.length, "zajęcia", "zajęcia", "zajęć")}
+                </Button>
+                <Button variant="secondary" onClick={anuluj}>
+                  Anuluj
+                </Button>
+              </div>
+            </div>
+          </CollapseItem>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

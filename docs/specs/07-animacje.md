@@ -38,7 +38,8 @@ Three tools, each for the kind of change it handles best. No other animation lib
 - `src/components/motion/MotionProvider.tsx` is a client component, rendered once in `AppShell` around the content:
   - `<MotionConfig reducedMotion="user">` makes Motion follow the OS setting;
   - `<LazyMotion features={loadFeatures} strict>`, where `loadFeatures` dynamically imports `domMax` from `src/components/motion/features.ts`, so the initial bundle carries only the small `m` component.
-- Components use `m.div` and friends, never `motion.div`. `strict` makes the wrong one throw in development.
+- Components import `* as m from "motion/react-m"` and use `m.div` and friends, never `motion.div`. `strict` makes the wrong one throw in development.
+- `m` must not come from the `motion/react` barrel. Turbopack then merges it with the full `motion` component, and every feature (drag, layout, …) lands in the initial bundle, about +32 kB gzip. An ESLint `no-restricted-imports` rule forbids that import, and `e2e/bundle.spec.ts` guards the result.
 - Motion is client-only. Server Components stay server components; wrap only the animated part in a small client component.
 
 ### Shared tokens
@@ -56,10 +57,23 @@ Three tools, each for the kind of change it handles best. No other animation lib
   - ready-made transitions: `enter`, `exit` and `collapse`.
 - Values live in these two places only. Components never hard-code durations or curves.
 
+### Transition types
+Navigations carry a React transition type, so each `<ViewTransition>` can tell them apart. The constants are `PRZEJSCIE` in `src/lib/motion.ts`.
+
+| Type | Set by | Animates |
+|------|--------|----------|
+| `strona` | every in-app link, via `AppLink` (`src/components/ui/AppLink.tsx`, also used by `ButtonLink`) | the page entrance and exit |
+| `filtr` | `GrupaFilters`, `ProwadzacyFilters` | a crossfade of the calendar |
+| `tydzien-nastepny` / `tydzien-poprzedni` | `WeekNav` | a directional slide of the calendar |
+
+Types are needed because a search-param change remounts the page segment in Next.js. Without them, the page entrance would replay on every filter change. Browser back/forward carries no type, so it doesn't animate.
+
 ### Reusable motion components (`src/components/motion/`)
-- `Collapse`: `AnimatePresence` + `m.div`. It animates `height: 0 → auto` and `opacity`, enter `DUR.enter` ease-out, exit `DUR.exit` ease-in. Used for the add-instructor form, the import result panel and error/success banners.
+- `Collapse` / `CollapseItem`: `AnimatePresence` + `m.div`. They animate `height: 0 → auto` and `opacity`, enter `DUR.enter` ease-out, exit `DUR.exit` ease-in.
+  - `overflow` is `hidden` only while the element moves, so shadows and hover lifts aren't clipped once it's open.
+  - Used for the add-instructor form, the import result panel, banners, and the Kierunki cards and rows.
 - `FadeIn`: opacity 0 → 1 plus `y: 8 → 0`, ease-out. With reduced motion, opacity only.
-- `AnimatedList`: wraps list items in `AnimatePresence` with `m.div layout`. New items fade and scale in from 0.98, removed items fade out, and the remaining items glide into place with `layout`.
+- `AnimatedItem`: an `m.article` with `layout="position"`, used as the direct child of `<AnimatePresence mode="popLayout">` in the instructor grid. New items fade and scale in from 0.98, removed items fade out, and the remaining items glide into place.
 
 ## Catalogue
 What animates, where, and with which tool. Anything not listed stays static.
@@ -96,20 +110,21 @@ What animates, where, and with which tool. Anything not listed stays static.
   - while a filter or week navigation is in flight (`isPending` from the existing `useTransition`), the calendar dims to `opacity: 0.6` over `--dur-fast`;
   - the calendar gets `aria-busy="true"`;
   - this is CSS only.
-- **Suspense reveal:** the "Wczytywanie harmonogramu…" fallback exits with a fade, and the content enters with `FadeIn`-style CSS keyframes.
+- **Suspense reveal:** the "Wczytywanie harmonogramu…" fallback exits with a fade, and the content enters with `FadeIn`-style CSS keyframes. React runs this on a direct visit too, while the content streams in.
+- **Route layout:** the header and the `<Suspense>` boundary live in `app/harmonogram*/layout.tsx`, above the page. A same-route navigation can then never show the fallback: React keeps the dimmed calendar until the new one is ready. The page animation lives there too, so it plays only when you arrive at the route or leave it.
 
 ### Kierunki i grupy (Motion)
-- Search results use `AnimatedList`:
+- Search results use `CollapseItem` (height), not layout animations. Cards in a single column need no measuring; everything below simply follows the collapsing height. Card spacing is a margin inside each wrapper, so it shrinks with the card.
   - programmes and group rows that stop matching fade out;
   - the rest close the gap smoothly;
   - the empty-state message fades in.
 
 ### Prowadzący (Motion)
 - The "Nowy prowadzący" form opens and closes with `Collapse`. The first field gets focus after the open animation starts, not after it ends.
-- Field error messages fade in with `y: -4 → 0` over `DUR.enter`. No shaking.
+- Field error messages fade in with `y: -4 → 0` over `--dur-enter`, using a CSS keyframe (`rise-in`) that runs on mount. No Motion is needed and nothing shakes.
 - A saved instructor's card enters at the top of `AnimatedList` and the other cards shift down with `layout`.
 - The success banner enters with `Collapse`.
-- Search filtering uses `AnimatedList`, as on Kierunki.
+- Search filtering uses `AnimatedItem` cards in `AnimatePresence mode="popLayout"`. Removed cards leave the flow at once, so the rest move to their new grid cells together.
 
 ### Import i eksport (Motion + CSS)
 - The import result panel (summary, rows and buttons) opens with `Collapse` when a file is read, and closes on "Anuluj" or after a successful import.
@@ -127,6 +142,8 @@ What animates, where, and with which tool. Anything not listed stays static.
 ## Testing (extends spec 06)
 - **Component tests:** `vitest.setup.ts` sets `MotionGlobalConfig.skipAnimations = true` (from `motion/react`), so animations finish instantly. Assertions that an element disappeared use `waitFor` or `waitForElementToBeRemoved`, because `AnimatePresence` removes exiting elements asynchronously.
 - **E2e tests:** `playwright.config.ts` sets `use.reducedMotion: "reduce"` for all projects, so existing tests stay fast and deterministic.
+- `motion.spec.ts` waits until no animation is running before it starts recording, so the Suspense reveal of a direct visit isn't counted against the action under test.
+- `e2e/bundle.spec.ts` caps the JS loaded before `load` on `/kierunki`, `/prowadzacy` and `/import-eksport` at 165 kB compressed. A single barrel import of `m` breaks the cap.
 - New `e2e/motion.spec.ts` runs with `test.use({ reducedMotion: "no-preference" })` and checks:
   - after a week change, a filter change, opening the instructor form and loading an import, the affected content ends fully visible: computed `opacity` is 1 and no element is left with a non-identity `transform`;
   - while each of those animations runs, every entry of `document.getAnimations()` has `duration + delay <= 400`;
@@ -144,5 +161,9 @@ What animates, where, and with which tool. Anything not listed stays static.
 - No animation is longer than 400 ms, including delay. `motion.spec.ts` enforces this.
 - With reduced motion, nothing slides, scales or moves, and state changes are still visible as fades.
 - Rapid repeated actions never leave stale or half-faded content.
-- `motion` is the only new runtime dependency. Lighthouse "Total Blocking Time" and the first-load JS of `/kierunki` don't grow by more than 15 kB gzip, thanks to `LazyMotion`.
+- `motion` is the only new runtime dependency.
+- First-load JS grows by at most 20 kB gzip, with the features loaded lazily by `LazyMotion`.
+  - Measured on `/kierunki`: 140 → 159 kB.
+  - The drag and layout features (≈47 kB) arrive after the page is idle.
+  - The original 15 kB estimate didn't hold: `m`, `AnimatePresence`, `LazyMotion` and `MotionConfig` alone come to about 19 kB.
 - `npm run lint`, `npm run build`, `npm run test` and `npm run test:e2e` pass.

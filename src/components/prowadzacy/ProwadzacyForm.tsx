@@ -38,7 +38,7 @@ export function ProwadzacyForm({ onSave, onCancel }: ProwadzacyFormProps) {
   const [bledy, setBledy] = useState<Bledy>({});
 
   useEffect(() => {
-    formRef.current?.querySelector<HTMLInputElement>("#np-imie")?.focus();
+    formRef.current?.querySelector<HTMLInputElement>("#np-imie")?.focus({ preventScroll: true });
   }, []);
 
   const clearError = (pole: Pole) => {

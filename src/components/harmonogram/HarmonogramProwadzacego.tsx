@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import { WeekCalendar, type CalendarEvent } from "@/components/calendar/WeekCalendar";
 import { getGrupy } from "@/lib/data/kierunki";
 import { getProwadzacy } from "@/lib/data/prowadzacy";
@@ -5,8 +6,10 @@ import { getZajeciaProwadzacego } from "@/lib/data/zajecia";
 import { toISODate } from "@/lib/dates";
 import { sumaGodzin, zajeciaWTygodniu } from "@/lib/schedule";
 import { resolveTydzien, single, type SearchParams } from "@/lib/search-params";
+import { PendingProvider, PendingRegion } from "./PendingNavigation";
 import { ProwadzacyFilters } from "./ProwadzacyFilters";
 import { ProwadzacySummary } from "./ProwadzacySummary";
+import { Reveal, SUMMARY_TRANSITION, WEEK_TRANSITION } from "./Reveal";
 
 /** Filters, weekly summary and calendar for the instructor chosen in `?prowadzacy=&tydzien=`. */
 export async function HarmonogramProwadzacego({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -40,25 +43,42 @@ export async function HarmonogramProwadzacego({ searchParams }: { searchParams: 
   });
 
   return (
-    <>
-      <ProwadzacyFilters prowadzacy={lista} prowadzacyId={prowadzacy?.id} weekStart={toISODate(weekStart)} />
-      {!prowadzacy ? (
-        <div className="empty-state">Brak prowadzących.</div>
-      ) : (
-        <>
-          <ProwadzacySummary
-            prowadzacy={prowadzacy}
-            godziny={sumaGodzin(zajecia)}
-            grupy={grupyTygodnia.size}
-            tryby={trybyTygodnia.size}
-          />
-          {events.length === 0 ? (
-            <div className="empty-state">Brak zajęć w tym tygodniu.</div>
-          ) : (
-            <WeekCalendar events={events} weekStart={weekStart} />
-          )}
-        </>
-      )}
-    </>
+    <Reveal>
+      <PendingProvider>
+        <ProwadzacyFilters prowadzacy={lista} prowadzacyId={prowadzacy?.id} weekStart={toISODate(weekStart)} />
+        {!prowadzacy ? (
+          <div className="empty-state">Brak prowadzących.</div>
+        ) : (
+          <>
+            {/* An instructor switch crossfades the card; a week change only updates its numbers. */}
+            <ViewTransition key={prowadzacy.id} name="prowadzacy-podsumowanie" share={SUMMARY_TRANSITION} default="none">
+              <div>
+                <ProwadzacySummary
+                  prowadzacy={prowadzacy}
+                  godziny={sumaGodzin(zajecia)}
+                  grupy={grupyTygodnia.size}
+                  tryby={trybyTygodnia.size}
+                />
+              </div>
+            </ViewTransition>
+            {/* Keyed by instructor and week: a week change slides, an instructor change crossfades. */}
+            <ViewTransition
+              key={`${prowadzacy.id}|${toISODate(weekStart)}`}
+              name="harmonogram-prowadzacego"
+              share={WEEK_TRANSITION}
+              default="none"
+            >
+              <PendingRegion>
+                {events.length === 0 ? (
+                  <div className="empty-state">Brak zajęć w tym tygodniu.</div>
+                ) : (
+                  <WeekCalendar events={events} weekStart={weekStart} />
+                )}
+              </PendingRegion>
+            </ViewTransition>
+          </>
+        )}
+      </PendingProvider>
+    </Reveal>
   );
 }

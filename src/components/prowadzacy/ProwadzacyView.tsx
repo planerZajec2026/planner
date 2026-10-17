@@ -1,7 +1,10 @@
 "use client";
 
+import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Collapse } from "@/components/motion/Collapse";
+import { FadeIn } from "@/components/motion/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { SearchField } from "@/components/ui/SearchField";
@@ -64,25 +67,34 @@ export function ProwadzacyView({ initial }: { initial: Prowadzacy[] }) {
 
       {/* display:contents keeps the always-present live region from adding an empty flex gap */}
       <div role="status" style={{ display: "contents" }}>
-        {saved && (
+        <Collapse show={saved}>
           <div className="success-banner">
             <Icon name="check" />
             Dodano prowadzącego (dane lokalne)
           </div>
-        )}
+        </Collapse>
       </div>
 
-      {formOpen && <ProwadzacyForm onSave={handleSave} onCancel={toggleForm} />}
+      <Collapse show={formOpen}>
+        <ProwadzacyForm onSave={handleSave} onCancel={toggleForm} />
+      </Collapse>
 
-      {visible.length === 0 ? (
-        <div className="empty-state">Brak prowadzących spełniających kryteria.</div>
-      ) : (
-        <div className="card-grid">
+      <AnimatePresence initial={false}>
+        {visible.length === 0 && (
+          <FadeIn key="empty">
+            <div className="empty-state">Brak prowadzących spełniających kryteria.</div>
+          </FadeIn>
+        )}
+      </AnimatePresence>
+
+      {/* popLayout: removed cards leave the flow at once, so the rest glide to their new cells together. */}
+      <div className="card-grid">
+        <AnimatePresence mode="popLayout" initial={false}>
           {visible.map((p) => (
             <ProwadzacyCard key={p.id} prowadzacy={p} />
           ))}
-        </div>
-      )}
+        </AnimatePresence>
+      </div>
     </>
   );
 }
