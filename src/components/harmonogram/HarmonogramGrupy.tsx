@@ -1,17 +1,13 @@
-import { connection } from "next/server";
 import { WeekCalendar, type CalendarEvent } from "@/components/calendar/WeekCalendar";
 import { getGrupy, getKierunki } from "@/lib/data/kierunki";
 import { getProwadzacy } from "@/lib/data/prowadzacy";
 import { getZajeciaGrupy } from "@/lib/data/zajecia";
-import { parseISODate, startOfWeek, toISODate } from "@/lib/dates";
+import { toISODate } from "@/lib/dates";
 import { resolveGrupaSelection } from "@/lib/grupa-selection";
 import { pelneImie } from "@/lib/prowadzacy";
 import { zajeciaWTygodniu } from "@/lib/schedule";
+import { resolveTydzien, single, type SearchParams } from "@/lib/search-params";
 import { GrupaFilters } from "./GrupaFilters";
-
-type SearchParams = Record<string, string | string[] | undefined>;
-
-const single = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 /** Filters + weekly calendar for the group chosen in `?tryb=&kierunek=&grupa=&tydzien=`. */
 export async function HarmonogramGrupy({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -23,12 +19,7 @@ export async function HarmonogramGrupy({ searchParams }: { searchParams: Promise
     grupa: single(sp.grupa),
   });
 
-  let requestedWeek = parseISODate(single(sp.tydzien));
-  if (!requestedWeek) {
-    await connection(); // "today" must be read per request, not at prerender time
-    requestedWeek = new Date();
-  }
-  const weekStart = startOfWeek(requestedWeek);
+  const weekStart = await resolveTydzien(sp.tydzien);
 
   // TODO(backend): fetch only this week's classes, applying date-based exceptions (cancellations, holidays).
   const zajecia = selection.grupa
