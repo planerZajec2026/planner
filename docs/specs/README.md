@@ -21,6 +21,7 @@ Frontend for **Siatka**, a university timetable planner. Built with Next.js (App
 | 03 | [Prowadzący](03-prowadzacy.md) | `feat/03-prowadzacy` | `/prowadzacy` |
 | 04 | [Harmonogram prowadzącego](04-harmonogram-prowadzacego.md) | `feat/04-harmonogram-prowadzacego` | `/harmonogram-prowadzacych` |
 | 05 | [Import i eksport danych](05-import-eksport.md) | `feat/05-import-eksport` | `/import-eksport` |
+| 06 | [Testy aplikacji](06-testy.md) | `feat/06-testy` | none (tooling + tests) |
 
 ## Workflow
 
@@ -29,6 +30,13 @@ Each spec is built on its own branch, created from the latest `main`. Before a b
 ```bash
 npm run lint
 npm run build
+```
+
+Once spec 06 is merged, these must pass as well:
+
+```bash
+npm run test
+npm run test:e2e
 ```
 
 ## Domain model (shared by all specs)
