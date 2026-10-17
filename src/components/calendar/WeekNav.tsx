@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic } from "react";
+import { useNavigationTransition } from "@/components/harmonogram/PendingNavigation";
 import { Icon } from "@/components/ui/Icon";
 import { addDays, parseISODate, toISODate, weekLabel } from "@/lib/dates";
+import { PRZEJSCIE } from "@/lib/motion";
 
 type WeekNavProps = {
   /** Monday of the displayed week, "YYYY-MM-DD". */
@@ -15,7 +17,7 @@ export function WeekNav({ weekStart }: WeekNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [, startTransition] = useNavigationTransition();
   const [shown, setShown] = useOptimistic(weekStart);
   const monday = parseISODate(shown) ?? new Date();
 
@@ -25,7 +27,11 @@ export function WeekNav({ weekStart }: WeekNavProps) {
     params.set("tydzien", next);
     startTransition(() => {
       setShown(next);
-      router.replace(`${pathname}?${params}`, { scroll: false });
+      // The type lets the calendar's <ViewTransition> slide in the direction of travel.
+      router.replace(`${pathname}?${params}`, {
+        scroll: false,
+        transitionTypes: [days > 0 ? PRZEJSCIE.tydzienNastepny : PRZEJSCIE.tydzienPoprzedni],
+      });
     });
   };
 

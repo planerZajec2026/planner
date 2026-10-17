@@ -22,6 +22,14 @@
   --success-text: #067647;
   --shadow-card: rgba(34,42,53,0.05) 0px 4px 8px 0px;
   --shadow-hover: rgba(36,36,36,0.7) 0px 1px 5px -4px, rgba(36,36,36,0.05) 0px 4px 8px 0px;
+  /* Motion tokens (spec 07). Mirrored for Motion in src/lib/motion.ts — keep both in sync. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-enter: 220ms;
+  --dur-exit: 150ms;
+  --dur-move: 320ms;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
@@ -44,11 +52,15 @@ button { font-family:inherit; }
 .nav-item { display:flex; align-items:center; gap:11px; padding:9px 14px; border-radius:9999px; font-size:14px; font-weight:500; color:var(--graphite); }
 .nav-item svg { flex:0 0 17px; }
 .nav-item:hover { background:var(--paper); }
-.nav-item.active { background:var(--ink); color:var(--white); }
+.nav-item { position:relative; isolation:isolate; }
+.nav-item.active { color:var(--white); }
+.nav-item.active:hover { background:transparent; }
+.nav-pill { position:absolute; inset:0; z-index:-1; border-radius:9999px; background:var(--ink); }
 .sidebar-foot { margin-top:auto; font-size:12px; color:var(--stone); line-height:1.6; padding-top:16px; border-top:1px solid var(--silver); }
 
 .content { flex:1 1 0; min-width:0; overflow-y:auto; padding:40px 48px; display:flex; flex-direction:column; gap:24px; }
-.content > * { flex-shrink:0; } /* children overflow (and scroll) instead of squeezing to fit */
+.content > * { flex-shrink:0; }
+.page { display:flex; flex-direction:column; gap:24px; } /* one box per page so it can be a view-transition participant */ /* children overflow (and scroll) instead of squeezing to fit */
 .back-link { font-size:13px; color:var(--slate); display:inline-flex; align-items:center; gap:4px; align-self:flex-start; }
 .back-link:hover { color:var(--ink); }
 .page-header { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; }
@@ -101,7 +113,7 @@ button { font-family:inherit; }
 .class-block .meta { color:var(--slate); letter-spacing:-0.2px; }
 .class-block .block-tag { align-self:flex-start; font-size:10px; font-weight:500; background:var(--paper); color:var(--graphite); border-radius:9999px; padding:2px 8px; }
 
-.card-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px,100%), 1fr)); gap:16px; }
+.card-grid { position:relative; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px,100%), 1fr)); gap:16px; }
 .instructor-card { background:var(--white); border-radius:12px; box-shadow:var(--shadow-card); padding:20px; display:flex; flex-direction:column; gap:12px; }
 .instructor-top { display:flex; gap:14px; align-items:center; }
 .avatar { width:46px; height:46px; border-radius:50%; background:var(--paper); color:var(--ink); display:flex; align-items:center; justify-content:center; font-weight:600; font-family:var(--font-display); font-size:14px; flex:0 0 auto; overflow:hidden; }
@@ -150,6 +162,10 @@ button { font-family:inherit; }
 .import-result-head { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px; font-size:13px; color:var(--slate); }
 .two-col { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(360px,100%), 1fr)); gap:16px; align-items:start; }
 
+/* Spacing lives inside each collapsing wrapper (not flex gap), so it shrinks with the card. */
+.kierunki-list { display:flex; flex-direction:column; }
+.kierunki-list .kierunek-card { margin-bottom:24px; }
+.kierunki-list > :last-child .kierunek-card { margin-bottom:0; }
 .kierunek-card { background:var(--white); border-radius:12px; box-shadow:var(--shadow-card); padding:22px 24px; display:flex; flex-direction:column; gap:4px; max-width:620px; }
 
 .conflict-banner { display:flex; align-items:flex-start; gap:10px; background:var(--danger-bg); color:var(--danger-text); border-radius:12px; padding:14px 18px; font-size:13px; line-height:1.5; }
@@ -180,13 +196,82 @@ button { font-family:inherit; }
 .kierunek-head h3 { font-size:17px; letter-spacing:0.2px; }
 .kierunek-count { font-size:12px; color:var(--stone); font-weight:500; }
 .grupa-row { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:12px 4px; border-bottom:1px solid var(--silver); }
-.grupa-row:last-child { border-bottom:none; }
+.grupa-row:last-child, .grupa-collapse:last-child > .grupa-row { border-bottom:none; }
 .grupa-code { font-weight:600; font-size:14.5px; color:var(--ink); min-width:92px; letter-spacing:-0.2px; }
 .grupa-students { font-size:13px; color:var(--slate); }
 .grupa-link { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:500; color:var(--graphite); padding:8px 14px; border-radius:9999px; border:1px solid var(--silver); margin-left:auto; }
 .grupa-link:hover { border-color:var(--ink); color:var(--ink); }
 
 .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* ── Motion (spec 07) ─────────────────────────────────────────────────────────
+   CSS handles hover/press/focus and state colours; React <ViewTransition> handles navigation;
+   Motion (src/components/motion) handles mount/unmount and layout. Only opacity/transform move. */
+.btn, .btn-icon, .grupa-link, .week-nav button, .nav-item, .search-field,
+.select-field, .text-field, .form-field input, .form-field select {
+  transition-property: background-color, border-color, color, outline-color, box-shadow, transform;
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease-out);
+}
+.btn:active:not(:disabled), .btn-icon:active, .grupa-link:active, .week-nav button:active { transform:scale(0.98); }
+.instructor-card, .kierunek-card { transition: box-shadow var(--dur-fast) var(--ease-out), translate var(--dur-fast) var(--ease-out); }
+.instructor-card:hover, .kierunek-card:hover { box-shadow:var(--shadow-hover); translate:0 -1px; }
+.dropzone { transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out); }
+.dropzone .icon { transition: translate var(--dur-fast) var(--ease-out); }
+.dropzone.drag-over .icon { translate:0 -2px; }
+.import-result-row { transition: background-color var(--dur-enter) var(--ease-out), color var(--dur-enter) var(--ease-out); }
+.form-field .field-error, .import-result-row .row-note, .import-result-row .row-status { animation: rise-in var(--dur-enter) var(--ease-out) both; }
+
+/* Calendar dims while a filter or week change is loading. The delay keeps fast navigations from flickering. */
+.pending-region { transition: opacity var(--dur-fast) var(--ease-out); }
+.pending-region[aria-busy="true"] { opacity:0.6; transition-delay:150ms; }
+
+@keyframes rise-in { from { opacity:0; translate:0 -4px; } to { opacity:1; translate:0 0; } }
+@keyframes vt-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes vt-fade-out { from { opacity:1; } to { opacity:0; } }
+@keyframes vt-rise { from { translate:0 8px; } to { translate:0 0; } }
+@keyframes vt-slide-in { from { translate:var(--vt-offset) 0; } to { translate:0 0; } }
+@keyframes vt-slide-out { from { translate:0 0; } to { translate:var(--vt-offset) 0; } }
+
+/* View transitions: only named parts animate; the rest of the page swaps instantly. */
+::view-transition { pointer-events:none; } /* clicks during a transition reach the live page */
+::view-transition-group(root), ::view-transition-old(root), ::view-transition-new(root) { animation:none; }
+::view-transition-old(root) { display:none; }
+::view-transition-group(sidebar), ::view-transition-new(sidebar) { animation:none; }
+::view-transition-old(sidebar) { display:none; }
+
+/* Page change: old page leaves fast, new page fades in after it and rises 8px. */
+::view-transition-old(.page-exit) { animation: var(--dur-exit) var(--ease-in) both vt-fade-out; }
+::view-transition-new(.page-enter) {
+  animation: var(--dur-enter) var(--ease-out) var(--dur-exit) both vt-fade-in, var(--dur-move) var(--ease-out) both vt-rise;
+}
+/* Suspense fallback → content. */
+::view-transition-old(.fallback-exit) { animation: var(--dur-exit) var(--ease-in) both vt-fade-out; }
+/* Same timing as .page-enter, so content that arrives with a page change moves together with it. */
+::view-transition-new(.content-enter) { animation: var(--dur-enter) var(--ease-out) var(--dur-exit) both vt-fade-in, var(--dur-move) var(--ease-out) both vt-rise; }
+
+/* Week change: slide in the direction of travel. Same group, different content: crossfade (the "auto" default). */
+::view-transition-group(.tydzien-nastepny), ::view-transition-group(.tydzien-poprzedni) { animation-duration: var(--dur-move); }
+/* Keep the sliding weeks inside the calendar card instead of spilling past its edges. */
+::view-transition-image-pair(.tydzien-nastepny), ::view-transition-image-pair(.tydzien-poprzedni) { overflow:clip; border-radius:12px; }
+::view-transition-old(.tydzien-nastepny) { --vt-offset:-40px; animation: var(--dur-exit) var(--ease-in) both vt-fade-out, var(--dur-move) var(--ease-in-out) both vt-slide-out; }
+::view-transition-new(.tydzien-nastepny) { --vt-offset:40px; animation: var(--dur-enter) var(--ease-out) 60ms both vt-fade-in, var(--dur-move) var(--ease-in-out) both vt-slide-in; }
+::view-transition-old(.tydzien-poprzedni) { --vt-offset:40px; animation: var(--dur-exit) var(--ease-in) both vt-fade-out, var(--dur-move) var(--ease-in-out) both vt-slide-out; }
+::view-transition-new(.tydzien-poprzedni) { --vt-offset:-40px; animation: var(--dur-enter) var(--ease-out) 60ms both vt-fade-in, var(--dur-move) var(--ease-in-out) both vt-slide-in; }
+::view-transition-old(.crossfade) { animation: var(--dur-exit) var(--ease-in) both vt-fade-out; }
+::view-transition-new(.crossfade) { animation: var(--dur-enter) var(--ease-out) both vt-fade-in; }
+::view-transition-group(.crossfade) { animation-duration: var(--dur-enter); animation-timing-function: var(--ease-in-out); }
+
+/* Reduced motion: keep fades (state changes stay visible), drop all movement. */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active:not(:disabled), .btn-icon:active, .grupa-link:active, .week-nav button:active { transform:none; }
+  .instructor-card:hover, .kierunek-card:hover, .dropzone.drag-over .icon { translate:none; }
+  .form-field .field-error, .import-result-row .row-note, .import-result-row .row-status { animation-name: vt-fade-in; }
+  ::view-transition-new(.page-enter), ::view-transition-new(.content-enter) { animation: var(--dur-enter) var(--ease-out) both vt-fade-in; }
+  ::view-transition-old(.tydzien-nastepny), ::view-transition-old(.tydzien-poprzedni) { animation: var(--dur-exit) var(--ease-in) both vt-fade-out; }
+  ::view-transition-new(.tydzien-nastepny), ::view-transition-new(.tydzien-poprzedni) { animation: var(--dur-enter) var(--ease-out) both vt-fade-in; }
+  ::view-transition-group(*) { animation-duration:0s !important; }
+}
 
 /* Phone width: sidebar stacks above content and the whole page scrolls, 16px gutters. */
 @media (max-width: 720px) {

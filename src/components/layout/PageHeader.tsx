@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AppLink } from "@/components/ui/AppLink";
 import type { ReactNode } from "react";
 
 type PageHeaderProps = {
@@ -12,9 +12,9 @@ export function PageHeader({ title, description, back, actions }: PageHeaderProp
   return (
     <>
       {back && (
-        <Link className="back-link" href={back.href}>
+        <AppLink className="back-link" href={back.href}>
           ← {back.label}
-        </Link>
+        </AppLink>
       )}
       <div className="page-header">
         <div>

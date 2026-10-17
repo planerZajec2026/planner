@@ -89,3 +89,24 @@ test.describe("narrow window", () => {
     expect(box.height).toBeGreaterThanOrEqual(box.gridHeight);
   });
 });
+
+test("a slow week change keeps the current calendar, dimmed, instead of showing the loading text", async ({ page }) => {
+  await page.goto("/harmonogram?grupa=inf-z-3&tydzien=2026-10-12");
+  // Hold the server response for the next week to simulate a slow backend.
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/tydzien=2026-10-19/, async (route) => {
+    await held;
+    await route.continue();
+  });
+
+  await page.getByRole("button", { name: "Następny tydzień" }).click();
+  await expect(page.locator(".week-nav")).toContainText("19–25 października 2026"); // optimistic label
+  await expect(page.locator(".pending-region")).toHaveAttribute("aria-busy", "true");
+  await expect(page.locator(".day-header").first()).toHaveText("Pon12.10"); // old calendar still shown
+  await expect(page.getByText("Wczytywanie harmonogramu…")).toHaveCount(0);
+
+  release();
+  await expect(page.locator(".day-header").first()).toHaveText("Pon19.10");
+  await expect(page.locator(".pending-region")).not.toHaveAttribute("aria-busy");
+});
