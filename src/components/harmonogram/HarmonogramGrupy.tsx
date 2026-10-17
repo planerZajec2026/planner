@@ -5,7 +5,7 @@ import { getProwadzacy } from "@/lib/data/prowadzacy";
 import { getZajeciaGrupy } from "@/lib/data/zajecia";
 import { parseISODate, startOfWeek, toISODate } from "@/lib/dates";
 import { resolveGrupaSelection } from "@/lib/grupa-selection";
-import { prowadzacyLabel } from "@/lib/labels";
+import { pelneImie } from "@/lib/prowadzacy";
 import { zajeciaWTygodniu } from "@/lib/schedule";
 import { GrupaFilters } from "./GrupaFilters";
 
@@ -44,7 +44,7 @@ export async function HarmonogramGrupy({ searchParams }: { searchParams: Promise
       do: z.do,
       typ: z.typ,
       tytul: z.przedmiot,
-      meta: p ? `${z.sala} · ${prowadzacyLabel(p)}` : z.sala,
+      meta: p ? `${z.sala} · ${pelneImie(p)}` : z.sala,
     };
   });
 
