@@ -10,6 +10,7 @@ import {
 } from "@/lib/dates";
 import type { DzienTygodnia, TypZajec } from "@/lib/types";
 import { ClassBlock } from "./ClassBlock";
+import { layoutDay } from "./layout";
 
 export type CalendarEvent = {
   id: string;
@@ -40,39 +41,6 @@ const SLOTS_PER_HOUR = 60 / SLOT_MINUTES;
 const SLOT_HEIGHT = 56 / SLOTS_PER_HOUR;
 /** Grid row 1 is the day header. */
 const FIRST_SLOT_ROW = 2;
-
-type Placed = CalendarEvent & { start: number; end: number; lane: number; lanes: number };
-
-/** Splits overlapping events of one day into side-by-side lanes. */
-function layoutDay(events: CalendarEvent[]): Placed[] {
-  const sorted = events
-    .map((e) => ({ ...e, start: timeToMinutes(e.od), end: timeToMinutes(e.do), lane: 0, lanes: 1 }))
-    .sort((a, b) => a.start - b.start || b.end - a.end);
-
-  const placed: Placed[] = [];
-  let cluster: Placed[] = [];
-  let laneEnds: number[] = [];
-  let clusterEnd = -1;
-
-  const closeCluster = () => {
-    for (const e of cluster) e.lanes = laneEnds.length;
-    cluster = [];
-    laneEnds = [];
-  };
-
-  for (const e of sorted) {
-    if (e.start >= clusterEnd) closeCluster();
-    let lane = laneEnds.findIndex((end) => end <= e.start);
-    if (lane === -1) lane = laneEnds.push(0) - 1;
-    laneEnds[lane] = e.end;
-    e.lane = lane;
-    cluster.push(e);
-    placed.push(e);
-    clusterEnd = Math.max(clusterEnd, e.end);
-  }
-  closeCluster();
-  return placed;
-}
 
 /** Monday–Sunday timetable grid: a time column plus 7 day columns, 15-minute rows. */
 export function WeekCalendar({ events, weekStart, hourFrom = 8, hourTo = 20 }: WeekCalendarProps) {
