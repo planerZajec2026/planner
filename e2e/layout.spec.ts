@@ -4,9 +4,8 @@ import { expect, ROUTES, test } from "./fixtures";
 async function scrollToBottom(page: import("@playwright/test").Page) {
   return page.evaluate(async () => {
     const main = document.querySelector<HTMLElement>("main.content")!;
-    const filler = document.createElement("div");
-    filler.style.height = "2000px";
-    main.appendChild(filler);
+    // Padding instead of an inserted element: adding DOM nodes before hydration ends would be a hydration mismatch.
+    main.style.paddingBottom = "2000px";
     document.scrollingElement!.scrollTop = 99999;
     main.scrollTop = 99999;
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));

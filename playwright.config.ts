@@ -14,6 +14,8 @@ export default defineConfig({
     locale: "pl-PL",
     timezoneId: "Europe/Warsaw",
     trace: "retain-on-failure",
+    // Animations (spec 07) are checked in e2e/motion.spec.ts, which opts back in; everything else runs without movement.
+    reducedMotion: "reduce",
   },
   projects: [
     {

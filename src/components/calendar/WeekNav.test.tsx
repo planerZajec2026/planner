@@ -15,11 +15,15 @@ describe("WeekNav", () => {
     render(<WeekNav weekStart="2026-10-12" />);
 
     await userEvent.click(screen.getByRole("button", { name: "Następny tydzień" }));
-    expect(router.replace).toHaveBeenLastCalledWith(expect.stringMatching(/^\/harmonogram\?/), { scroll: false });
+    expect(router.replace).toHaveBeenLastCalledWith(expect.stringMatching(/^\/harmonogram\?/), {
+      scroll: false,
+      transitionTypes: ["tydzien-nastepny"],
+    });
     expect(Object.fromEntries(lastReplacedParams())).toEqual({ grupa: "inf-z-3", tydzien: "2026-10-19" });
 
     await userEvent.click(screen.getByRole("button", { name: "Poprzedni tydzień" }));
     expect(lastReplacedParams().get("tydzien")).toBe("2026-10-05");
+    expect(router.replace.mock.lastCall?.[1]).toEqual({ scroll: false, transitionTypes: ["tydzien-poprzedni"] });
   });
 
   it("crosses into the next year", async () => {

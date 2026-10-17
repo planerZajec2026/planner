@@ -1,6 +1,9 @@
 "use client";
 
+import { AnimatePresence } from "motion/react";
 import { useState } from "react";
+import { Collapse } from "@/components/motion/Collapse";
+import { FadeIn } from "@/components/motion/FadeIn";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { Icon } from "@/components/ui/Icon";
@@ -52,24 +55,29 @@ export function ExportPanel({ kierunki, grupy, prowadzacy }: ResolveContext) {
             ))}
           </select>
         </FormField>
-        {wybor && (
-          <FormField id="exp-cel" label={wybor.label}>
-            <select
-              id="exp-cel"
-              value={cel}
-              onChange={(e) => {
-                setCel(e.target.value);
-                setKomunikat(false);
-              }}
-            >
-              {wybor.options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-        )}
+        {/* mode="wait": switching scope fades the old target select out before the new one comes in. */}
+        <AnimatePresence initial={false} mode="wait">
+          {wybor && (
+            <FadeIn key={zakres}>
+              <FormField id="exp-cel" label={wybor.label}>
+                <select
+                  id="exp-cel"
+                  value={cel}
+                  onChange={(e) => {
+                    setCel(e.target.value);
+                    setKomunikat(false);
+                  }}
+                >
+                  {wybor.options.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </FadeIn>
+          )}
+        </AnimatePresence>
         {/* TODO(backend): generate the .xlsx for `zakres`/`cel` in a route handler (e.g. exceljs)
             or a Supabase Edge Function, and return it as a download. */}
         <Button onClick={() => setKomunikat(true)}>
@@ -79,12 +87,12 @@ export function ExportPanel({ kierunki, grupy, prowadzacy }: ResolveContext) {
       </div>
       <p className="card-note">Plik .xlsx będzie zawierał wszystkie zaplanowane zajęcia wraz z salami i prowadzącymi.</p>
       <div role="status" style={{ display: "contents" }}>
-        {komunikat && (
+        <Collapse show={komunikat}>
           <div className="info-banner" style={{ marginTop: 14 }}>
             <Icon name="alert" />
             Eksport będzie dostępny po podłączeniu backendu
           </div>
-        )}
+        </Collapse>
       </div>
     </section>
   );
