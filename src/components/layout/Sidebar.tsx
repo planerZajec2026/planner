@@ -1,0 +1,60 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Icon, type IconName } from "@/components/ui/Icon";
+
+const NAV: { href: string; label: string; icon: IconName }[] = [
+  { href: "/kierunki", label: "Kierunki i grupy", icon: "layers" },
+  { href: "/harmonogram", label: "Harmonogram grup", icon: "calendar" },
+  { href: "/prowadzacy", label: "Prowadzący", icon: "users" },
+  { href: "/harmonogram-prowadzacych", label: "Harmonogram prowadzących", icon: "badge" },
+  { href: "/import-eksport", label: "Import i eksport danych", icon: "upload" },
+];
+
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function Sidebar() {
+  const pathname = usePathname();
+
+  return (
+    <aside className="sidebar">
+      <Link href="/kierunki" className="sidebar-brand">
+        <div className="mark">
+          <Icon name="calendar" stroke="#fff" />
+        </div>
+        <div>
+          <h1>Siatka</h1>
+          <span className="sidebar-sub">Plan zajęć uczelni</span>
+        </div>
+      </Link>
+      <nav aria-label="Nawigacja główna">
+        <ul className="nav-list">
+          {NAV.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
+              <li key={item.href}>
+                <Link
+                  className={active ? "nav-item active" : "nav-item"}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <Icon name={item.icon} size={17} />
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      {/* TODO(backend): read the current academic year and semester from settings in Supabase. */}
+      <div className="sidebar-foot">
+        Rok akademicki 2026/2027
+        <br />
+        Semestr zimowy
+      </div>
+    </aside>
+  );
+}
