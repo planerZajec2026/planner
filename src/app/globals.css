@@ -107,6 +107,10 @@ button { font-family:inherit; }
 .instructor-role { font-size:12.5px; color:var(--slate); }
 .instructor-meta { font-size:13px; color:var(--slate); display:flex; flex-direction:column; gap:4px; }
 .instructor-meta a:hover { color:var(--ink); }
+.summary-card { display:flex; flex-wrap:wrap; align-items:center; gap:18px; padding:16px 20px; }
+.summary-stats { margin-left:auto; display:flex; flex-wrap:wrap; gap:24px; }
+.summary-stat { display:flex; flex-direction:column-reverse; text-align:right; font-size:12px; color:var(--slate); }
+.summary-stat dd { margin:0; font-family:var(--font-display); font-weight:600; font-size:18px; color:var(--ink); }
 .tag-row { display:flex; flex-wrap:wrap; gap:6px; }
 .tag { font-size:11.5px; font-weight:500; padding:4px 11px; border-radius:9999px; background:var(--paper); color:var(--graphite); }
 .card-actions { display:flex; gap:8px; margin-top:auto; padding-top:10px; border-top:1px solid var(--silver); }
