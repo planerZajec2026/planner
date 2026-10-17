@@ -5,12 +5,15 @@
 :root {
   --ink: #101010;
   --graphite: #242424;
-  --slate: #6b7280;
-  --stone: #898989;
+  /* --slate and --stone are darker than the design's #6b7280 / #898989 to meet WCAG AA (4.5:1) on white and --paper. */
+  --slate: #5f6673;
+  --stone: #6e6e6e;
   --silver: #e5e7eb;
   --paper: #f4f4f4;
   --white: #ffffff;
   --action-blue: #0099ff;
+  /* Blue for text: --action-blue is only 3:1 on white, so text uses this darker shade (5.15:1). */
+  --action-blue-text: #0070c0;
   --info-bg: #eff6fe;
   --danger-bg: #fef2f2;
   --danger-text: #b42318;
@@ -68,7 +71,7 @@ button { font-family:inherit; }
 .search-field input::placeholder { color:var(--stone); }
 .search-field:focus-within { outline:2px solid var(--action-blue); outline-offset:1px; }
 
-.info-banner { display:flex; align-items:center; gap:10px; background:var(--info-bg); color:var(--action-blue); border-radius:12px; padding:12px 18px; font-size:13px; font-weight:500; letter-spacing:-0.2px; }
+.info-banner { display:flex; align-items:center; gap:10px; background:var(--info-bg); color:var(--action-blue-text); border-radius:12px; padding:12px 18px; font-size:13px; font-weight:500; letter-spacing:-0.2px; }
 .info-banner svg { flex:0 0 auto; }
 .success-banner { display:flex; align-items:center; gap:10px; background:var(--success-bg); color:var(--success-text); border-radius:12px; padding:12px 18px; font-size:13px; font-weight:500; letter-spacing:-0.2px; }
 .success-banner svg { flex:0 0 auto; }
@@ -88,8 +91,8 @@ button { font-family:inherit; }
 .calendar-grid { position:relative; min-width:820px; }
 .day-header { background:var(--white); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--graphite); padding:6px 4px 10px; }
 .day-header .sub { font-weight:400; color:var(--stone); font-size:11px; margin-top:2px; letter-spacing:-0.2px; }
-.day-header.weekend { color:var(--action-blue); }
-.day-header.weekend .sub { color:var(--action-blue); opacity:0.75; }
+.day-header.weekend { color:var(--action-blue-text); }
+.day-header.weekend .sub { color:var(--action-blue-text); }
 .time-col { font-size:11.5px; color:var(--stone); text-align:right; padding-right:10px; transform:translateY(-8px); }
 .day-track { border-left:1px solid var(--silver); background-image: repeating-linear-gradient(to bottom, var(--silver) 0, var(--silver) 1px, transparent 1px, transparent 56px); }
 .day-track.weekend { background-color:rgba(239,246,254,0.65); }
