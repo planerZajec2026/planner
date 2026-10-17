@@ -1,12 +1,15 @@
+import type { Ref } from "react";
+import { AnimatedItem } from "@/components/motion/AnimatedItem";
 import { Avatar } from "@/components/ui/Avatar";
 import { ButtonLink } from "@/components/ui/Button";
 import { Tag } from "@/components/ui/Tag";
 import { inicjaly, pelneImie } from "@/lib/prowadzacy";
 import type { Prowadzacy } from "@/lib/types";
 
-export function ProwadzacyCard({ prowadzacy: p }: { prowadzacy: Prowadzacy }) {
+/** `ref` is forwarded so the card can be a direct child of <AnimatePresence mode="popLayout">. */
+export function ProwadzacyCard({ prowadzacy: p, ref }: { prowadzacy: Prowadzacy; ref?: Ref<HTMLElement> }) {
   return (
-    <article className="instructor-card" aria-label={pelneImie(p)}>
+    <AnimatedItem ref={ref} className="instructor-card" aria-label={pelneImie(p)}>
       <div className="instructor-top">
         <Avatar initials={inicjaly(p)} src={p.zdjecieUrl} />
         <div>
@@ -27,6 +30,6 @@ export function ProwadzacyCard({ prowadzacy: p }: { prowadzacy: Prowadzacy }) {
       <div className="card-actions">
         <ButtonLink href={`/harmonogram-prowadzacych?prowadzacy=${p.id}`}>Zobacz harmonogram</ButtonLink>
       </div>
-    </article>
+    </AnimatedItem>
   );
 }

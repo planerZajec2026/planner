@@ -2,6 +2,7 @@
 
 import { Fragment, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { Collapse } from "@/components/motion/Collapse";
 import { FormField } from "@/components/ui/FormField";
 import { Icon } from "@/components/ui/Icon";
 import { znajdzKonflikty, type Konflikt } from "@/lib/conflicts";
@@ -226,7 +227,7 @@ export function ManualZajeciaForm({ istniejace, onAdd, ...ctx }: ManualZajeciaFo
         </FormField>
       </Fragment>
 
-      {konflikty.length > 0 && (
+      <Collapse show={konflikty.length > 0}>
         <div className="conflict-banner" role="alert">
           <Icon name="alert" />
           <div>
@@ -238,14 +239,14 @@ export function ManualZajeciaForm({ istniejace, onAdd, ...ctx }: ManualZajeciaFo
             </ul>
           </div>
         </div>
-      )}
+      </Collapse>
       <div role="status" style={{ display: "contents" }}>
-        {dodano && (
+        <Collapse show={dodano}>
           <div className="success-banner">
             <Icon name="check" />
             Dodano zajęcia (dane lokalne)
           </div>
-        )}
+        </Collapse>
       </div>
 
       <div className="form-actions">

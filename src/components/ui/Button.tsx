@@ -1,5 +1,6 @@
-import Link from "next/link";
+import type Link from "next/link";
 import type { ButtonHTMLAttributes, ComponentProps } from "react";
+import { AppLink } from "./AppLink";
 
 type Variant = "primary" | "secondary" | "danger-ghost";
 
@@ -16,5 +17,5 @@ export function Button({ variant = "primary", className, type = "button", ...res
 type ButtonLinkProps = ComponentProps<typeof Link> & { variant?: Variant };
 
 export function ButtonLink({ variant = "secondary", className, ...rest }: ButtonLinkProps) {
-  return <Link className={classes(variant, className)} {...rest} />;
+  return <AppLink className={classes(variant, className)} {...rest} />;
 }

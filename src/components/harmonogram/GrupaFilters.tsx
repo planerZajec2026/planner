@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic } from "react";
 import { WeekNav } from "@/components/calendar/WeekNav";
 import { SelectField } from "@/components/ui/SelectField";
 import { resolveGrupaSelection, type GrupaSelectionInput } from "@/lib/grupa-selection";
+import { PRZEJSCIE } from "@/lib/motion";
 import type { Grupa, Kierunek, TrybStudiow } from "@/lib/types";
+import { useNavigationTransition } from "./PendingNavigation";
 
 const TRYB_OPTIONS: { value: TrybStudiow; label: string }[] = [
   { value: "niestacjonarne", label: "Niestacjonarne (zaoczne)" },
@@ -26,7 +28,7 @@ export function GrupaFilters({ kierunki, grupy, tryb, kierunekId, grupaId, weekS
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [, startTransition] = useNavigationTransition();
   const [current, setCurrent] = useOptimistic(
     resolveGrupaSelection(kierunki, grupy, { tryb, kierunek: kierunekId, grupa: grupaId }),
   );
@@ -45,7 +47,7 @@ export function GrupaFilters({ kierunki, grupy, tryb, kierunekId, grupaId, weekS
     else params.delete("grupa");
     startTransition(() => {
       setCurrent(next);
-      router.replace(`${pathname}?${params}`, { scroll: false });
+      router.replace(`${pathname}?${params}`, { scroll: false, transitionTypes: [PRZEJSCIE.filtr] });
     });
   };
 

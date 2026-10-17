@@ -1,11 +1,13 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic } from "react";
 import { WeekNav } from "@/components/calendar/WeekNav";
 import { SelectField } from "@/components/ui/SelectField";
 import { pelneImie } from "@/lib/prowadzacy";
+import { PRZEJSCIE } from "@/lib/motion";
 import type { Prowadzacy } from "@/lib/types";
+import { useNavigationTransition } from "./PendingNavigation";
 
 type ProwadzacyFiltersProps = {
   prowadzacy: Prowadzacy[];
@@ -18,7 +20,7 @@ export function ProwadzacyFilters({ prowadzacy, prowadzacyId, weekStart }: Prowa
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [, startTransition] = useNavigationTransition();
   const [selected, setSelected] = useOptimistic(prowadzacyId ?? "");
 
   const select = (id: string) => {
@@ -26,7 +28,7 @@ export function ProwadzacyFilters({ prowadzacy, prowadzacyId, weekStart }: Prowa
     params.set("prowadzacy", id);
     startTransition(() => {
       setSelected(id);
-      router.replace(`${pathname}?${params}`, { scroll: false });
+      router.replace(`${pathname}?${params}`, { scroll: false, transitionTypes: [PRZEJSCIE.filtr] });
     });
   };
 
