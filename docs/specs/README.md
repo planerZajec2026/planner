@@ -22,6 +22,7 @@ Frontend for **Siatka**, a university timetable planner. Built with Next.js (App
 | 04 | [Harmonogram prowadzącego](04-harmonogram-prowadzacego.md) | `feat/04-harmonogram-prowadzacego` | `/harmonogram-prowadzacych` |
 | 05 | [Import i eksport danych](05-import-eksport.md) | `feat/05-import-eksport` | `/import-eksport` |
 | 06 | [Testy aplikacji](06-testy.md) | `feat/06-testy` | none (tooling + tests) |
+| 07 | [Animacje i mikrointerakcje](07-animacje.md) | `feat/07-animacje` | all |
 
 ## Workflow
 
