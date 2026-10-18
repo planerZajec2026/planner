@@ -72,4 +72,9 @@ jobs:
           npm run db:seed:generate
           # porcelain also catches a file that is missing from the commit (git diff ignores untracked files)
           changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql)"
-          if [ -n "$changed" ]; then echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql; exit 1; fi
+          if [ -n "$changed" ]; then
+            echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql
+            # The generated types as a base64 annotation, so they can be taken from the PR without a local database.
+            echo "::error title=database.types.ts (base64)::$(base64 -w0 src/lib/supabase/database.types.ts)"
+            exit 1
+          fi
