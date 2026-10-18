@@ -1,0 +1,49 @@
+name: Deploy database
+
+# Spec 09: migrations reach the cloud database only through this workflow, never by hand.
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Also load the demo seed (supabase/seed.sql). Only once, on a fresh project."
+        type: boolean
+        default: false
+
+# Migrations never run in parallel, and a running push is never cancelled halfway.
+concurrency:
+  group: deploy-db
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  push-migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Holds the secrets; a required reviewer here makes every cloud migration wait for approval.
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      # The same CLI version as local development and CI: the one pinned in package.json.
+      - id: cli
+        run: echo "version=$(node -p "require('./package.json').devDependencies.supabase")" >> "$GITHUB_OUTPUT"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: ${{ steps.cli.outputs.version }}
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Pending migrations
+        run: supabase db push --dry-run
+      - run: supabase db push --yes
+      # Never automatic: only a manual run with seed checked loads the demo data.
+      - name: Demo seed
+        if: github.event_name == 'workflow_dispatch' && inputs.seed
+        run: supabase db push --include-seed --yes
+      # This workflow never runs db reset against the cloud.
