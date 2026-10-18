@@ -46,3 +46,7 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+
+# Agent skills: .agents/skills is committed; .claude/skills holds machine-specific links to it.
+# Recreate them with the `npx skills add ...` commands in README.md.
+/.claude/skills/
