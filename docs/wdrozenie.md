@@ -15,33 +15,36 @@ Uzupełniaj na bieżąco: nazwy, regiony, daty i to, **które** sekrety istniej�
 
 | Co | Wartość |
 |----|---------|
-| Projekt Supabase | `planner-prod` (do potwierdzenia), region `eu-west-1` (Irlandia), Postgres 17, compute Nano |
+| Adres produkcyjny | https://studia-planer.vercel.app (projekt Vercela `planner`, zespół `thewebcookies-projects`) |
+| Projekt Supabase | `planner`, region `eu-west-1` (Irlandia), Postgres 17, compute Nano (plan Free) |
 | Region funkcji Vercela | `dub1` (Dublin), ustawiony w [`vercel.json`](../vercel.json) |
 | Node | 22.x (`engines` w `package.json`, tak samo jak w CI) |
-| Środowisko GitHub `production` | sekrety `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`; dodane: — |
-| Zmienne w Vercelu (Production, Preview) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; dodane: — |
-| Pierwsze wdrożenie produkcyjne | — |
-| Seed demo w chmurze | — |
+| Środowisko GitHub `production` | sekrety `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`; dodane 2026-10-18. Bez wymaganego recenzenta: migracje wgrywają się bez zatwierdzania |
+| Zmienne w Vercelu (Production, Preview) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; dodane 2026-10-18 |
+| Pierwsze wdrożenie produkcyjne | 2026-10-18, commit `9b82405` (spec 09); wszystkie strony odpowiadają, w JS brak `sb_secret` i `service_role` |
+| Migracje w chmurze | wszystkie 5 ze spec 08, wgrane 2026-10-18 pierwszym ręcznym uruchomieniem `deploy-db.yml`; `supabase migration list` zgodne z repo |
+| Seed demo w chmurze | nie wgrany |
 
 ## Jednorazowa konfiguracja (właściciel projektu)
 
 1. **Supabase**
    - [x] Projekt w `eu-west-1`, Postgres 17 (zgodnie z `supabase/config.toml`).
-   - [ ] Zanotuj project ref, hasło do bazy i **publishable key** (Settings → API Keys).
-   - [ ] Utwórz token dostępu dla CI (Account → Access Tokens).
+   - [x] Zanotuj project ref, hasło do bazy i **publishable key** (Settings → API Keys).
+   - [x] Utwórz token dostępu dla CI (Account → Access Tokens).
 2. **GitHub**, repozytorium → Settings
-   - [ ] Environment `production`, najlepiej z wymaganym recenzentem: wtedy każda migracja do chmury czeka na jedno kliknięcie zatwierdzenia.
-   - [ ] W tym środowisku sekrety `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`.
+   - [x] Environment `production`.
+   - [ ] Wymagany recenzent w tym środowisku (zalecane): wtedy każda migracja do chmury czeka na jedno kliknięcie zatwierdzenia.
+   - [x] W tym środowisku sekrety `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`.
 3. **Vercel**
-   - [ ] Zaimportuj repozytorium. Preset Next.js i komendę `npm run build` zostaw tak, jak zostały wykryte.
-   - [ ] Gałąź produkcyjna: `main`.
-   - [ ] Zmienne `NEXT_PUBLIC_SUPABASE_URL` i `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` dla Production i Preview. Dla Development nie ustawiaj: lokalnie działa lokalny stack (`npm run db:start`).
+   - [x] Zaimportuj repozytorium. Preset Next.js i komendę `npm run build` zostaw tak, jak zostały wykryte.
+   - [x] Gałąź produkcyjna: `main`.
+   - [x] Zmienne `NEXT_PUBLIC_SUPABASE_URL` i `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` dla Production i Preview. Dla Development nie ustawiaj: lokalnie działa lokalny stack (`npm run db:start`).
      Integracja Supabase z Vercel Marketplace też je ustawia; sprawdź wtedy, czy klucz publishable ma nazwę, którą czyta aplikacja.
    - [ ] **Deployment Checks** wymagające workflow `CI`, żeby czerwony build nigdy nie trafił na Production.
 
 Pierwsze wdrożenie Vercela nie potrzebuje bazy, więc zrób je najpierw: sprawdza, czy build działa na Vercelu.
 
-Migracje ze spec 08 są już w `main`, więc `deploy-db.yml` nie uruchomi się dla nich sam. Po dodaniu sekretów uruchom go raz ręcznie: Actions → Deploy database → Run workflow, z zaznaczonym `seed`, jeśli chcesz dane demo.
+Migracje ze spec 08 trafiły do `main` przed `deploy-db.yml`, więc wgrano je jednym ręcznym uruchomieniem (2026-10-18, bez `seed`). Dane demo można wgrać później tak samo: Actions → Deploy database → Run workflow, z zaznaczonym `seed`.
 
 ### Plany
 
@@ -75,3 +78,4 @@ npx supabase migration list
 - `SUPABASE_ACCESS_TOKEN` zarządza wszystkimi projektami na koncie właściciela. Jest tylko w środowisku `production` na GitHubie. Wymień go, gdy odchodzi ktoś z dostępem.
 - Pliki `.env*` są w `.gitignore`; `.env.example` zawiera tylko nazwy.
 - Kontrola po buildzie: w `.next/static` nie może być `sb_secret` ani `service_role`.
+- Doradcy bezpieczeństwa Supabase w chmurze (`npx supabase db advisors --linked --type security`) zgłaszają `public.rls_auto_enable()`: funkcję `SECURITY DEFINER` z `EXECUTE` dla `anon` i `authenticated`. Nie pochodzi z naszych migracji; Supabase tworzy ją przy zakładaniu projektu z automatycznym włączaniem RLS. To funkcja wyzwalacza zdarzeń, więc nie da się jej wywołać przez `/rest/v1/rpc`, ale ostrzeżenie zostaje, dopóki nie odbierze się jej `EXECUTE`. Lokalnie ta funkcja nie istnieje, więc CI tego nie wykryje.
