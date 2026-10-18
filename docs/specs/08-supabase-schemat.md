@@ -74,7 +74,6 @@ Identifiers are Polish and snake_case, matching the domain model in [the index](
   - `typ_zajec` (`wyklad`, `cwiczenia`, `laboratorium`, `seminarium`);
   - `powtarzalnosc` (`co-tydzien`, `parzyste`, `nieparzyste`);
   - `tytul_naukowy` (`mgr`, `mgr inż.`, `dr`, `dr inż.`, `dr hab.`, `prof.`).
-- `create type timerange as range (subtype = time);`, so hours can be compared with `&&`.
 
 ### Migration 2: `create_core_tables`
 - `kierunki`, `grupy` and `prowadzacy` have `text` IDs with a default of `gen_random_uuid()::text`:
@@ -100,7 +99,7 @@ Identifiers are Polish and snake_case, matching the domain model in [the index](
 ### Migration 3: `zajecia_conflicts`
 The database enforces the same rules as `src/lib/conflicts.ts`, so two users can't create a clash at the same time.
 - Generated columns on `zajecia`:
-  - `czas timerange generated always as (case when godzina_od < godzina_do then timerange(godzina_od, godzina_do, '[)') end) stored`. Half-open, so 10:00–12:00 and 12:00–14:00 don't overlap. The guard matters because generated columns are computed before check constraints run: without it, start ≥ end would fail inside the range constructor (22000) instead of on `zajecia_godziny_check` (23514);
+  - `czas tsrange generated always as (case when godzina_od < godzina_do then tsrange(date '2000-01-01' + godzina_od, date '2000-01-01' + godzina_do, '[)') end) stored`. Both times sit on a fixed date, so the built-in `tsrange` compares them like a time range. A custom `timerange` type was dropped: Postgres generates constructor functions for it, which the security advisor flags (`function_search_path_mutable`). Half-open, so 10:00–12:00 and 12:00–14:00 don't overlap. The guard matters because generated columns are computed before check constraints run: without it, start ≥ end would fail inside the range constructor (22000) instead of on `zajecia_godziny_check` (23514);
   - `tygodnie int4range generated always as (case powtarzalnosc when 'parzyste' then '[0,1)' when 'nieparzyste' then '[1,2)' else '[0,2)' end::int4range) stored`. Weekly overlaps both kinds; even and odd weeks never overlap each other.
 - Three exclusion constraints, each with a readable name, because the app turns the name into a Polish message in spec 10:
   - `zajecia_grupa_bez_kolizji exclude using gist (grupa_id with =, dzien with =, czas with &&, tygodnie with &&)`;

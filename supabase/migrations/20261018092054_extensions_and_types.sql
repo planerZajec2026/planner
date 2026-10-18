@@ -1,4 +1,4 @@
--- Spec 08, migration 1: extensions, enum types, a time range type, and API default privileges.
+-- Spec 08, migration 1: extensions, enum types, and API default privileges.
 
 -- btree_gist lets the exclusion constraints in `zajecia_conflicts` combine `=` on scalar columns with `&&` on ranges.
 create extension if not exists btree_gist with schema extensions;
@@ -18,6 +18,3 @@ create type public.typ_zajec as enum ('wyklad', 'cwiczenia', 'laboratorium', 'se
 create type public.powtarzalnosc as enum ('co-tydzien', 'parzyste', 'nieparzyste');
 
 create type public.tytul_naukowy as enum ('mgr', 'mgr inż.', 'dr', 'dr inż.', 'dr hab.', 'prof.');
-
--- Hours of a class as a range, so overlaps can be checked with `&&` (half-open: 10:00–12:00 and 12:00–14:00 don't overlap).
-create type public.timerange as range (subtype = time);

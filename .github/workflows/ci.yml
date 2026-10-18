@@ -56,7 +56,7 @@ jobs:
               data = json.loads(raw)
           except ValueError:
               data = None
-          items = data if isinstance(data, list) else (data or {}).get("lints") or (data or {}).get("result") or []
+          items = data if isinstance(data, list) else (data or {}).get("results") or []
           if not items:
               print("::error title=Supabase security advisors::" + " ".join(raw.split())[:900])
           for item in items:
