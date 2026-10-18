@@ -1,19 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./database.types";
 
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers.
  * Create a new client for every request; never share one between requests.
  *
- * TODO(backend): not used yet. The UI reads mock data through src/lib/data/*.
+ * TODO(backend): not used yet. The UI reads mock data through src/lib/data/* until spec 10.
+ * database.types.ts is generated: regenerate it with `npm run db:types` after every migration.
  * Add a proxy/middleware that refreshes the session once auth is introduced.
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {

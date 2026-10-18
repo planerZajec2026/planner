@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -27,3 +27,53 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
+
+  # Spec 08: the schema builds from scratch, its tests pass, and generated files are current.
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Only Postgres is needed; the CLI version is the one pinned in package.json.
+      - run: npx supabase db start
+      - run: npx supabase db reset --local
+      - run: npm run db:test
+      - run: npx supabase db lint --local --level warning --fail-on warning
+      - name: Security advisors
+        # Each finding also becomes an annotation, so it shows on the PR without opening the log.
+        run: |
+          if ! npx supabase db advisors --local --type security --fail-on warn --output-format json > advisors.json; then
+            cat advisors.json
+            python3 - <<'PY'
+          import json
+          raw = open("advisors.json").read()
+          try:
+              data = json.loads(raw)
+          except ValueError:
+              data = None
+          items = data if isinstance(data, list) else (data or {}).get("results") or []
+          if not items:
+              print("::error title=Supabase security advisors::" + " ".join(raw.split())[:900])
+          for item in items:
+              name = item.get("name") or item.get("title") or "advisor"
+              detail = item.get("detail") or item.get("description") or json.dumps(item)
+              print(f"::error title=Supabase advisor: {name}::{' '.join(str(detail).split())[:900]}")
+          PY
+            exit 1
+          fi
+      - name: Generated types and seed are up to date
+        run: |
+          npm run db:types
+          npm run db:seed:generate
+          # porcelain also catches a file that is missing from the commit (git diff ignores untracked files)
+          changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql)"
+          if [ -n "$changed" ]; then
+            echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql
+            echo "::error title=Generated files are stale::Run npm run db:types and npm run db:seed:generate, then commit the result."
+            exit 1
+          fi
