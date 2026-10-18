@@ -74,10 +74,6 @@ jobs:
           changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql)"
           if [ -n "$changed" ]; then
             echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql
-            # The generated types (gzip + base64, in numbered parts of 4000 chars, the annotation size limit) so they
-            # can be recovered from the PR without a local database.
-            gzip -9 -c src/lib/supabase/database.types.ts | base64 -w0 | fold -w 4000 > types.parts
-            n=$(wc -l < types.parts); i=0
-            while IFS= read -r part; do i=$((i+1)); echo "::error title=database.types.ts.gz.b64 part $i/$n::$part"; done < types.parts
+            echo "::error title=Generated files are stale::Run npm run db:types and npm run db:seed:generate, then commit the result."
             exit 1
           fi
