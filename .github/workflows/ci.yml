@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -33,8 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -44,7 +44,28 @@ jobs:
       - run: npx supabase db reset --local
       - run: npm run db:test
       - run: npx supabase db lint --local --level warning --fail-on warning
-      - run: npx supabase db advisors --local --type security --fail-on warn
+      - name: Security advisors
+        # Each finding also becomes an annotation, so it shows on the PR without opening the log.
+        run: |
+          if ! npx supabase db advisors --local --type security --fail-on warn --output-format json > advisors.json; then
+            cat advisors.json
+            python3 - <<'PY'
+          import json
+          raw = open("advisors.json").read()
+          try:
+              data = json.loads(raw)
+          except ValueError:
+              data = None
+          items = data if isinstance(data, list) else (data or {}).get("lints") or (data or {}).get("result") or []
+          if not items:
+              print("::error title=Supabase security advisors::" + " ".join(raw.split())[:900])
+          for item in items:
+              name = item.get("name") or item.get("title") or "advisor"
+              detail = item.get("detail") or item.get("description") or json.dumps(item)
+              print(f"::error title=Supabase advisor: {name}::{' '.join(str(detail).split())[:900]}")
+          PY
+            exit 1
+          fi
       - name: Generated types and seed are up to date
         run: |
           npm run db:types
