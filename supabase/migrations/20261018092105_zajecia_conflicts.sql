@@ -2,12 +2,15 @@
 -- A clash is the same group, room or instructor, on the same day, at overlapping hours, in weeks that can coincide.
 
 alter table public.zajecia
-  -- Half-open, so classes that only touch (10:00–12:00, 12:00–14:00) don't overlap.
-  -- Guarded so that start >= end is reported by zajecia_godziny_check, not by the range constructor
-  -- (generated columns are computed before check constraints run).
-  add column czas public.timerange
+  -- The hours as a range on a fixed date: the built-in tsrange compares like a time range would, without a custom
+  -- range type (whose generated constructor functions the security advisor flags). Half-open, so classes that only
+  -- touch (10:00–12:00, 12:00–14:00) don't overlap. Guarded so that start >= end is reported by zajecia_godziny_check,
+  -- not by the range constructor (generated columns are computed before check constraints run).
+  add column czas tsrange
     generated always as (
-      case when godzina_od < godzina_do then public.timerange(godzina_od, godzina_do, '[)') end
+      case when godzina_od < godzina_do
+        then tsrange(date '2000-01-01' + godzina_od, date '2000-01-01' + godzina_do, '[)')
+      end
     ) stored,
   -- Weekly classes cover both week kinds; even and odd weeks never overlap each other.
   add column tygodnie int4range
