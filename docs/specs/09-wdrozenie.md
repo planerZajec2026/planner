@@ -14,8 +14,8 @@ The app still runs on mock data until spec 10, so the first Vercel deploy needs 
 
 ## Decisions (defaults; change them here before implementing)
 - **Region:**
-  - Supabase `eu-central-1` (Frankfurt), the closest to Poland;
-  - Vercel functions in `fra1`, next to the database.
+  - Supabase `eu-west-1` (Ireland), where the project was created;
+  - Vercel functions in `dub1` (Dublin), next to the database.
 - **One Supabase project to start** (`planner-prod`). Preview deployments use it as well. That's safe while the database refuses every write (spec 08).
 - **Add a `planner-staging` project before spec 11 enables writes,** and point Preview deployments at it, so PRs can't change production data.
 - **Production data:**
@@ -33,7 +33,7 @@ The app still runs on mock data until spec 10, so the first Vercel deploy needs 
 These steps need account access, so they are a checklist, not code. Record what was done in `docs/wdrozenie.md` (created by this spec): project names, regions, and which secrets exist. Never record secret values.
 
 1. **Supabase**
-   - Create project `planner-prod` in `eu-central-1`, Postgres 17 (matching `config.toml` from spec 08).
+   - Create project `planner-prod` in `eu-west-1`, Postgres 17 (matching `config.toml` from spec 08).
    - Note the project ref, the database password, and the **publishable key** (Settings → API Keys).
    - Create a personal access token for CI (Account → Access Tokens).
 2. **GitHub**, repo → Settings:
@@ -57,7 +57,7 @@ These steps need account access, so they are a checklist, not code. Record what 
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["fra1"]
+  "regions": ["dub1"]
 }
 ```
 Nothing else. Next.js settings stay in `next.config.ts`; Vercel supports `cacheComponents` and Partial Prefetching natively.
@@ -106,7 +106,7 @@ Nothing else. Next.js settings stay in `next.config.ts`; Vercel supports `cacheC
 - Supabase Branching (a database per PR) instead of a shared staging project.
 
 ## Acceptance criteria
-- Merging to `main` produces a Production deployment on Vercel, built with Node 22 in region `fra1`, that serves every route.
+- Merging to `main` produces a Production deployment on Vercel, built with Node 22 in region `dub1`, that serves every route.
 - Opening a PR produces a Preview URL on the PR. A PR whose CI fails is never promoted to Production.
 - After a PR that adds a migration is merged:
   - `deploy-db.yml` runs, waits for approval in the `production` environment (if configured), and applies exactly the new migrations;
