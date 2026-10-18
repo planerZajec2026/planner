@@ -1,0 +1,19 @@
+name: No AI attribution
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Reject Claude co-author trailers
+        run: |
+          if git log --all --format='%H%n%B' | grep -i -E '^co-authored-by: .*(claude|anthropic)|generated with \[?claude code'; then
+            echo "::error::Commit messages must not contain Claude co-author trailers."
+            exit 1
+          fi

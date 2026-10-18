@@ -7,3 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Commits and pull requests
+
+Never add `Co-Authored-By: Claude …` trailers or "Generated with Claude Code" footers to commits or PR descriptions. `.claude/settings.json` disables them, `.githooks/commit-msg` strips them and CI rejects them.
