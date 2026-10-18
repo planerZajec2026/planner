@@ -27,3 +27,28 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 14
+
+  # Spec 08: the schema builds from scratch, its tests pass, and generated files are current.
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Only Postgres is needed; the CLI version is the one pinned in package.json.
+      - run: npx supabase db start
+      - run: npx supabase db reset --local
+      - run: npm run db:test
+      - run: npx supabase db lint --local --level warning --fail-on warning
+      - run: npx supabase db advisors --local --type security --fail-on warn
+      - name: Generated types and seed are up to date
+        run: |
+          npm run db:types
+          npm run db:seed:generate
+          # porcelain also catches a file that is missing from the commit (git diff ignores untracked files)
+          changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql)"
+          if [ -n "$changed" ]; then echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql; exit 1; fi
