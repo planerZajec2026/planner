@@ -25,7 +25,8 @@
     "db:lint": "supabase db lint --local --level warning",
     "db:advisors": "supabase db advisors --local --type security",
     "db:test": "supabase test db",
-    "db:seed:generate": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-seed.ts"
+    "db:seed:generate": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-seed.ts",
+    "db:plan-seed:generate": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generate-plan-seed.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

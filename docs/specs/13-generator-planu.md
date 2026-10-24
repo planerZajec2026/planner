@@ -90,9 +90,17 @@ Używany w CLI, w workerze (plan jest zapisywany razem z raportem) i w testach. 
 ## Schemat Supabase
 Nowe migracje w `supabase/migrations/`, zgodnie z regułami z [spec 08](08-supabase-schemat.md). Nazwy nie kolidują ze starymi tabelami (`zajecia`, `grupy`, `prowadzacy`).
 
-Tabele: `sloty`, `kalendarz`, `sale`, `roczniki`, `grupy_plan`, `studenci_grupy`, `kolizje_grup`, `prowadzacy_plan`, `dezyderaty`, `blokady_stale`, `zajecia_plan` (wejście), `generation_jobs`, `plan_zajec` (wynik: id zajęć, dzień, slot, sala, parzystość / tygodnie, `job_id`) oraz widok rozwijający spotkania do dat przez `kalendarz`.
+Cztery migracje (`20261024100000`–`20261024100300`):
+1. `plan_dane_slownikowe`: `sloty`, `kalendarz`, `sale`, `roczniki`, `grupy_plan`, `studenci`, `studenci_grupy`, `kolizje_grup`, `prowadzacy_plan`, `przedmioty_plan`.
+2. `plan_zajecia_i_dezyderaty`: `zajecia_plan` (wejście) z tabelami łączącymi `zajecia_plan_grupy` i `zajecia_plan_prowadzacy`, `blokady_stale`, `rada_wydzialu`, `dezyderaty_terminy`, `dezyderaty_ogolne`, `dezyderaty_sale`.
+3. `plan_generowanie`: `generation_jobs` (status `queued`/`running`/`done`/`failed`, parametry, raport walidatora, wynik miękkich), `plan_zajec` (wynik: zajęcia, dzień, slot, sala, tygodnie, `job_id`) i widok `plan_spotkania`, który rozwija przydział na spotkania z datami z `kalendarz` (`security_invoker`).
+4. `plan_api_grants_and_rls`: RLS na wszystkich tabelach, odczyt dla `anon` i `authenticated`, zapis tylko dla `service_role` (worker i import).
 
-RLS: odczyt dla wszystkich, zlecanie zadań dla planisty. Import danych: `scripts/import-plan-data.ts` wczytuje `requirements/dane_planu.json`. Typy przez `npm run db:types`.
+Zlecanie zadań z aplikacji (przycisk „Generuj") wymaga zapisu do `generation_jobs`. Do czasu logowania (spec 11) zrobiłaby to Server Action po stronie serwera z kluczem `service_role`; ten wyjątek od zasady ze spec 08 trzeba rozstrzygnąć w etapie 6.
+
+`sale.pojemnosc` jest pusta dla 24 sal niedostępnych do planowania (pracownie specjalistyczne), więc kolumna dopuszcza null, ale tylko dla sal niedostępnych.
+
+Dane wejściowe: `scripts/generate-plan-seed.ts` (`npm run db:plan-seed:generate`) zamienia `requirements/dane_planu.json` na `supabase/seeds/plan.sql`, ładowany po `seed.sql` przez `db reset`. CI sprawdza, że plik jest aktualny. Typy przez `npm run db:types`; testy pgTAP w `supabase/tests/plan.test.sql`.
 
 ## UI
 - **`/generator`:** parametry (limit czasu, wagi), przycisk „Generuj" (Server Action tworzy zadanie), status zadania, raport naruszeń i jakości.

@@ -70,10 +70,11 @@ jobs:
         run: |
           npm run db:types
           npm run db:seed:generate
+          npm run db:plan-seed:generate
           # porcelain also catches a file that is missing from the commit (git diff ignores untracked files)
-          changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql)"
+          changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql supabase/seeds/plan.sql)"
           if [ -n "$changed" ]; then
-            echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql
-            echo "::error title=Generated files are stale::Run npm run db:types and npm run db:seed:generate, then commit the result."
+            echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql supabase/seeds/plan.sql
+            echo "::error title=Generated files are stale::Run npm run db:types, npm run db:seed:generate and npm run db:plan-seed:generate, then commit the result."
             exit 1
           fi

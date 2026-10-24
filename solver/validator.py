@@ -172,7 +172,7 @@ def waliduj(dane: Dane, plan: list[Przydzial], wagi: dict[str, int] | None = Non
         if brak:
             n.append(Naruszenie(6, f"sala {p.sala} bez wyposażenia {sorted(brak)}", (z.id,)))
         # 7. Pojemność.
-        if sala.pojemnosc < z.potrzebne_miejsca:
+        if (sala.pojemnosc or 0) < z.potrzebne_miejsca:
             n.append(
                 Naruszenie(7, f"sala {p.sala} ({sala.pojemnosc} miejsc) dla {z.potrzebne_miejsca} osób", (z.id,))
             )
@@ -235,7 +235,8 @@ def ocen_miekkie(dane: Dane, plan: list[tuple[Przydzial, Zajecia]]) -> dict[str,
     for p, z in plan:
         sloty = set(_zajmuje_sloty(p, z))
         poza += sum(1 for s in sloty if s == 1 or s >= PIERWSZY_SLOT_POZNY) * len(p.tygodnie)
-        sala_luz += round(100 * (dane.sale[p.sala].pojemnosc - z.potrzebne_miejsca) / dane.sale[p.sala].pojemnosc)
+        pojemnosc = dane.sale[p.sala].pojemnosc or z.potrzebne_miejsca or 1  # nieznana pojemność: brak kary
+        sala_luz += round(100 * (pojemnosc - z.potrzebne_miejsca) / pojemnosc)
         for w in p.tygodnie:
             for g in z.grupy:
                 grupa_dzien[(g, p.dzien, w)] |= sloty

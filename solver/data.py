@@ -53,7 +53,7 @@ class Zajecia:
 class Sala:
     id: str
     typ: str
-    pojemnosc: int
+    pojemnosc: int | None  # brak dla części sal niedostępnych do planowania
     wyposazenie: frozenset[str]
     dostepna: bool
 
@@ -128,7 +128,7 @@ def sala_pasuje(z: Zajecia, s: Sala) -> bool:
     return (
         typ_ok
         and set(z.wymagane_wyposazenie) <= s.wyposazenie
-        and s.pojemnosc >= z.potrzebne_miejsca
+        and (s.pojemnosc or 0) >= z.potrzebne_miejsca
     )
 
 
