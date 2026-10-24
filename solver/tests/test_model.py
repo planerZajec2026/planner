@@ -53,6 +53,20 @@ def test_brak_rozwiazania_gdy_dane_sprzeczne():
     assert wynik.status == "INFEASIBLE"
 
 
+def test_cel_jest_zgodny_z_walidatorem_i_unika_godzin_skrajnych(dane):
+    wynik = generuj(dane, limit_czasu=10, workers=1, wagi={"poza_godzinami": 100})
+    raport = waliduj(dane, wynik.plan)
+    assert raport.miekkie["poza_godzinami"] == 0
+    assert wynik.cel is not None and wynik.dolna_granica <= wynik.cel
+
+
+def test_waga_zmienia_wynik():
+    # Jedne zajęcia, jedna sala w każdym rozmiarze: duża waga sali wybiera mniejszą salę.
+    d = zbuduj(zajecia_lista=[zajecia("Z1", liczba_studentow=8)])
+    wynik = generuj(d, limit_czasu=10, workers=1, wagi={"zla_wielkosc_sali": 1000})
+    assert wynik.plan[0].sala == "S2"  # 10 miejsc dla 8 osób (S1 i S4 mają 30)
+
+
 def test_prawdziwe_dane_daja_plan_bez_naruszen_twardych():
     dane = wczytaj()
     wynik = generuj(dane, limit_czasu=60)
@@ -60,3 +74,5 @@ def test_prawdziwe_dane_daja_plan_bez_naruszen_twardych():
     raport = waliduj(dane, wynik.plan)
     assert raport.naruszenia == []
     assert len(wynik.plan) == len(dane.zajecia) == 174
+    # Plan z samej wykonalności miał ok. 16 tys. punktów kary.
+    assert raport.wynik_miekkich < 16000

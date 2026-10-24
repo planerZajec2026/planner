@@ -7,6 +7,7 @@ import sys
 
 from .checks import sprawdz_dane
 from .data import DOMYSLNE_DANE, wczytaj
+from .weights import DOMYSLNE_WAGI
 from .validator import waliduj, wczytaj_plan, zapisz_plan
 
 
@@ -22,6 +23,10 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--time", type=float, default=120, help="limit czasu solvera w sekundach")
     g.add_argument("--workers", type=int, default=8)
     g.add_argument("--log", action="store_true", help="pokaż postęp solvera")
+    g.add_argument(
+        "--waga", action="append", default=[], metavar="NAZWA=WARTOSC",
+        help=f"nadpisz wagę ograniczenia miękkiego ({', '.join(DOMYSLNE_WAGI)}); można powtarzać",
+    )
     args = parser.parse_args(argv)
 
     dane = wczytaj(args.dane)
@@ -29,12 +34,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.polecenie == "generuj":
         from .model import generuj  # ortools jest potrzebny tylko do generowania
 
-        wynik = generuj(dane, args.time, args.workers, args.log)
+        wagi = {}
+        for para in args.waga:
+            nazwa, _, wartosc = para.partition("=")
+            if nazwa not in DOMYSLNE_WAGI or not wartosc.lstrip("-").isdigit():
+                parser.error(f"zła waga '{para}', oczekiwano NAZWA=LICZBA, NAZWA z: {', '.join(DOMYSLNE_WAGI)}")
+            wagi[nazwa] = int(wartosc)
+        wynik = generuj(dane, args.time, args.workers, args.log, wagi)
         print(f"status: {wynik.status}, czas: {wynik.czas:.1f}s")
         if not wynik.znaleziono:
             return 1
+        print(f"kara wg modelu: {wynik.cel}, dolna granica: {wynik.dolna_granica:.0f}")
         zapisz_plan(wynik.plan, args.out)
-        raport = waliduj(dane, wynik.plan)
+        raport = waliduj(dane, wynik.plan, {**DOMYSLNE_WAGI, **wagi})
         for n in raport.naruszenia:
             print(f"  {n}")
         print(f"zapisano {args.out}; naruszenia twarde: {len(raport.naruszenia)}")

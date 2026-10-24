@@ -1,4 +1,4 @@
-"""Model CP-SAT: znajduje plan spełniający ograniczenia twarde 1-10.
+"""Model CP-SAT: znajduje plan spełniający ograniczenia twarde 1-10 i minimalizuje karę za miękkie.
 
 Każde zajęcia mają czas startowy `t` (0..59 = dzień * 12 + slot - 1), salę (zmienne logiczne `x[zajecia, sala]`)
 i tygodnie (stałe, parzystość albo wybór). Zasób (prowadzący, sala, student) może mieć jedne zajęcia naraz,
@@ -7,6 +7,7 @@ więc dla każdego zasobu i tygodnia dodajemy `NoOverlap` na przedziałach, któ
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -14,6 +15,7 @@ from ortools.sat.python import cp_model
 
 from .data import DNI, LICZBA_SLOTOW, LICZBA_TYGODNI, Dane, Zajecia
 from .validator import Przydzial
+from .weights import DOMYSLNE_WAGI, LIMIT_SLOTOW_W_DNIU, PIERWSZY_SLOT_POZNY
 
 # Obecność zajęć w tygodniu: True = zawsze, literał = zależnie od wyboru solvera.
 Obecnosc = bool | cp_model.IntVar | cp_model.NotBooleanVariable
@@ -24,6 +26,8 @@ class Wynik:
     status: str
     plan: list[Przydzial]
     czas: float
+    cel: int | None = None  # kara za ograniczenia miękkie wg modelu (mniej = lepiej)
+    dolna_granica: float | None = None  # solver dowodzi, że kara nie może być mniejsza
 
     @property
     def znaleziono(self) -> bool:
@@ -31,14 +35,18 @@ class Wynik:
 
 
 class Planista:
-    def __init__(self, dane: Dane):
+    def __init__(self, dane: Dane, wagi: dict[str, int] | None = None):
         self.dane = dane
+        self.wagi = {**DOMYSLNE_WAGI, **(wagi or {})}
         self.m = cp_model.CpModel()
         self.t: dict[str, cp_model.IntVar] = {}
         self.dzien: dict[str, cp_model.IntVar] = {}
+        self.start: dict[str, dict[int, cp_model.IntVar]] = {}  # one-hot po czasie startu
         self.sala: dict[tuple[str, str], cp_model.IntVar] = {}
         self.tygodnie: dict[str, dict[int, Obecnosc]] = {}
         self._przedzialy: dict[tuple, cp_model.IntervalVar] = {}
+        self._pokrycie: dict[tuple[str, int, int], cp_model.IntVar] = {}
+        self._czasy: dict[str, list[int]] = {}
         self._zbuduj()
 
     # --- zmienne ---------------------------------------------------------------------------------
@@ -70,6 +78,7 @@ class Planista:
         so = m.NewIntVar(0, LICZBA_SLOTOW - 1, f"s_{z.id}")
         m.Add(t == LICZBA_SLOTOW * d + so)
         self.t[z.id], self.dzien[z.id] = t, d
+        self._czasy[z.id] = czasy
 
         sale = self.dane.dozwolone_sale(z)
         for r in sale:
@@ -201,18 +210,173 @@ class Planista:
                         elif xb is not None:
                             self.m.Add(xb == 0)
 
+    # --- funkcja celu ----------------------------------------------------------------------------
+    #
+    # Ten sam zestaw kar co `validator.ocen_miekkie`. Różnica: okienka i przeciążenie liczymy po dniu grupy
+    # lub prowadzącego niezależnie od tygodnia (suma zajęć ze wszystkich tygodni) i mnożymy przez liczbę tygodni,
+    # bo walidator liczy je w każdym tygodniu osobno.
+
+    def _pokrywa(self, z: Zajecia, dzien: int, slot: int) -> cp_model.IntVar | None:
+        """Zmienna równa 1, gdy zajęcia trwają w slocie `slot` dnia `dzien` (0..4)."""
+        klucz = (z.id, dzien, slot)
+        if klucz not in self._pokrycie:
+            starty = [
+                v
+                for c, v in self.start[z.id].items()
+                if c // LICZBA_SLOTOW == dzien and c % LICZBA_SLOTOW + 1 <= slot < c % LICZBA_SLOTOW + 1 + z.sloty
+            ]
+            if starty:
+                p = self.m.NewBoolVar(f"pokr_{z.id}_{dzien}_{slot}")
+                self.m.Add(p == sum(starty))
+                self._pokrycie[klucz] = p
+            else:
+                self._pokrycie[klucz] = None
+        return self._pokrycie[klucz]
+
+    def _zajete_sloty(self, zajecia: list[Zajecia], nazwa: str) -> dict[tuple[int, int], cp_model.IntVar]:
+        """`o[dzien, slot]` = 1, gdy którekolwiek z zajęć trwa w tym slocie."""
+        o = {}
+        for dzien in range(len(DNI)):
+            for slot in range(1, LICZBA_SLOTOW + 1):
+                pokrycia = [p for z in zajecia if (p := self._pokrywa(z, dzien, slot)) is not None]
+                v = self.m.NewBoolVar(f"o_{nazwa}_{dzien}_{slot}")
+                if pokrycia:
+                    for p in pokrycia:
+                        self.m.AddImplication(p, v)
+                    self.m.AddBoolOr([v.Not(), *pokrycia])
+                else:
+                    self.m.Add(v == 0)
+                o[dzien, slot] = v
+        return o
+
+    def _okienka(self, o: dict[tuple[int, int], cp_model.IntVar], nazwa: str) -> list[cp_model.IntVar]:
+        """Puste sloty między pierwszym a ostatnim zajętym slotem każdego dnia."""
+        m = self.m
+        luki = []
+        for dzien in range(len(DNI)):
+            przed, po = {}, {}
+            for slot in range(1, LICZBA_SLOTOW + 1):
+                przed[slot] = m.NewBoolVar(f"przed_{nazwa}_{dzien}_{slot}")
+                m.Add(przed[slot] >= o[dzien, slot])
+                if slot > 1:
+                    m.Add(przed[slot] >= przed[slot - 1])
+            for slot in range(LICZBA_SLOTOW, 0, -1):
+                po[slot] = m.NewBoolVar(f"po_{nazwa}_{dzien}_{slot}")
+                m.Add(po[slot] >= o[dzien, slot])
+                if slot < LICZBA_SLOTOW:
+                    m.Add(po[slot] >= po[slot + 1])
+            for slot in range(1, LICZBA_SLOTOW + 1):
+                luka = m.NewBoolVar(f"luka_{nazwa}_{dzien}_{slot}")
+                m.Add(luka >= przed[slot] + po[slot] - 1 - o[dzien, slot])
+                luki.append(luka)
+        return luki
+
+    def _cel(self) -> None:
+        dane, w, m = self.dane, self.wagi, self.m
+        zajecia = list(dane.zajecia.values())
+        kary: list = []
+
+        # One-hot czasu startu: podstawa kosztów (pokrycie slotów, godziny skrajne). Dodajemy dopiero tutaj,
+        # bo w etapie szukania planu spowalniają solver, a nie są potrzebne do ograniczeń twardych.
+        for z in zajecia:
+            self.start[z.id] = {c: m.NewBoolVar(f"at_{z.id}_{c}") for c in self._czasy[z.id]}
+            m.AddExactlyOne(self.start[z.id].values())
+            m.Add(self.t[z.id] == sum(c * v for c, v in self.start[z.id].items()))
+
+        # Okienka i przeciążenie dnia grup. Dzień grupy obejmuje też zajęcia jej grup nadrzędnych.
+        for g in sorted({g for z in zajecia for g in z.grupy}):
+            lancuch = set(dane.przodkowie(g))
+            o = self._zajete_sloty([z for z in zajecia if lancuch & set(z.grupy)], f"g_{g}")
+            kary += [w["okienka_studentow"] * LICZBA_TYGODNI * luka for luka in self._okienka(o, f"g_{g}")]
+            for dzien in range(len(DNI)):
+                nadmiar = m.NewIntVar(0, LICZBA_SLOTOW, f"nadmiar_{g}_{dzien}")
+                m.Add(nadmiar >= sum(o[dzien, s] for s in range(1, LICZBA_SLOTOW + 1)) - LIMIT_SLOTOW_W_DNIU)
+                kary.append(w["przeciazenie_dnia"] * LICZBA_TYGODNI * nadmiar)
+
+        # Okienka prowadzących i preferencja co do liczby dni.
+        for p in sorted(dane.prowadzacy):
+            zajecia_p = [z for z in zajecia if p in z.prowadzacy]
+            if not zajecia_p:
+                continue
+            o = self._zajete_sloty(zajecia_p, f"p_{p}")
+            kary += [w["okienka_prowadzacych"] * LICZBA_TYGODNI * luka for luka in self._okienka(o, f"p_{p}")]
+            tryb = dane.preferencje.get(p, "brak")
+            if tryb == "brak":
+                continue
+            uzyte = []
+            for dzien in range(len(DNI)):
+                dni_zajec = [
+                    sum(v for c, v in self.start[z.id].items() if c // LICZBA_SLOTOW == dzien) for z in zajecia_p
+                ]
+                u = m.NewBoolVar(f"dzien_{p}_{dzien}")
+                for ind in dni_zajec:
+                    m.Add(u >= ind)
+                m.Add(u <= sum(dni_zajec))
+                uzyte.append(u)
+            if tryb == "skumulowane":
+                kary += [w["preferencja_dni"] * u for u in uzyte]
+            else:  # nieskumulowane: kara za każdy brakujący dzień do min(3, liczba zajęć)
+                brak = m.NewIntVar(0, 3, f"brak_dni_{p}")
+                m.Add(brak >= min(3, len(zajecia_p)) - sum(uzyte))
+                kary.append(w["preferencja_dni"] * brak)
+
+        for z in zajecia:
+            # Sloty przed 9:00 i po 17:00, razy liczba spotkań.
+            for c, v in self.start[z.id].items():
+                start = c % LICZBA_SLOTOW + 1
+                poza = sum(1 for s in range(start, start + z.sloty) if s == 1 or s >= PIERWSZY_SLOT_POZNY)
+                if poza:
+                    kary.append(w["poza_godzinami"] * poza * z.liczba_spotkan * v)
+            # Sala niezbyt duża dla grupy.
+            for (zid, r), x in self.sala.items():
+                if zid == z.id:
+                    pojemnosc = dane.sale[r].pojemnosc
+                    luz = round(100 * (pojemnosc - z.potrzebne_miejsca) / pojemnosc)
+                    kary.append(w["zla_wielkosc_sali"] * luz * x)
+
+        self._kary = sum(kary)
+
     # --- rozwiązanie -----------------------------------------------------------------------------
 
-    def rozwiaz(self, limit_czasu: float = 60, workers: int = 8, log: bool = False) -> Wynik:
+    def _solver(self, limit_czasu: float, workers: int, log: bool) -> cp_model.CpSolver:
         solver = cp_model.CpSolver()
         solver.parameters.max_time_in_seconds = limit_czasu
         solver.parameters.num_workers = workers
         solver.parameters.log_search_progress = log
+        return solver
+
+    def rozwiaz(self, limit_czasu: float = 60, workers: int = 8, log: bool = False) -> Wynik:
+        """Etap 1: plan spełniający ograniczenia twarde (bez celu, zwykle ułamek sekundy).
+        Etap 2: ten plan jest rozwiązaniem startowym, a solver minimalizuje karę za miękkie do końca limitu."""
+        poczatek = time.monotonic()
+        solver = self._solver(min(limit_czasu / 2, 60), workers, log)
+        status = solver.Solve(self.m)
+        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            return Wynik(solver.StatusName(status), [], solver.WallTime())
+        plan_startowy = self._odczytaj(solver)
+        for i in range(len(self.m.Proto().variables)):
+            zmienna = self.m.GetIntVarFromProtoIndex(i)
+            self.m.AddHint(zmienna, solver.Value(zmienna))
+
+        t_startowe = {z: solver.Value(v) for z, v in self.t.items()}
+        self._cel()
+        for zid, wartosci in self.start.items():
+            for c, v in wartosci.items():
+                self.m.AddHint(v, int(c == t_startowe[zid]))
+        self.m.Minimize(self._kary)
+        solver = self._solver(max(limit_czasu - (time.monotonic() - poczatek), 1), workers, log)
+        solver.parameters.repair_hint = True
         status = solver.Solve(self.m)
         nazwa = solver.StatusName(status)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-            return Wynik(nazwa, [], solver.WallTime())
-        return Wynik(nazwa, self._odczytaj(solver), solver.WallTime())
+            return Wynik("FEASIBLE", plan_startowy, time.monotonic() - poczatek)
+        return Wynik(
+            nazwa,
+            self._odczytaj(solver),
+            time.monotonic() - poczatek,
+            cel=round(solver.ObjectiveValue()),
+            dolna_granica=solver.BestObjectiveBound(),
+        )
 
     def _odczytaj(self, solver: cp_model.CpSolver) -> list[Przydzial]:
         plan = []
@@ -228,5 +392,11 @@ class Planista:
         return plan
 
 
-def generuj(dane: Dane, limit_czasu: float = 60, workers: int = 8, log: bool = False) -> Wynik:
-    return Planista(dane).rozwiaz(limit_czasu, workers, log)
+def generuj(
+    dane: Dane,
+    limit_czasu: float = 60,
+    workers: int = 8,
+    log: bool = False,
+    wagi: dict[str, int] | None = None,
+) -> Wynik:
+    return Planista(dane, wagi).rozwiaz(limit_czasu, workers, log)

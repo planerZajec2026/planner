@@ -66,7 +66,10 @@ Służą do oceny i optymalizacji jakości. Wagi są konfigurowalne (domyślne w
 - Python 3.12, OR-Tools CP-SAT. Wybrany, bo ograniczenia twarde (`NoOverlap` na zasobach, opcjonalne interwały, tabele dozwolonych sal i slotów) opisuje się wprost, a solver daje gwarancję spełnienia reguł i ocenę odległości od optimum. Własny solver w TypeScript nie daje takich gwarancji.
 - Zmienne na zajęcia: dzień, slot startowy, sala (z domeny wyznaczonej z ograniczeń 6–7), parzystość dla `co_2_tygodnie`, wybór tygodni dla `wybrane_tygodnie`.
 - Tygodnie zajęć wynikają z częstotliwości i zakresu; nakładanie liczone z użyciem maski 14 tygodni.
-- Etap 1: znalezienie planu spełniającego ograniczenia twarde. Etap 2: poprawa funkcji celu w limicie czasu. Zawsze zwracany jest najlepszy znaleziony plan.
+- Etap 1: znalezienie planu spełniającego ograniczenia twarde (ułamek sekundy). Etap 2: ten plan jest rozwiązaniem startowym, a solver minimalizuje karę za ograniczenia miękkie do końca limitu. Zawsze zwracany jest najlepszy znaleziony plan, razem z dolną granicą kary.
+- Funkcja celu ma te same składniki co walidator. Okienka i przeciążenie dnia model liczy po dniu grupy lub prowadzącego niezależnie od tygodnia i mnoży przez 14, więc jego kara jest przybliżeniem; wiążący jest wynik walidatora.
+- Wagi: `solver/weights.py`, nadpisywane w CLI przez `--waga nazwa=liczba` (powtarzalne).
+- Typowy wynik na danych z `requirements/`: kara miękkich 16274 (sama wykonalność), ok. 8000 po 60 s, ok. 5100 po 180 s, zawsze 0 naruszeń twardych.
 - Struktura w katalogu `solver/`: `loader.py`, `model.py`, `weights.py`, `validator.py`, `worker.py`, `cli.py`, `tests/`, `Dockerfile`.
 - CLI: `python -m solver.cli generuj --out plan.json --time 120` (dane domyślnie z `requirements/dane_planu.json`); dodatkowo `dane` (kontrola spójności) i `waliduj --plan plan.json`.
 - Uruchomienie w dockerze: `docker build -f solver/Dockerfile -t planner-solver .`, potem `docker run --rm -v "$PWD:/app" planner-solver generuj`.
