@@ -58,6 +58,17 @@ def wczytaj_plan(sciezka: str | Path) -> list[Przydzial]:
         return plan_z_slownika(json.load(f))
 
 
+def zapisz_plan(plan: list[Przydzial], sciezka: str | Path) -> None:
+    dane = {
+        "przydzialy": [
+            {"zajecia_id": p.zajecia_id, "dzien": p.dzien, "slot": p.slot, "sala": p.sala, "tygodnie": list(p.tygodnie)}
+            for p in sorted(plan, key=lambda p: p.zajecia_id)
+        ]
+    }
+    with open(sciezka, "w", encoding="utf-8") as f:
+        json.dump(dane, f, ensure_ascii=False, indent=1)
+
+
 def plan_z_slownika(d: dict) -> list[Przydzial]:
     return [
         Przydzial(

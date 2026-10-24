@@ -68,7 +68,8 @@ Służą do oceny i optymalizacji jakości. Wagi są konfigurowalne (domyślne w
 - Tygodnie zajęć wynikają z częstotliwości i zakresu; nakładanie liczone z użyciem maski 14 tygodni.
 - Etap 1: znalezienie planu spełniającego ograniczenia twarde. Etap 2: poprawa funkcji celu w limicie czasu. Zawsze zwracany jest najlepszy znaleziony plan.
 - Struktura w katalogu `solver/`: `loader.py`, `model.py`, `weights.py`, `validator.py`, `worker.py`, `cli.py`, `tests/`, `Dockerfile`.
-- CLI: `python -m solver.cli --in requirements/dane_planu.json --out plan.json --time 120`.
+- CLI: `python -m solver.cli generuj --out plan.json --time 120` (dane domyślnie z `requirements/dane_planu.json`); dodatkowo `dane` (kontrola spójności) i `waliduj --plan plan.json`.
+- Uruchomienie w dockerze: `docker build -f solver/Dockerfile -t planner-solver .`, potem `docker run --rm -v "$PWD:/app" planner-solver generuj`.
 
 ## Walidator
 `solver/validator.py` liczy wszystko od zera z surowych danych i nie używa kodu modelu. Zwraca:

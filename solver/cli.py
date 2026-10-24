@@ -7,7 +7,7 @@ import sys
 
 from .checks import sprawdz_dane
 from .data import DOMYSLNE_DANE, wczytaj
-from .validator import waliduj, wczytaj_plan
+from .validator import waliduj, wczytaj_plan, zapisz_plan
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -17,9 +17,29 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("dane", help="sprawdź spójność danych wejściowych")
     w = sub.add_parser("waliduj", help="sprawdź plan względem ograniczeń")
     w.add_argument("--plan", required=True, help="ścieżka do planu JSON")
+    g = sub.add_parser("generuj", help="wygeneruj plan solverem CP-SAT")
+    g.add_argument("--out", default="plan.json", help="gdzie zapisać plan JSON")
+    g.add_argument("--time", type=float, default=120, help="limit czasu solvera w sekundach")
+    g.add_argument("--workers", type=int, default=8)
+    g.add_argument("--log", action="store_true", help="pokaż postęp solvera")
     args = parser.parse_args(argv)
 
     dane = wczytaj(args.dane)
+
+    if args.polecenie == "generuj":
+        from .model import generuj  # ortools jest potrzebny tylko do generowania
+
+        wynik = generuj(dane, args.time, args.workers, args.log)
+        print(f"status: {wynik.status}, czas: {wynik.czas:.1f}s")
+        if not wynik.znaleziono:
+            return 1
+        zapisz_plan(wynik.plan, args.out)
+        raport = waliduj(dane, wynik.plan)
+        for n in raport.naruszenia:
+            print(f"  {n}")
+        print(f"zapisano {args.out}; naruszenia twarde: {len(raport.naruszenia)}")
+        print(f"ograniczenia miękkie: {raport.miekkie}, wynik: {raport.wynik_miekkich}")
+        return 0 if raport.poprawny else 1
 
     if args.polecenie == "dane":
         problemy = sprawdz_dane(dane)
