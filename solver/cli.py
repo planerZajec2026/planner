@@ -1,8 +1,9 @@
-"""CLI: `python -m solver.cli dane` (kontrola danych) i `python -m solver.cli waliduj --plan plan.json`."""
+"""CLI: `dane` (kontrola danych), `generuj`, `waliduj --plan plan.json` i `worker` (kolejka w bazie)."""
 
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 
 from .checks import sprawdz_dane
@@ -27,7 +28,18 @@ def main(argv: list[str] | None = None) -> int:
         "--waga", action="append", default=[], metavar="NAZWA=WARTOSC",
         help=f"nadpisz wagę ograniczenia miękkiego ({', '.join(DOMYSLNE_WAGI)}); można powtarzać",
     )
+    wk = sub.add_parser("worker", help="przetwarzaj zadania z generation_jobs (baza z DATABASE_URL)")
+    wk.add_argument("--poll", type=float, default=5, help="co ile sekund sprawdzać pustą kolejkę")
+    wk.add_argument("--raz", action="store_true", help="przetwórz jedno zadanie (jeśli jest) i zakończ")
+    wk.add_argument("--workers", type=int, default=None, help="wątki solvera (domyślnie liczba rdzeni, max 8)")
     args = parser.parse_args(argv)
+
+    if args.polecenie == "worker":
+        from .worker import uruchom  # psycopg i ortools są potrzebne tylko workerowi
+
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+        uruchom(odpytywanie=args.poll, raz=args.raz, workers=args.workers)
+        return 0
 
     dane = wczytaj(args.dane)
 

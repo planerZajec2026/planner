@@ -83,8 +83,12 @@ Używany w CLI, w workerze (plan jest zapisywany razem z raportem) i w testach. 
 
 ## Worker i kolejka
 - UI wstawia wiersz do `generation_jobs` (parametry: limit czasu, wagi, status `queued`).
-- Worker (kontener lokalny, `docker compose up solver-worker`) pobiera zadanie, ustawia `running`, liczy, zapisuje `plan_zajec` i raport, ustawia `done` lub `failed`.
-- Klucz service_role istnieje tylko w środowisku workera, nigdy w aplikacji Next.js.
+- Worker (kontener lokalny, `docker compose up solver-worker` po `npm run db:start`) łączy się bezpośrednio z Postgresem (`DATABASE_URL`, domyślnie lokalny Supabase). Zadanie bierze atomowo (`for update skip locked`), ustawia `running`, wczytuje dane wejściowe z tabel, liczy i waliduje.
+- Wynik: plan i raport (status solvera, kara modelu, dolna granica, naruszenia, składniki miękkich) zapisuje w jednej transakcji i ustawia `done`. Brak planu, naruszenie twarde wykryte przez walidator, błędne parametry lub wyjątek kończą zadanie jako `failed` z komunikatem w `blad`; plan z naruszeniem nigdy nie trafia do `plan_zajec`.
+- Parametry zadania (`generation_jobs.parametry`): `{"limit_czasu": 200-400 s (domyślnie 200), "wagi": {nazwa: liczba całkowita ≥ 0}}`. Dolna granica 200 s jest wymuszona, bo krótsze limity dają słabsze plany: etap optymalizacji dostaje pół czasu i potrzebuje go na poprawę planu startowego (przy 20 s plan bywał gorszy niż sam plan wykonalny).
+- Zadanie `running` starsze niż godzina uchodzi za przerwane i przy starcie workera dostaje `failed`. Zakładamy jeden worker na bazę.
+- Polecenia: `python -m solver.cli worker [--raz] [--poll 5] [--workers N]`; `--raz` przetwarza jedno zadanie i kończy.
+- Połączenie z bazą ma uprawnienia zapisu, więc dane dostępowe istnieją tylko w środowisku workera, nigdy w aplikacji Next.js.
 - Supabase służy jako baza i kolejka. Nie hostuje Pythona (Edge Functions: Deno, krótki limit CPU), więc worker działa poza nim. Później można go przenieść na GitHub Actions (`workflow_dispatch`) lub Cloud Run bez zmiany modelu danych.
 
 ## Schemat Supabase

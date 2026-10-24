@@ -1,0 +1,13 @@
+# Worker generatora planu (spec 13). Wymaga lokalnej bazy: `npm run db:start`, potem `docker compose up solver-worker`.
+# Poza lokalnym Supabase ustaw DATABASE_URL na adres bazy (rola z prawem zapisu, tylko po stronie serwera).
+services:
+  solver-worker:
+    build:
+      context: .
+      dockerfile: solver/Dockerfile
+    command: ["worker"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:54322/postgres}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
