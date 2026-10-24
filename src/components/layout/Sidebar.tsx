@@ -12,6 +12,8 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/prowadzacy", label: "Prowadzący", icon: "users" },
   { href: "/harmonogram-prowadzacych", label: "Harmonogram prowadzących", icon: "badge" },
   { href: "/import-eksport", label: "Import i eksport danych", icon: "upload" },
+  { href: "/plan", label: "Plan zajęć", icon: "table" },
+  { href: "/generator", label: "Generator planu", icon: "check" },
 ];
 
 function isActive(pathname: string, href: string) {

@@ -107,10 +107,12 @@ Zlecanie zadań z aplikacji (przycisk „Generuj") wymaga zapisu do `generation_
 Dane wejściowe: `scripts/generate-plan-seed.ts` (`npm run db:plan-seed:generate`) zamienia `requirements/dane_planu.json` na `supabase/seeds/plan.sql`, ładowany po `seed.sql` przez `db reset`. CI sprawdza, że plik jest aktualny. Typy przez `npm run db:types`; testy pgTAP w `supabase/tests/plan.test.sql`.
 
 ## UI
-- **`/generator`:** parametry (limit czasu, wagi), przycisk „Generuj" (Server Action tworzy zadanie), status zadania, raport naruszeń i jakości.
-- **`/plan`:** pokazuje **cały plan**, czyli wszystkie 174 zajęcia z pełnym przydziałem: przedmiot, forma, grupy, prowadzący, dzień, godziny od–do, sala, tygodnie / parzystość. Filtry (grupa, prowadzący, sala, dzień), sortowanie i widok tygodniowy 1–14 z datami z `kalendarz`. Nic nie jest ucinane ani ukryte za wyborem jednej grupy. Komponenty kalendarza: `src/components/calendar/`.
-- **Eksport:** XLSX (route handler, np. `exceljs`) i JSON: cały plan, grupa, prowadzący, sala. Podpięcie do `ExportPanel.tsx`.
-- Interfejs po polsku; dostęp do danych przez `src/lib/data/`.
+- **`/generator`:** formularz (limit czasu 200–400 s, wagi ograniczeń miękkich) z przyciskiem „Generuj plan". Server Action `zlecGenerowanie` waliduje dane (limity jak w workerze), odmawia, gdy w kolejce są już 3 zadania, i dodaje wiersz do `generation_jobs`. Pod formularzem lista ostatnich zadań (status, czas, raport: naruszenia twarde, kara miękkich, dolna granica, rozbicie na składniki); strona sama się odświeża co 5 s, dopóki jakieś zadanie jest `queued` lub `running`.
+- **Zapis z aplikacji:** Server Action używa klucza `SUPABASE_SERVICE_ROLE_KEY` (tylko serwer, `server-only`, `src/lib/supabase/admin.ts`). To świadomy wyjątek od zasady ze spec 08, do czasu logowania (spec 11); klucz jest opisany w `.env.example`.
+- **`/plan`:** pokazuje **cały plan** z ostatniego ukończonego zadania. Widok *Tabela* (domyślny) wypisuje wszystkie 174 zajęcia: przedmiot, forma, grupy, prowadzący, dzień, godziny od–do, sala, tygodnie / parzystość. Filtry (rocznik, grupa, prowadzący, sala, dzień) to zwykły formularz GET, więc działają w adresie URL i bez JavaScriptu. Widok *Kalendarz tygodniowy* pokazuje wybrany tydzień 1–14 z datami z `kalendarz` (środa tygodnia 11 to 8 I 2027); wymaga wyboru rocznika, grupy, prowadzącego lub sali, bo wszystkie zajęcia naraz są nieczytelne. Nic w tabeli nie jest ucinane.
+- **Eksport:** `/plan/eksport` (route handler) zwraca plik XLSX (domyślnie; arkusze „Plan" i „Informacje") albo JSON (`?format=json`, z identyfikatorami i numerami slotów). Te same filtry zawężają zawartość, bez filtrów wychodzi cały plan. Przyciski są na stronie `/plan` i uwzględniają wybrane filtry. Istniejący `ExportPanel` w `/import-eksport` dotyczy starego modelu danych i nie został zmieniony.
+- Interfejs po polsku; dostęp do danych przez `src/lib/data/plan.ts`, logika bez bazy w `src/lib/plan.ts` i `src/lib/generator.ts`.
+- Testy e2e nowych stron nie wchodzą do `e2e/` (CI testuje produkcyjny build bez Supabase); strony sprawdzają testy jednostkowe i komponentów oraz ręczny przebieg na lokalnym stosie.
 
 ## Kryteria akceptacji
 - Walidator zwraca 0 naruszeń twardych dla wszystkich 174 zajęć; wynik miękkich jest raportowany.
