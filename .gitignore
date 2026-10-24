@@ -50,3 +50,8 @@ next-env.d.ts
 # Agent skills: .agents/skills is committed; .claude/skills holds machine-specific links to it.
 # Recreate them with the `npx skills add ...` commands in README.md.
 /.claude/skills/
+
+# Python (solver)
+__pycache__/
+.pytest_cache/
+.venv/

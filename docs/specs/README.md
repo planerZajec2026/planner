@@ -30,6 +30,7 @@ Frontend for **Siatka**, a university timetable planner. Built with Next.js (App
 | 08 | [Supabase: CLI, schemat i migracje](08-supabase-schemat.md) | `feat/08-supabase-schemat` | none (database) |
 | 09 | [Wdrożenie: Vercel + Supabase](09-wdrozenie.md) | `feat/09-wdrozenie` | none (CI/CD) |
 | 10–12 | [Plan: odczyt, zapis z logowaniem, eksport do Excela](10-11-12-plan.md) | — | outlines only |
+| 13 | [Generator planu zajęć](13-generator-planu.md) | `feat/13-generator-planu` | `/generator`, `/plan` |
 
 ## Workflow
 
