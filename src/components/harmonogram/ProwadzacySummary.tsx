@@ -7,26 +7,24 @@ type ProwadzacySummaryProps = {
   prowadzacy: Prowadzacy;
   godziny: number;
   grupy: number;
-  tryby: number;
+  spotkania: number;
 };
 
 const formatGodziny = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 });
 
 /** Instructor card above the calendar, with stats for the displayed week. */
-export function ProwadzacySummary({ prowadzacy: p, godziny, grupy, tryby }: ProwadzacySummaryProps) {
+export function ProwadzacySummary({ prowadzacy: p, godziny, grupy, spotkania }: ProwadzacySummaryProps) {
   return (
     <section className="card summary-card" aria-label={`Podsumowanie tygodnia: ${pelneImie(p)}`}>
-      <Avatar initials={inicjaly(p)} src={p.zdjecieUrl} />
+      <Avatar initials={inicjaly(p)} />
       <div>
         <div className="instructor-name">{pelneImie(p)}</div>
-        <div className="instructor-role">
-          {[p.instytut, p.email].filter(Boolean).join(" · ")}
-        </div>
+        {p.jednostka && <div className="instructor-role">{p.jednostka}</div>}
       </div>
       <dl className="summary-stats">
         <Stat value={`${formatGodziny.format(godziny)} godz.`} label="w tym tygodniu" />
+        <Stat value={spotkania} label={pluralPl(spotkania, "spotkanie", "spotkania", "spotkań")} />
         <Stat value={grupy} label={pluralPl(grupy, "grupa", "grupy", "grup")} />
-        <Stat value={tryby} label={pluralPl(tryby, "tryb studiów", "tryby studiów", "trybów studiów")} />
       </dl>
     </section>
   );

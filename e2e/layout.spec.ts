@@ -64,7 +64,9 @@ test.describe("navigation", () => {
     "/harmonogram": "Harmonogram grup",
     "/prowadzacy": "Prowadzący",
     "/harmonogram-prowadzacych": "Harmonogram prowadzących",
-    "/import-eksport": "Import i eksport danych",
+    "/plan": "Plan zajęć",
+    "/generator": "Generator planu",
+    "/import-eksport": "Import danych",
   };
 
   for (const route of ROUTES) {

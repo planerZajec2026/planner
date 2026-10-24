@@ -1,5 +1,7 @@
 # Spec 05: Import i eksport danych
 
+> **Superseded by [spec 13](13-generator-planu.md):** the JSON import described here belonged to the first, mock-up model and was removed. `/import-eksport` now loads the generator's input data (`dane_planu`), and there is no study mode any more.
+
 **Branch:** `feat/05-import-eksport` · **Route:** `/import-eksport`
 
 ## Goal

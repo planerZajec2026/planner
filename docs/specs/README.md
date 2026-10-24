@@ -30,7 +30,7 @@ Frontend for **Siatka**, a university timetable planner. Built with Next.js (App
 | 08 | [Supabase: CLI, schemat i migracje](08-supabase-schemat.md) | `feat/08-supabase-schemat` | none (database) |
 | 09 | [Wdrożenie: Vercel + Supabase](09-wdrozenie.md) | `feat/09-wdrozenie` | none (CI/CD) |
 | 10–12 | [Plan: odczyt, zapis z logowaniem, eksport do Excela](10-11-12-plan.md) | — | outlines only |
-| 13 | [Generator planu zajęć](13-generator-planu.md) | `feat/13-generator-planu` | `/generator`, `/plan` |
+| 13 | [Generator planu zajęć](13-generator-planu.md) | `feat/13-generator-planu` | `/generator`, `/plan`, `/import-eksport` |
 
 ## Workflow
 
@@ -50,13 +50,12 @@ npm run test:e2e
 
 ## Domain model (shared by all specs)
 
+Updated by [spec 13](13-generator-planu.md): the pages read the generator's data from the database, there is no study mode any more (part-time studies are not supported), and instructors are pseudonyms from the input data. The older specs (05, 06, 08) describe the first, mock-up model and are kept as history.
+
 | Type | Fields |
 |------|--------|
-| `TrybStudiow` | `"stacjonarne" \| "niestacjonarne"` |
 | `Kierunek` | `id`, `nazwa` |
-| `Grupa` | `id`, `kod` (e.g. `INF/Z-3`), `kierunekId`, `tryb`, `liczbaStudentow` |
-| `Prowadzacy` | `id`, `tytul`, `imie`, `nazwisko`, `instytut`, `email`, `przedmioty[]`, `zdjecieUrl?` |
-| `TypZajec` | `"wyklad" \| "cwiczenia" \| "laboratorium" \| "seminarium"` |
+| `Grupa` | `id`, `kod` (e.g. `INF1-R1-G1`), `kierunekId`, `rocznikId`, `rocznikNazwa`, `nadrzednaId?`, `liczbaStudentow` |
+| `Prowadzacy` | `id` (e.g. `P01`), `stopien`, `nazwa` (e.g. `dr P01`), `jednostka`, `przedmioty[]` |
+| `TypZajec` | `"wyklad" \| "cwiczenia" \| "laboratorium" \| "seminarium"` (block styles of the calendar) |
 | `DzienTygodnia` | `1` (Mon) … `7` (Sun) |
-| `Powtarzalnosc` | `"co-tydzien" \| "parzyste" \| "nieparzyste"` |
-| `Zajecia` | `id`, `przedmiot`, `typ`, `prowadzacyId`, `grupaId`, `dzien`, `od` (`"HH:MM"`), `do`, `sala`, `powtarzalnosc` |

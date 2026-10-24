@@ -6,6 +6,9 @@ import {
   filtruj,
   formaNaTyp,
   koniecSlotu,
+  lancuchGrup,
+  spotkaniaDoEventow,
+  spotkaniaWTygodniu,
   odczytajDzien,
   odczytajFiltry,
   odczytajTydzien,
@@ -253,5 +256,56 @@ describe("wierszZBazy", () => {
       },
     });
     expect(w).toMatchObject({ slotOd: 5, slotDo: 7, grupy: ["A", "B"], prowadzacy: ["P1", "P2"], tygodnie: [6, 7, 8] });
+  });
+});
+
+describe("lancuchGrup", () => {
+  const grupy = [
+    { id: "ALL" },
+    { id: "G1", nadrzednaId: "ALL" },
+    { id: "SPEC-A", nadrzednaId: "ALL" },
+    { id: "A1", nadrzednaId: "SPEC-A" },
+  ];
+  it("zwraca grupę i jej grupy nadrzędne od najbliższej", () => {
+    expect(lancuchGrup(grupy, "A1")).toEqual(["A1", "SPEC-A", "ALL"]);
+    expect(lancuchGrup(grupy, "G1")).toEqual(["G1", "ALL"]);
+    expect(lancuchGrup(grupy, "ALL")).toEqual(["ALL"]);
+  });
+  it("nieznana grupa daje pusty łańcuch, a cykl nie zapętla", () => {
+    expect(lancuchGrup(grupy, "nie ma")).toEqual([]);
+    expect(lancuchGrup([{ id: "A", nadrzednaId: "B" }, { id: "B", nadrzednaId: "A" }], "A")).toEqual(["A", "B"]);
+  });
+});
+
+describe("spotkaniaWTygodniu", () => {
+  // Poniedziałek 4 I 2027 jest 12. wystąpieniem planu poniedziałku, środa 6 I to 10., a piątek 8 I to 11. środa.
+  const kalendarz: KalendarzDzien[] = [
+    { data: "2027-01-04", planDnia: 1, nrTygodnia: 12 },
+    { data: "2027-01-05", planDnia: 2, nrTygodnia: 12 },
+    { data: "2027-01-06", planDnia: null, nrTygodnia: null },
+    { data: "2027-01-07", planDnia: 4, nrTygodnia: 12 },
+    { data: "2027-01-08", planDnia: 3, nrTygodnia: 11 },
+  ];
+  const poniedzialek = new Date(2027, 0, 4);
+  const srody = wiersz({ zajeciaId: "S", dzien: 3, tygodnie: [11] });
+  const poniedzialki = wiersz({ zajeciaId: "P", dzien: 1, tygodnie: [12, 13] });
+
+  it("umieszcza zajęcia w dniu kalendarza, nie w dniu planu (środa tygodnia 11 wypada w piątek)", () => {
+    const wynik = spotkaniaWTygodniu([srody, poniedzialki], kalendarz, poniedzialek);
+    expect(wynik.map((s) => [s.wiersz.zajeciaId, s.data, s.dzien])).toEqual([
+      ["P", "2027-01-04", 1],
+      ["S", "2027-01-08", 5],
+    ]);
+  });
+
+  it("pomija dni wolne i zajęcia spoza tygodnia", () => {
+    const innyTydzien = wiersz({ zajeciaId: "X", dzien: 1, tygodnie: [3] });
+    expect(spotkaniaWTygodniu([innyTydzien], kalendarz, poniedzialek)).toEqual([]);
+    expect(spotkaniaWTygodniu([srody], kalendarz, new Date(2026, 11, 28))).toEqual([]);
+  });
+
+  it("zamienia spotkania na wydarzenia z unikalnym id i podanym opisem", () => {
+    const [e] = spotkaniaDoEventow(spotkaniaWTygodniu([srody], kalendarz, poniedzialek), { grupy: {}, prowadzacy: {} }, (w) => w.sala);
+    expect(e).toMatchObject({ id: "S-2027-01-08", dzien: 5, od: "10:15", do: "12:00", tytul: "Analiza matematyczna I", meta: "A281" });
   });
 });

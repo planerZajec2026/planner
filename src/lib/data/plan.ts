@@ -121,3 +121,11 @@ export async function getAktywnyPlan(): Promise<AktywnyPlan | null> {
     kalendarz: (kalendarz.data ?? []).map((k) => ({ data: k.data, planDnia: k.plan_dnia, nrTygodnia: k.nr_tygodnia })),
   };
 }
+
+/** How many classes to schedule are loaded; 0 means the input data has not been loaded yet. */
+export async function getLiczbaZajec(): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase.from("zajecia_plan").select("id", { count: "exact", head: true });
+  if (error) throw new Error(`Nie udało się sprawdzić danych wejściowych: ${error.message}`);
+  return count ?? 0;
+}

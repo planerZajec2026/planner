@@ -2,17 +2,13 @@ import { describe, expect, it } from "vitest";
 import { inicjaly, pelneImie } from "./prowadzacy";
 
 describe("pelneImie", () => {
-  it("joins title, first name and surname", () => {
-    expect(pelneImie({ tytul: "dr hab.", imie: "Marta", nazwisko: "Nowak" })).toBe("dr hab. Marta Nowak");
+  it("shows the degree with the pseudonym as the source data gives it", () => {
+    expect(pelneImie({ nazwa: "dr hab. P12" })).toBe("dr hab. P12");
   });
 });
 
 describe("inicjaly", () => {
-  it("takes the first letters of first name and surname", () => {
-    expect(inicjaly({ imie: "Marta", nazwisko: "Nowak" })).toBe("MN");
-  });
-
-  it("upper-cases, Polish letters included", () => {
-    expect(inicjaly({ imie: "łucja", nazwisko: "żak" })).toBe("ŁŻ");
+  it("uses the pseudonym id for the avatar", () => {
+    expect(inicjaly({ id: "P12" })).toBe("P12");
   });
 });

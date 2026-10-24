@@ -1,5 +1,4 @@
 import type { Page } from "@playwright/test";
-import { PRZYKLADOWY_PLAN } from "../src/lib/import";
 import { expect, test } from "./fixtures";
 
 type Recorded = { pseudo: string | null; total: number; props: string[] };
@@ -76,7 +75,7 @@ test.describe("with motion", () => {
   test.use({ reducedMotion: "no-preference" });
 
   test("week change slides the calendar via a view transition, within 400ms", async ({ page }) => {
-    await page.goto("/harmonogram?grupa=inf-z-3&tydzien=2026-10-12");
+    await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12");
     await startRecording(page);
     await page.getByRole("button", { name: "Następny tydzień" }).click();
     await expect(page.locator(".day-header").first()).toHaveText("Pon19.10");
@@ -89,10 +88,10 @@ test.describe("with motion", () => {
   });
 
   test("group change crossfades without sliding", async ({ page }) => {
-    await page.goto("/harmonogram?grupa=inf-2a&tydzien=2026-10-12");
+    await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12");
     await startRecording(page);
-    await page.getByLabel("Grupa").selectOption("inf-2b");
-    await expect(page.locator(".class-block .title").first()).toHaveText("Sieci komputerowe");
+    await page.getByLabel("Grupa").selectOption("INF1-R1-G2");
+    await expect(page.locator(".class-block .title").first()).toHaveText("Fizyka");
     const rec = await stopRecording(page);
 
     expect(viewTransitions(rec).length).toBeGreaterThan(0);
@@ -102,7 +101,7 @@ test.describe("with motion", () => {
   });
 
   test("rapid week clicks end on the right week with a single calendar", async ({ page }) => {
-    await page.goto("/harmonogram?grupa=inf-z-3&tydzien=2026-10-12");
+    await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12");
     const next = page.getByRole("button", { name: "Następny tydzień" });
     await next.click();
     await next.click();
@@ -133,46 +132,13 @@ test.describe("with motion", () => {
     ]);
     expect(pill).toEqual(item);
   });
-
-  test("opening the instructor form and saving animate within 400ms and settle", async ({ page }) => {
-    await page.goto("/prowadzacy");
-    await startRecording(page);
-    await page.getByRole("button", { name: "+ Dodaj prowadzącego" }).click();
-    await expect(page.getByLabel("Imię *")).toBeFocused();
-    await page.getByLabel("Imię *").fill("Katarzyna");
-    await page.getByLabel("Nazwisko *").fill("Lewandowska");
-    await page.getByLabel("E-mail *").fill("k.lewandowska@uczelnia.edu.pl");
-    await page.getByRole("button", { name: "Zapisz prowadzącego" }).click();
-    await expect(page.getByRole("form")).toHaveCount(0);
-    const rec = await stopRecording(page);
-
-    expect(tooLong(rec)).toEqual([]);
-    await expectSettled(page, ".success-banner");
-    await expectSettled(page, '[aria-label="mgr Katarzyna Lewandowska"]');
-  });
-
-  test("an import preview opens within 400ms and settles", async ({ page }) => {
-    await page.goto("/import-eksport");
-    await startRecording(page);
-    await page.getByLabel("Plik JSON z planem zajęć").setInputFiles({
-      name: "plan.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(PRZYKLADOWY_PLAN),
-    });
-    await expect(page.getByText("Podgląd importu")).toBeVisible();
-    const rec = await stopRecording(page);
-
-    expect(tooLong(rec)).toEqual([]);
-    await expectSettled(page, ".import-result");
-    await expectSettled(page, ".import-result-row .row-note");
-  });
 });
 
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce" });
 
   test("nothing moves on a week change or a page change, but content still updates", async ({ page }) => {
-    await page.goto("/harmonogram?grupa=inf-z-3&tydzien=2026-10-12");
+    await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12");
     await startRecording(page);
     await page.getByRole("button", { name: "Następny tydzień" }).click();
     await expect(page.locator(".day-header").first()).toHaveText("Pon19.10");

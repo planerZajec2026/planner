@@ -1,5 +1,7 @@
 # Spec 06: Testy aplikacji
 
+> **Superseded by [spec 13](13-generator-planu.md):** the expected values below describe the mock data, which is gone. Component and unit tests use `src/test/fixtures.ts`, e2e runs on the seeded local Supabase with a plan fixture.
+
 **Branch:** `feat/06-testy` · **Route(s):** none (tooling + tests)
 
 ## Goal

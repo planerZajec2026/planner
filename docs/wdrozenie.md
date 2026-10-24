@@ -58,7 +58,9 @@ Decyzja o płatnościach należy do właściciela projektu; kod od niej nie zale
 - **Aplikacja:** każdy PR dostaje adres Preview od Vercela. Po scaleniu do `main` Vercel buduje wersję produkcyjną, a Deployment Checks czekają na zielone `CI`.
 - **Schemat bazy:** nowa migracja w `supabase/migrations/` (spec 08). Po scaleniu do `main` uruchamia się `deploy-db.yml`: czeka na zatwierdzenie w środowisku `production`, pokazuje oczekujące migracje (`db push --dry-run`) i je stosuje. Nigdy nie wypychaj migracji ręcznie.
 - **Kolejność:** aplikacja i baza wdrażają się niezależnie, w dowolnej kolejności. Dlatego migracje muszą być wstecznie zgodne (expand → migrate → contract).
-- **Seed demo:** tylko raz, na świeżym projekcie: Actions → Deploy database → Run workflow, zaznacz `seed`. Bez tej opcji workflow nigdy nie zmienia danych.
+- **Dane wejściowe:** strony czytają wszystko z bazy (spec 13). Na świeżym projekcie baza jest pusta, a dane wgrywa się na stronie Import danych albo jednorazowo seedem: Actions → Deploy database → Run workflow, zaznacz `seed` (seed wywołuje `wgraj_dane_planu` z danymi z `requirements/`). Bez tej opcji workflow nigdy nie zmienia danych.
+- **Klucz do zapisu:** import danych i przycisk „Generuj" zapisują do bazy przez Server Action z kluczem `service_role`. Ustaw `SUPABASE_SERVICE_ROLE_KEY` (secret key z Supabase → Settings → API Keys) w Vercelu dla Production i Preview, **bez** prefiksu `NEXT_PUBLIC_` i nigdy w repo. Worker planu działa poza Vercelem (lokalny docker) i łączy się z bazą przez `DATABASE_URL`.
+- **Migracja usuwająca stary model** (`usun_stary_model`) kasuje tabele makiety ze spec 08; w chmurze zawierały tylko makietę, bo seed nie był tam wgrywany.
 
 Sprawdzenie, czy chmura ma wszystkie migracje (lokalnie, po `npx supabase link`):
 

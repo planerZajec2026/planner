@@ -1,13 +1,11 @@
 import type { Prowadzacy } from "./types";
 
-type Imie = Pick<Prowadzacy, "tytul" | "imie" | "nazwisko">;
-
-/** "dr Paweł Zieliński" */
-export function pelneImie(p: Imie): string {
-  return `${p.tytul} ${p.imie} ${p.nazwisko}`;
+/** "dr P39": how an instructor is shown. The source data holds pseudonyms, not names. */
+export function pelneImie(p: Pick<Prowadzacy, "nazwa">): string {
+  return p.nazwa;
 }
 
-/** "PZ" */
-export function inicjaly(p: Omit<Imie, "tytul">): string {
-  return `${p.imie.charAt(0)}${p.nazwisko.charAt(0)}`.toLocaleUpperCase("pl-PL");
+/** "P39": the avatar text. */
+export function inicjaly(p: Pick<Prowadzacy, "id">): string {
+  return p.id;
 }

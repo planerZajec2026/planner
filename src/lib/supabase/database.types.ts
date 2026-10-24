@@ -85,20 +85,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"dni_wolne": {
-                  Row: {
-                    "data": string,"opis": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "data": string,"opis": string
-                  }
-                  Update: {
-                    "data"?: string,"opis"?: string
-                  }
-                  Relationships: [
-                    
-                  ]
                 },"generation_jobs": {
                   Row: {
                     "blad": string | null,"id": string,"parametry": NonNullable<Json>,"raport": Json | null,"rozpoczeto": string | null,"status": Database["public"]['Enums']["status_zadania"],"utworzono": string,"wynik_miekkich": number | null,"zakonczono": string | null
@@ -112,26 +98,6 @@ isOneToOne: false
                   }
                   Relationships: [
                     
-                  ]
-                },"grupy": {
-                  Row: {
-                    "created_at": string,"id": string,"kierunek_id": string,"kod": string,"liczba_studentow": number,"tryb": Database["public"]['Enums']["tryb_studiow"]
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "created_at"?: string,"id"?: string,"kierunek_id": string,"kod": string,"liczba_studentow"?: number,"tryb": Database["public"]['Enums']["tryb_studiow"]
-                  }
-                  Update: {
-                    "created_at"?: string,"id"?: string,"kierunek_id"?: string,"kod"?: string,"liczba_studentow"?: number,"tryb"?: Database["public"]['Enums']["tryb_studiow"]
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "grupy_kierunek_id_fkey"
-      columns: ["kierunek_id"]
-isOneToOne: false
-      referencedRelation: "kierunki"
-      referencedColumns: ["id"]
-    }
                   ]
                 },"grupy_plan": {
                   Row: {
@@ -173,20 +139,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"kierunki": {
-                  Row: {
-                    "created_at": string,"id": string,"nazwa": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "created_at"?: string,"id"?: string,"nazwa": string
-                  }
-                  Update: {
-                    "created_at"?: string,"id"?: string,"nazwa"?: string
-                  }
-                  Relationships: [
-                    
-                  ]
                 },"kolizje_grup": {
                   Row: {
                     "grupa_a": string,"grupa_b": string,"wspolni_studenci": number
@@ -210,26 +162,6 @@ isOneToOne: false
       columns: ["grupa_b"]
 isOneToOne: false
       referencedRelation: "grupy_plan"
-      referencedColumns: ["id"]
-    }
-                  ]
-                },"odwolane_zajecia": {
-                  Row: {
-                    "data": string,"powod": string | null,"zajecia_id": number
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "data": string,"powod"?: string | null,"zajecia_id": number
-                  }
-                  Update: {
-                    "data"?: string,"powod"?: string | null,"zajecia_id"?: number
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "odwolane_zajecia_zajecia_id_fkey"
-      columns: ["zajecia_id"]
-isOneToOne: false
-      referencedRelation: "zajecia"
       referencedColumns: ["id"]
     }
                   ]
@@ -265,20 +197,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"prowadzacy": {
-                  Row: {
-                    "created_at": string,"email": string,"id": string,"imie": string,"instytut": string,"nazwisko": string,"tytul": Database["public"]['Enums']["tytul_naukowy"],"zdjecie_url": string | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "created_at"?: string,"email": string,"id"?: string,"imie": string,"instytut"?: string,"nazwisko": string,"tytul": Database["public"]['Enums']["tytul_naukowy"],"zdjecie_url"?: string | null
-                  }
-                  Update: {
-                    "created_at"?: string,"email"?: string,"id"?: string,"imie"?: string,"instytut"?: string,"nazwisko"?: string,"tytul"?: Database["public"]['Enums']["tytul_naukowy"],"zdjecie_url"?: string | null
-                  }
-                  Relationships: [
-                    
-                  ]
                 },"prowadzacy_plan": {
                   Row: {
                     "czlonek_rady_wydzialu": boolean,"id": string,"jednostka": string | null,"nazwa": string,"stopien": string | null
@@ -289,46 +207,6 @@ isOneToOne: false
                   }
                   Update: {
                     "czlonek_rady_wydzialu"?: boolean,"id"?: string,"jednostka"?: string | null,"nazwa"?: string,"stopien"?: string | null
-                  }
-                  Relationships: [
-                    
-                  ]
-                },"prowadzacy_przedmioty": {
-                  Row: {
-                    "prowadzacy_id": string,"przedmiot_id": number
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "prowadzacy_id": string,"przedmiot_id": number
-                  }
-                  Update: {
-                    "prowadzacy_id"?: string,"przedmiot_id"?: number
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "prowadzacy_przedmioty_prowadzacy_id_fkey"
-      columns: ["prowadzacy_id"]
-isOneToOne: false
-      referencedRelation: "prowadzacy"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "prowadzacy_przedmioty_przedmiot_id_fkey"
-      columns: ["przedmiot_id"]
-isOneToOne: false
-      referencedRelation: "przedmioty"
-      referencedColumns: ["id"]
-    }
-                  ]
-                },"przedmioty": {
-                  Row: {
-                    "id": number,"nazwa": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "id"?: number,"nazwa": string
-                  }
-                  Update: {
-                    "id"?: number,"nazwa"?: string
                   }
                   Relationships: [
                     
@@ -469,38 +347,6 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"zajecia": {
-                  Row: {
-                    "created_at": string,"czas": unknown,"dzien": number,"godzina_do": string,"godzina_od": string,"grupa_id": string,"id": number,"powtarzalnosc": Database["public"]['Enums']["powtarzalnosc"],"prowadzacy_id": string,"przedmiot_id": number,"sala": string,"tygodnie": unknown,"typ": Database["public"]['Enums']["typ_zajec"]
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "created_at"?: string,"czas"?: never,"dzien": number,"godzina_do": string,"godzina_od": string,"grupa_id": string,"id"?: number,"powtarzalnosc"?: Database["public"]['Enums']["powtarzalnosc"],"prowadzacy_id": string,"przedmiot_id": number,"sala": string,"tygodnie"?: never,"typ": Database["public"]['Enums']["typ_zajec"]
-                  }
-                  Update: {
-                    "created_at"?: string,"czas"?: never,"dzien"?: number,"godzina_do"?: string,"godzina_od"?: string,"grupa_id"?: string,"id"?: number,"powtarzalnosc"?: Database["public"]['Enums']["powtarzalnosc"],"prowadzacy_id"?: string,"przedmiot_id"?: number,"sala"?: string,"tygodnie"?: never,"typ"?: Database["public"]['Enums']["typ_zajec"]
-                  }
-                  Relationships: [
-                    {
-      foreignKeyName: "zajecia_grupa_id_fkey"
-      columns: ["grupa_id"]
-isOneToOne: false
-      referencedRelation: "grupy"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "zajecia_prowadzacy_id_fkey"
-      columns: ["prowadzacy_id"]
-isOneToOne: false
-      referencedRelation: "prowadzacy"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "zajecia_przedmiot_id_fkey"
-      columns: ["przedmiot_id"]
-isOneToOne: false
-      referencedRelation: "przedmioty"
-      referencedColumns: ["id"]
-    }
-                  ]
                 },"zajecia_plan": {
                   Row: {
                     "czestotliwosc": string,"dodatkowi_studenci": number,"dozwolone_sale": (string)[],"forma": string,"godziny_programowe": number | null,"id": string,"laczone_z": string | null,"liczba_spotkan": number,"liczba_studentow": number,"powiazanie": string | null,"przedmiot_id": string,"rocznik_id": string,"sloty_na_spotkanie": number,"tryb": string,"tydzien_do": number,"tydzien_od": number,"tygodnie_niedostepne": (number)[],"typ_powiazania": string | null,"typy_sal": (string)[],"uwagi": string | null,"wymagane_wyposazenie": (string)[]
@@ -611,10 +457,12 @@ isOneToOne: false
                 }
           }
           Functions: {
-            [_ in never]: never
+            "wgraj_dane_planu":
+{ Args: { "payload": Json }; Returns: Json
+                           }
           }
           Enums: {
-            "powtarzalnosc": "co-tydzien"|"parzyste"|"nieparzyste","status_zadania": "queued"|"running"|"done"|"failed","tryb_studiow": "stacjonarne"|"niestacjonarne","typ_dnia": "zajecia"|"wolne"|"odpracowanie","typ_zajec": "wyklad"|"cwiczenia"|"laboratorium"|"seminarium","tytul_naukowy": "mgr"|"mgr inż."|"dr"|"dr inż."|"dr hab."|"prof."
+            "status_zadania": "queued"|"running"|"done"|"failed","typ_dnia": "zajecia"|"wolne"|"odpracowanie"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -730,7 +578,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "powtarzalnosc": ["co-tydzien", "parzyste", "nieparzyste"],"status_zadania": ["queued", "running", "done", "failed"],"tryb_studiow": ["stacjonarne", "niestacjonarne"],"typ_dnia": ["zajecia", "wolne", "odpracowanie"],"typ_zajec": ["wyklad", "cwiczenia", "laboratorium", "seminarium"],"tytul_naukowy": ["mgr", "mgr inż.", "dr", "dr inż.", "dr hab.", "prof."]
+            "status_zadania": ["queued", "running", "done", "failed"],"typ_dnia": ["zajecia", "wolne", "odpracowanie"]
           }
         }
 } as const

@@ -1,7 +1,7 @@
 -- Spec 13: generator tables, seeded input data, constraints, API grants and the meetings view.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(58);
+select plan(72);
 
 -- Tables
 select has_table('public', t, format('table %s exists', t))
@@ -140,6 +140,59 @@ select ok(
   (select reloptions @> array['security_invoker=true'] from pg_class where oid = 'public.plan_spotkania'::regclass),
   'the meetings view runs with the caller''s rights'
 );
+
+-- Every table in public has RLS, including tables added later.
+select is(
+  (select array_agg(c.relname order by c.relname)
+   from pg_class c join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public' and c.relkind in ('r', 'p') and not c.relrowsecurity),
+  null,
+  'no table in public is without row level security'
+);
+
+-- The settings row is public to read and closed to writes through the API.
+select ok(has_table_privilege('anon', 'public.ustawienia', 'select'), 'anon can read ustawienia');
+select ok(not has_table_privilege('anon', 'public.ustawienia', 'update'), 'anon cannot update ustawienia');
+
+-- wgraj_dane_planu: only service_role may call it.
+select ok(not has_function_privilege('anon', 'public.wgraj_dane_planu(jsonb)', 'execute'), 'anon cannot load data');
+select ok(not has_function_privilege('authenticated', 'public.wgraj_dane_planu(jsonb)', 'execute'), 'authenticated cannot load data');
+select ok(has_function_privilege('service_role', 'public.wgraj_dane_planu(jsonb)', 'execute'), 'service_role can load data');
+
+-- Loading replaces the input data and drops the generated plans, all in one transaction.
+select is(
+  (select public.wgraj_dane_planu($json$
+    {"sloty": [{"slot": 1, "od": "8:15", "do": "9:00"}],
+     "kalendarz": [{"data": "2027-01-04", "dzien_tygodnia": "poniedziałek", "typ_dnia": "zajęcia", "plan_dnia": 1, "nr_tygodnia": 1, "opis": ""}],
+     "sale": [{"id": "T1", "nazwa": null, "budynek": "A", "typ": "sala_dydaktyczna", "pojemnosc": 30, "pojemnosc_szacowana": false, "metraz_m2": null, "wyposazenie": ["projektor"], "przeznaczenie": null, "dostepna_do_planowania": true, "uwagi": null}],
+     "prowadzacy": [{"id": "PT", "stopien": "dr", "nazwa": "dr PT", "jednostka": "WFiIS", "czlonek_rady_wydzialu": false}],
+     "roczniki": [{"id": "R1", "kierunek": "Informatyka", "stopien_studiow": "I", "rok": 1, "semestr": 1, "nazwa": "Rocznik 1", "liczba_studentow": 10, "syntetyczny": false}],
+     "grupy": [{"id": "R1-ALL", "rocznik": "R1", "nazwa": "Cały rocznik", "typ": "rocznik", "podzial": null, "grupa_nadrzedna": null, "liczba_studentow": 10},
+               {"id": "R1-G1", "rocznik": "R1", "nazwa": "Grupa 1", "typ": "grupa", "podzial": "ćwiczenia", "grupa_nadrzedna": "R1-ALL", "liczba_studentow": 5}],
+     "przedmioty": [{"id": "PRZ-1", "rocznik": "R1", "nazwa": "Analiza"}],
+     "zajecia": [{"id": "ZT", "rocznik": "R1", "przedmiot_id": "PRZ-1", "forma": "W", "liczba_studentow": 10, "laczone_z": null,
+                    "dodatkowi_studenci": 0, "godziny_programowe": 28, "liczba_spotkan": 14, "sloty_na_spotkanie": 2,
+                    "czestotliwosc": "co_tydzien", "tydzien_od": 1, "tydzien_do": 14, "typy_sal": ["sala_dydaktyczna"],
+                    "dozwolone_sale": [], "wymagane_wyposazenie": [], "tryb": "stacjonarny", "powiazanie": null,
+                    "typ_powiazania": null, "tygodnie_niedostepne": [6], "uwagi": null, "grupy": ["R1-ALL"], "prowadzacy": ["PT"]}]}
+  $json$::jsonb) ->> 'zajecia'),
+  '1',
+  'loading reports the number of classes'
+);
+select is((select array_agg(id) from public.zajecia_plan), array['ZT'], 'the old classes are replaced');
+select is((select count(*)::int from public.sale), 1, 'the old rooms are replaced');
+select is((select count(*)::int from public.generation_jobs), 0, 'generated plans are dropped with the old data');
+select is((select tygodnie_niedostepne from public.zajecia_plan), array[6]::smallint[], 'lists become arrays');
+select is((select typ_dnia::text from public.kalendarz), 'zajecia', 'the Polish day type maps onto the enum');
+
+-- A rejected payload changes nothing.
+select throws_ok(
+  $$select public.wgraj_dane_planu(
+    '{"zajecia": [{"id": "ZX", "rocznik": "NIE-MA", "przedmiot_id": "PRZ-1", "forma": "W", "liczba_studentow": 10, "liczba_spotkan": 14, "sloty_na_spotkanie": 2, "czestotliwosc": "co_tydzien", "tydzien_od": 1, "tydzien_do": 14, "tryb": "stacjonarny", "grupy": [], "prowadzacy": []}]}'::jsonb
+  )$$,
+  '23503', null, 'a reference to a missing row is rejected'
+);
+select is((select array_agg(id) from public.zajecia_plan), array['ZT'], 'after a rejected load the data is intact');
 
 select * from finish();
 rollback;

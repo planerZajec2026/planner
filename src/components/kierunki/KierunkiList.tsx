@@ -9,7 +9,6 @@ import { AppLink } from "@/components/ui/AppLink";
 import { Icon } from "@/components/ui/Icon";
 import { SearchField } from "@/components/ui/SearchField";
 import { Tag } from "@/components/ui/Tag";
-import { TRYB_LABEL } from "@/lib/labels";
 import { countPl, normalize } from "@/lib/pl";
 import type { Grupa, Kierunek } from "@/lib/types";
 
@@ -36,7 +35,7 @@ export function KierunkiList({ kierunki, grupy }: Props) {
     <>
       <PageHeader
         title="Kierunki i grupy"
-        description="Przeglądaj kierunki studiów oraz przypisane im grupy i tryby zajęć."
+        description="Przeglądaj kierunki studiów oraz przypisane im grupy."
         actions={
           <SearchField
             label="Szukaj kierunku lub grupy"
@@ -70,7 +69,7 @@ export function KierunkiList({ kierunki, grupy }: Props) {
                     <CollapseItem key={g.id} className="grupa-collapse">
                       <div className="grupa-row">
                         <span className="grupa-code">{g.kod}</span>
-                        <Tag>{TRYB_LABEL[g.tryb]}</Tag>
+                        <Tag>{g.rocznikNazwa}</Tag>
                         <span className="grupa-students">
                           {countPl(g.liczbaStudentow, "student", "studentów", "studentów")}
                         </span>

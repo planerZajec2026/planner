@@ -1,6 +1,5 @@
-// Domain model. Field names mirror the planned Supabase tables (snake_case columns map 1:1).
-
-export type TrybStudiow = "stacjonarne" | "niestacjonarne";
+// Domain model of the pages that browse the generator's data (spec 13). The rows come from the database through
+// src/lib/data/*; the field names here are the app's own and are mapped from the Polish table columns there.
 
 export type Kierunek = {
   id: string;
@@ -9,44 +8,29 @@ export type Kierunek = {
 
 export type Grupa = {
   id: string;
-  /** Group code shown in the UI, e.g. "INF/Z-3". */
+  /** Group code shown in the UI, e.g. "INF1-R1-G1". */
   kod: string;
   kierunekId: string;
-  tryb: TrybStudiow;
+  rocznikId: string;
+  /** e.g. "Informatyka I st., rok I, sem. I" */
+  rocznikNazwa: string;
+  /** The group this one is part of (a lab group belongs to the whole year), if any. */
+  nadrzednaId?: string;
   liczbaStudentow: number;
 };
 
-export type TytulNaukowy = "mgr" | "mgr inż." | "dr" | "dr inż." | "dr hab." | "prof.";
-
 export type Prowadzacy = {
   id: string;
-  tytul: TytulNaukowy;
-  imie: string;
-  nazwisko: string;
-  instytut: string;
-  email: string;
+  /** Academic degree, e.g. "dr", "dr hab.", "prof.". */
+  stopien: string;
+  /** How the person is shown: degree and pseudonym, e.g. "dr P01". */
+  nazwa: string;
+  jednostka: string;
   przedmioty: string[];
-  zdjecieUrl?: string;
 };
 
+/** The four block styles of the calendar. */
 export type TypZajec = "wyklad" | "cwiczenia" | "laboratorium" | "seminarium";
 
 /** 1 = poniedziałek … 7 = niedziela */
 export type DzienTygodnia = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-export type Powtarzalnosc = "co-tydzien" | "parzyste" | "nieparzyste";
-
-export type Zajecia = {
-  id: string;
-  przedmiot: string;
-  typ: TypZajec;
-  prowadzacyId: string;
-  grupaId: string;
-  dzien: DzienTygodnia;
-  /** "HH:MM" */
-  od: string;
-  /** "HH:MM" */
-  do: string;
-  sala: string;
-  powtarzalnosc: Powtarzalnosc;
-};

@@ -1,5 +1,4 @@
 import AxeBuilder from "@axe-core/playwright";
-import { PRZYKLADOWY_PLAN } from "../src/lib/import";
 import { expect, ROUTES, test } from "./fixtures";
 
 async function seriousViolations(page: import("@playwright/test").Page) {
@@ -11,29 +10,38 @@ async function seriousViolations(page: import("@playwright/test").Page) {
     .map((v) => `${v.id}: ${v.help} — ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
 }
 
+// Pages that show nothing useful without a selection are checked with one.
+const WITH_DATA: Partial<Record<(typeof ROUTES)[number], string>> = {
+  "/harmonogram": "/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12",
+  "/harmonogram-prowadzacych": "/harmonogram-prowadzacych?prowadzacy=P01&tydzien=2026-10-12",
+};
+
 for (const route of ROUTES) {
   test(`${route} has no serious accessibility violations`, async ({ page }) => {
-    await page.goto(route === "/harmonogram" ? "/harmonogram?grupa=inf-z-3&tydzien=2026-10-12" : route);
+    await page.goto(WITH_DATA[route] ?? route);
     expect(await seriousViolations(page)).toEqual([]);
   });
 }
 
-test("the add-instructor form has no serious accessibility violations", async ({ page }) => {
-  await page.goto("/prowadzacy");
-  await page.getByRole("button", { name: "+ Dodaj prowadzącego" }).click();
-  await page.getByRole("button", { name: "Zapisz prowadzącego" }).click(); // include the error state
+test("the weekly plan view has no serious accessibility violations", async ({ page }) => {
+  await page.goto("/plan?widok=tydzien&grupa=INF1-R1-G1&tydzien=2");
+  await expect(page.locator(".calendar-grid")).toBeVisible();
   expect(await seriousViolations(page)).toEqual([]);
 });
 
-test("import results, banners and form errors have no serious accessibility violations", async ({ page }) => {
+test("the generator's form errors have no serious accessibility violations", async ({ page }) => {
+  await page.goto("/generator");
+  await page.getByLabel("Limit czasu (sekundy)").fill("100");
+  await page.getByRole("button", { name: "Generuj plan" }).click();
+  await expect(page.getByLabel("Limit czasu (sekundy)")).toHaveAttribute("aria-invalid", "true");
+  expect(await seriousViolations(page)).toEqual([]);
+});
+
+test("the import page with a rejected file has no serious accessibility violations", async ({ page }) => {
   await page.goto("/import-eksport");
-  await page.getByLabel("Plik JSON z planem zajęć").setInputFiles({
-    name: "plan.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(PRZYKLADOWY_PLAN),
-  });
-  await expect(page.getByText("Podgląd importu")).toBeVisible();
-  await page.getByRole("button", { name: "Dodaj zajęcia do planu" }).click();
-  await page.locator(".export-row").getByRole("button", { name: "Eksportuj do Excela" }).click();
+  await page.getByLabel("Plik z danymi").setInputFiles({ name: "zly.json", mimeType: "application/json", buffer: Buffer.from("{}") });
+  await page.getByLabel(/Rozumiem/).check();
+  await page.getByRole("button", { name: "Wgraj dane" }).click();
+  await expect(page.getByText("W pliku są błędy. Nic nie zostało wgrane.")).toBeVisible();
   expect(await seriousViolations(page)).toEqual([]);
 });

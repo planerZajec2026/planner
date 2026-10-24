@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -17,6 +17,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test
+      # Spec 13: the pages read everything from the database, so e2e runs against a local Supabase (API only: Postgres,
+      # PostgREST and the gateway). Its seed loads the input data; the e2e global setup adds a finished plan.
+      - run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,storage-api,gotrue,supavisor
+      - run: npm run db:env
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
@@ -66,15 +70,31 @@ jobs:
           PY
             exit 1
           fi
-      - name: Generated types and seed are up to date
+      - name: Generated types, mock data and seed are up to date
         run: |
           npm run db:types
+          npm run db:mock:generate
           npm run db:seed:generate
-          npm run db:plan-seed:generate
           # porcelain also catches a file that is missing from the commit (git diff ignores untracked files)
-          changed="$(git status --porcelain -- src/lib/supabase/database.types.ts supabase/seed.sql supabase/seeds/plan.sql)"
+          files="src/lib/supabase/database.types.ts src/lib/mock-data.ts supabase/seed.sql"
+          changed="$(git status --porcelain -- $files)"
           if [ -n "$changed" ]; then
-            echo "$changed"; git diff -- src/lib/supabase/database.types.ts supabase/seed.sql supabase/seeds/plan.sql
-            echo "::error title=Generated files are stale::Run npm run db:types, npm run db:seed:generate and npm run db:plan-seed:generate, then commit the result."
+            echo "$changed"; git diff -- $files
+            echo "::error title=Generated files are stale::Run npm run db:types, npm run db:mock:generate and npm run db:seed:generate, then commit the result."
             exit 1
           fi
+
+  # Spec 13: the timetable solver (OR-Tools CP-SAT) and its validator.
+  solver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: solver/requirements*.txt
+      - run: pip install -r solver/requirements.txt -r solver/requirements-dev.txt
+      # The tests that need a database are opt-in (RUN_DB_TESTS) and stay off here.
+      - run: python -m pytest solver/tests -q

@@ -11,14 +11,11 @@ export function ProwadzacyCard({ prowadzacy: p, ref }: { prowadzacy: Prowadzacy;
   return (
     <AnimatedItem ref={ref} className="instructor-card" aria-label={pelneImie(p)}>
       <div className="instructor-top">
-        <Avatar initials={inicjaly(p)} src={p.zdjecieUrl} />
+        <Avatar initials={inicjaly(p)} />
         <div>
           <div className="instructor-name">{pelneImie(p)}</div>
-          {p.instytut && <div className="instructor-role">{p.instytut}</div>}
+          {p.jednostka && <div className="instructor-role">{p.jednostka}</div>}
         </div>
-      </div>
-      <div className="instructor-meta">
-        <a href={`mailto:${p.email}`}>{p.email}</a>
       </div>
       {p.przedmioty.length > 0 && (
         <div className="tag-row">

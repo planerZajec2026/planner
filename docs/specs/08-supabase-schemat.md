@@ -1,5 +1,7 @@
 # Spec 08: Supabase — CLI, schemat i migracje
 
+> **Superseded by [spec 13](13-generator-planu.md):** the tables of this model (`kierunki`, `grupy`, `prowadzacy`, `zajecia`…) and the `tryb_studiow` type were dropped by the `usun_stary_model` migration. The rules for migrations, RLS and tooling still apply.
+
 **Branch:** `feat/08-supabase-schemat` · **Route(s):** none (database, tooling)
 
 ## Goal

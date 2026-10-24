@@ -3,8 +3,13 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 const CI = !!process.env.CI;
 
+// Locally use the installed Chrome (no browser download); CI installs Playwright's Chromium.
+const channel = CI ? undefined : "chrome";
+
 export default defineConfig({
   testDir: "e2e",
+  // Puts the database in a known state (input data + a finished plan); see e2e/global-setup.ts.
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: CI,
   retries: CI ? 1 : 0,
@@ -21,13 +26,22 @@ export default defineConfig({
     {
       name: "desktop",
       grepInvert: /@phone/,
-      // Locally use the installed Chrome (no browser download); CI installs Playwright's Chromium.
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, channel: CI ? undefined : "chrome" },
+      testIgnore: /wgrywanie-danych/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, channel },
     },
     {
       name: "phone",
       grep: /@phone/,
-      use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, channel: CI ? undefined : "chrome" },
+      testIgnore: /wgrywanie-danych/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, channel },
+    },
+    {
+      // Loading a file replaces all data and plans in the database, so it runs alone, after everything else.
+      name: "wgrywanie-danych",
+      testMatch: /wgrywanie-danych/,
+      dependencies: ["desktop", "phone"],
+      fullyParallel: false,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, channel },
     },
   ],
   webServer: {

@@ -1,7 +1,7 @@
 // Domain logic of the generated timetable (spec 13): slots, weeks, filters and calendar events.
 // Pure functions only, so they are unit-tested without a database. Data comes from src/lib/data/plan.ts.
 import type { CalendarEvent } from "@/components/calendar/WeekCalendar";
-import { DNI_PELNE, parseISODate, shortDate } from "./dates";
+import { addDays, DNI_PELNE, parseISODate, shortDate, toISODate } from "./dates";
 import type { DzienTygodnia, TypZajec } from "./types";
 
 /** 12 slots of 45 minutes with 15-minute breaks: slot 1 = 8:15–9:00, slot 12 = 19:15–20:00. */
@@ -304,4 +304,51 @@ export function nazwaPliku(f: PlanFiltry, rozszerzenie: "xlsx" | "json"): string
     .filter(([, v]) => v !== undefined)
     .map(([nazwa, v]) => `${nazwa}-${String(v).replace(/[^A-Za-z0-9_-]/g, "_")}`);
   return ["plan-zajec", ...czesci].join("-") + `.${rozszerzenie}`;
+}
+
+/** A class on one calendar date: `dzien` is the real weekday of `data` (the plan day may differ on make-up days). */
+export type Spotkanie = { wiersz: PlanWiersz; data: string; dzien: DzienTygodnia };
+
+/** The group and the groups it belongs to, nearest first (a lab group, then the whole year it is part of). */
+export function lancuchGrup(grupy: { id: string; nadrzednaId?: string }[], grupaId: string): string[] {
+  const poId = new Map(grupy.map((g) => [g.id, g]));
+  const lancuch: string[] = [];
+  let biezaca = poId.get(grupaId);
+  while (biezaca && !lancuch.includes(biezaca.id)) {
+    lancuch.push(biezaca.id);
+    biezaca = biezaca.nadrzednaId ? poId.get(biezaca.nadrzednaId) : undefined;
+  }
+  return lancuch;
+}
+
+/** Classes held in the calendar week starting on `poniedzialek`, each on the date the calendar gives it. */
+export function spotkaniaWTygodniu(wiersze: PlanWiersz[], kalendarz: KalendarzDzien[], poniedzialek: Date): Spotkanie[] {
+  const dni = new Map(kalendarz.map((k) => [k.data, k]));
+  const spotkania: Spotkanie[] = [];
+  for (let i = 0; i < 7; i++) {
+    const data = toISODate(addDays(poniedzialek, i));
+    const dzien = dni.get(data);
+    if (!dzien || dzien.planDnia === null || dzien.nrTygodnia === null) continue;
+    for (const wiersz of wiersze) {
+      if (wiersz.dzien === dzien.planDnia && wiersz.tygodnie.includes(dzien.nrTygodnia)) {
+        spotkania.push({ wiersz, data, dzien: (i + 1) as DzienTygodnia });
+      }
+    }
+  }
+  return spotkania;
+}
+
+export function spotkaniaDoEventow(spotkania: Spotkanie[], etykiety: Etykiety, opis: (w: PlanWiersz) => string): CalendarEvent[] {
+  return spotkania.map(({ wiersz: w, data, dzien }) => {
+    const czas = czasZajec(w);
+    return {
+      id: `${w.zajeciaId}-${data}`,
+      dzien,
+      od: czas.od,
+      do: czas.do,
+      typ: formaNaTyp(w.forma),
+      tytul: w.przedmiot,
+      meta: opis(w),
+    };
+  });
 }

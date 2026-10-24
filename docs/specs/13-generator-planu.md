@@ -1,6 +1,6 @@
 # Spec 13: Generator planu zajęć
 
-**Branch:** `feat/13-generator-planu` · **Route(s):** `/generator`, `/plan`
+**Branch:** `feat/13-generator-planu` · **Route(s):** `/generator`, `/plan`, `/import-eksport`; `/kierunki`, `/harmonogram`, `/prowadzacy`, `/harmonogram-prowadzacych` czytają z bazy
 
 ## Cel
 Z danych wejściowych w `requirements/` (WFiIS UŁ, Informatyka, studia stacjonarne, semestr zimowy 2026/27) wygenerować plan zajęć na cały semestr, sprawdzić go niezależnym walidatorem i pokazać w aplikacji. Każde zajęcia z tabeli `zajecia` dostają dzień, slot startowy, salę i (dla zajęć `co_2_tygodnie`) tydzień parzysty lub nieparzysty. Plan musi spełniać wszystkie ograniczenia twarde, a ograniczenia miękkie służą do oceny jakości.
@@ -16,11 +16,15 @@ Dane są spójne: istnieje co najmniej jeden plan spełniający wszystkie ograni
 - Nowy schemat bazy na dane wejściowe, zadania i wynik.
 - Strony `/generator` (uruchomienie i raport) oraz `/plan` (cały plan).
 - Eksport planu do XLSX i JSON.
+- **Dane tylko z bazy.** Żadna strona nie czyta makiet: `src/lib/mock-data.ts` zawiera prawdziwe dane z `requirements/` i służy wyłącznie do seedowania bazy (reguła ESLint zabrania importu z `src/`). Gdy w bazie nic nie ma, strony są puste i odsyłają do importu.
+- **Wgrywanie danych przez użytkownika** na stronie `/import-eksport` (plik `.xlsx` lub `.json`), tą samą funkcją bazy co seed.
 
-**Poza zakresem:** edycja planu w UI (następny etap), inne kierunki niż Informatyka, studia niestacjonarne, hosting workera poza lokalnym dockerem.
+**Poza zakresem:** edycja planu w UI (następny etap), inne kierunki niż Informatyka, hosting workera poza lokalnym dockerem. **Studia niestacjonarne nie są wspierane**: z aplikacji, bazy i dokumentacji zniknął tryb studiów.
 
 ## Dane wejściowe
-Pliki w `requirements/`: `dane_planu.json` (używany przez solver i import), `dane_planu.xlsx`, `README.md`. Dane są identyczne we wszystkich formatach.
+Pliki w `requirements/`: `dane_planu.xlsx`, `dane_planu.json`, `README.md`. Dane są identyczne w obu formatach (test `src/lib/dane-planu.test.ts` porównuje je tabela po tabeli).
+
+Droga danych do bazy: `requirements/dane_planu.json` → `npm run db:mock:generate` → `src/lib/mock-data.ts` (wygenerowany, typowany plik z prawdziwymi danymi) → `npm run db:seed:generate` → `supabase/seed.sql`, który woła `wgraj_dane_planu` → baza. Użytkownik wgrywa dane przez `/import-eksport` tą samą funkcją. Schemat tabel i ich kolumn (typy, walidacja strukturalna, odczyt `.xlsx`) jest w `src/lib/dane-planu.ts` i `src/lib/dane-planu-xlsx.ts`.
 
 | Tabela | Rozmiar | Rola |
 |---|---|---|
@@ -92,7 +96,7 @@ Używany w CLI, w workerze (plan jest zapisywany razem z raportem) i w testach. 
 - Supabase służy jako baza i kolejka. Nie hostuje Pythona (Edge Functions: Deno, krótki limit CPU), więc worker działa poza nim. Później można go przenieść na GitHub Actions (`workflow_dispatch`) lub Cloud Run bez zmiany modelu danych.
 
 ## Schemat Supabase
-Nowe migracje w `supabase/migrations/`, zgodnie z regułami z [spec 08](08-supabase-schemat.md). Nazwy nie kolidują ze starymi tabelami (`zajecia`, `grupy`, `prowadzacy`).
+Nowe migracje w `supabase/migrations/`, zgodnie z regułami z [spec 08](08-supabase-schemat.md). Tabele mają przyrostek `_plan` tam, gdzie nazwa kolidowała ze starym modelem; ten model usuwa migracja 6.
 
 Cztery migracje (`20261024100000`–`20261024100300`):
 1. `plan_dane_slownikowe`: `sloty`, `kalendarz`, `sale`, `roczniki`, `grupy_plan`, `studenci`, `studenci_grupy`, `kolizje_grup`, `prowadzacy_plan`, `przedmioty_plan`.
@@ -100,24 +104,43 @@ Cztery migracje (`20261024100000`–`20261024100300`):
 3. `plan_generowanie`: `generation_jobs` (status `queued`/`running`/`done`/`failed`, parametry, raport walidatora, wynik miękkich), `plan_zajec` (wynik: zajęcia, dzień, slot, sala, tygodnie, `job_id`) i widok `plan_spotkania`, który rozwija przydział na spotkania z datami z `kalendarz` (`security_invoker`).
 4. `plan_api_grants_and_rls`: RLS na wszystkich tabelach, odczyt dla `anon` i `authenticated`, zapis tylko dla `service_role` (worker i import).
 
-Zlecanie zadań z aplikacji (przycisk „Generuj") wymaga zapisu do `generation_jobs`. Do czasu logowania (spec 11) zrobiłaby to Server Action po stronie serwera z kluczem `service_role`; ten wyjątek od zasady ze spec 08 trzeba rozstrzygnąć w etapie 6.
+Dwie kolejne migracje:
+5. `wgraj_dane_planu` (`20261024110000`): funkcja `wgraj_dane_planu(payload jsonb)`, `security definer`, wykonywalna tylko przez `service_role`. W **jednej transakcji** czyści tabele wejściowe i `generation_jobs` (kaskada usuwa `plan_zajec`) i wstawia dane z jsonb o kształcie `dane_planu.json`; odrzucony plik niczego nie zmienia. Zwraca liczby rekordów. Woła ją seed i strona importu.
+6. `usun_stary_model` (`20261024110100`): usuwa tabele makiety ze spec 08 (`kierunki`, `grupy`, `prowadzacy`, `przedmioty`, `prowadzacy_przedmioty`, `zajecia`, `odwolane_zajecia`, `dni_wolne`) oraz typy `tryb_studiow`, `typ_zajec`, `powtarzalnosc`, `tytul_naukowy`. Zostaje `ustawienia`. Operacja destrukcyjna wdrażana w chmurze przez workflow `deploy-db`; tabele zawierały tylko makietę (chmura nie była seedowana).
+
+Zapis z aplikacji (przycisk „Generuj" i import danych) idzie przez Server Action z kluczem `service_role`. To świadomy wyjątek od zasady ze spec 08, do czasu logowania (spec 11); klucz `SUPABASE_SERVICE_ROLE_KEY` jest tylko po stronie serwera (`server-only`, `src/lib/supabase/admin.ts`) i opisany w `.env.example`. Na Vercelu trzeba go ustawić (patrz `docs/wdrozenie.md`).
 
 `sale.pojemnosc` jest pusta dla 24 sal niedostępnych do planowania (pracownie specjalistyczne), więc kolumna dopuszcza null, ale tylko dla sal niedostępnych.
 
-Dane wejściowe: `scripts/generate-plan-seed.ts` (`npm run db:plan-seed:generate`) zamienia `requirements/dane_planu.json` na `supabase/seeds/plan.sql`, ładowany po `seed.sql` przez `db reset`. CI sprawdza, że plik jest aktualny. Typy przez `npm run db:types`; testy pgTAP w `supabase/tests/plan.test.sql`.
+Typy przez `npm run db:types`; testy pgTAP w `supabase/tests/plan.test.sql` (tabele, ograniczenia, RLS, widok spotkań, `wgraj_dane_planu`).
 
 ## UI
 - **`/generator`:** formularz (limit czasu 200–400 s, wagi ograniczeń miękkich) z przyciskiem „Generuj plan". Server Action `zlecGenerowanie` waliduje dane (limity jak w workerze), odmawia, gdy w kolejce są już 3 zadania, i dodaje wiersz do `generation_jobs`. Pod formularzem lista ostatnich zadań (status, czas, raport: naruszenia twarde, kara miękkich, dolna granica, rozbicie na składniki); strona sama się odświeża co 5 s, dopóki jakieś zadanie jest `queued` lub `running`.
 - **Zapis z aplikacji:** Server Action używa klucza `SUPABASE_SERVICE_ROLE_KEY` (tylko serwer, `server-only`, `src/lib/supabase/admin.ts`). To świadomy wyjątek od zasady ze spec 08, do czasu logowania (spec 11); klucz jest opisany w `.env.example`.
 - **`/plan`:** pokazuje **cały plan** z ostatniego ukończonego zadania. Widok *Tabela* (domyślny) wypisuje wszystkie 174 zajęcia: przedmiot, forma, grupy, prowadzący, dzień, godziny od–do, sala, tygodnie / parzystość. Filtry (rocznik, grupa, prowadzący, sala, dzień) to zwykły formularz GET, więc działają w adresie URL i bez JavaScriptu. Widok *Kalendarz tygodniowy* pokazuje wybrany tydzień 1–14 z datami z `kalendarz` (środa tygodnia 11 to 8 I 2027); wymaga wyboru rocznika, grupy, prowadzącego lub sali, bo wszystkie zajęcia naraz są nieczytelne. Nic w tabeli nie jest ucinane.
-- **Eksport:** `/plan/eksport` (route handler) zwraca plik XLSX (domyślnie; arkusze „Plan" i „Informacje") albo JSON (`?format=json`, z identyfikatorami i numerami slotów). Te same filtry zawężają zawartość, bez filtrów wychodzi cały plan. Przyciski są na stronie `/plan` i uwzględniają wybrane filtry. Istniejący `ExportPanel` w `/import-eksport` dotyczy starego modelu danych i nie został zmieniony.
-- Interfejs po polsku; dostęp do danych przez `src/lib/data/plan.ts`, logika bez bazy w `src/lib/plan.ts` i `src/lib/generator.ts`.
-- Testy e2e nowych stron nie wchodzą do `e2e/` (CI testuje produkcyjny build bez Supabase); strony sprawdzają testy jednostkowe i komponentów oraz ręczny przebieg na lokalnym stosie.
+- **Eksport:** `/plan/eksport` (route handler) zwraca plik XLSX (domyślnie; arkusze „Plan" i „Informacje") albo JSON (`?format=json`, z identyfikatorami i numerami slotów). Te same filtry zawężają zawartość, bez filtrów wychodzi cały plan. Przyciski są na stronie `/plan` i uwzględniają wybrane filtry.
+- **`/import-eksport` (Import danych):** pole pliku `.xlsx` lub `.json` w formacie `dane_planu`, wymagane potwierdzenie (wgranie usuwa dotychczasowe dane i plany), podsumowanie po wgraniu. Server Action `wgrajDane` sprawdza plik (typy kolumn, unikalność id, odwołania między tabelami; limit 4 MB), a bazę ładuje funkcją `wgraj_dane_planu`. Błędy pliku są wypisane i nic się nie zmienia. Wykonalność planu sprawdza dopiero solver (`failed` z komunikatem w `blad`). Limit ciała Server Action: `serverActions.bodySizeLimit` w `next.config.ts`.
+- **Strony z bazy:** `/kierunki` (grupy z roczników), `/prowadzacy` (pseudonimy `P01…`, stopień, jednostka, przedmioty z zajęć), `/harmonogram` i `/harmonogram-prowadzacych` (tydzień kalendarzowy z wygenerowanego planu; grupa ma też zajęcia swoich grup nadrzędnych, np. wykład dla roku; środa tygodnia 11 wypada w piątek 8 I). Pusta baza → „Brak danych wejściowych" z linkiem do importu; dane są, planu nie ma → „Nie wygenerowano jeszcze planu" z linkiem do generatora. `/generator` bez danych wejściowych pokazuje to samo zamiast formularza.
+- Interfejs po polsku; dostęp do danych przez `src/lib/data/*`, logika bez bazy w `src/lib/plan.ts`, `src/lib/generator.ts` i `src/lib/dane-planu*.ts`. Granice `<Suspense>` leżą w stronach (`page.tsx`), nie w layoutach.
+- Testy: jednostkowe i komponentów używają stałych danych z `src/test/fixtures.ts`. E2e (`e2e/`) działa na lokalnym Supabase: `e2e/global-setup.ts` wgrywa dane z `mock-data.ts` i gotowy plan z `e2e/fixtures/plan.json` (solver nie liczy się w testach). Testy wgrywania pliku zmieniają całą bazę, więc idą osobnym projektem `wgrywanie-danych`, po pozostałych.
+
+## Uruchomienie lokalne
+Wymagania: Docker Desktop i Node 22.
+1. `npm install`, `npm run db:start` (lokalny Supabase; migracje i seed ładują się same), `npm run db:env` (zapisuje `.env.local` z lokalnymi kluczami).
+2. `npm run dev` (http://localhost:3000). Dane wejściowe są już w bazie; po `npm run db:reset` wracają do stanu z seeda.
+3. Worker (osobny terminal): `docker compose up --build solver-worker`.
+4. Na `/generator` kliknij „Generuj plan" (limit 200–400 s). Gotowy plan jest na `/plan`, `/harmonogram` i `/harmonogram-prowadzacych`.
+5. Własne dane: `/import-eksport` (plik w formacie `requirements/dane_planu.xlsx`).
+
+Testy: `npm run lint`, `npm run test`, `npm run db:test`, `npm run test:e2e` (wymaga działającego Supabase i `.env.local`; lokalnie szuka zainstalowanego Chrome'a, z `CI=1` używa Chromium z Playwrighta), `pytest solver/tests` (w Dockerze: `docker build -f solver/Dockerfile -t planner-solver .`, potem `docker run --rm -v "$PWD:/app" --entrypoint python planner-solver -m pytest solver/tests`).
 
 ## Kryteria akceptacji
 - Walidator zwraca 0 naruszeń twardych dla wszystkich 174 zajęć; wynik miękkich jest raportowany.
 - `/plan` pokazuje 174 zajęcia; zmiana tygodnia pokazuje właściwe daty z kalendarza (np. środa, tydzień 11 = 8 I 2027).
 - Eksport XLSX otwiera się w Excelu i zawiera ten sam przydział co UI.
+- Żadna strona nie czyta makiet; po `db reset` baza ma dane z seeda, a bez danych strony są puste i odsyłają do importu.
+- Wgranie `dane_planu.xlsx` i `dane_planu.json` przez `/import-eksport` daje te same dane; błędny plik jest odrzucony i niczego nie zmienia.
+- W aplikacji nie ma pojęcia „tryb studiów" ani studiów niestacjonarnych.
 - Przechodzą: `pytest solver/tests`, `npm run lint`, `npm run build`, `npm run test`, `npm run test:e2e`, `npm run db:test`.
 
 ## Etapy
@@ -128,5 +151,6 @@ Dane wejściowe: `scripts/generate-plan-seed.ts` (`npm run db:plan-seed:generate
 5. Worker i `generation_jobs`.
 6. UI: `/generator`, `/plan`, eksport.
 7. Testy (pytest, vitest, e2e) i dokumentacja.
+8. Prawdziwe dane zamiast makiety: `mock-data.ts` z `requirements/`, seed przez `wgraj_dane_planu`, strony czytają z bazy, wgrywanie danych w aplikacji, koniec wsparcia dla studiów niestacjonarnych, e2e na lokalnym Supabase.
 
 Następny etap po tym specu: edycja planu w UI.
