@@ -365,7 +365,8 @@ class Planista:
                 self.m.AddHint(v, int(c == t_startowe[zid]))
         self.m.Minimize(self._kary)
         solver = self._solver(max(limit_czasu - (time.monotonic() - poczatek), 1), workers, log)
-        solver.parameters.repair_hint = True
+        # Bez repair_hint: w OR-Tools 9.15 przy 8 wątkach na 1-2 rdzeniach zabija proces
+        # ("Check failed: heuristics.fixed_search != nullptr"). Podpowiedź i tak jest planem startowym.
         status = solver.Solve(self.m)
         nazwa = solver.StatusName(status)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
