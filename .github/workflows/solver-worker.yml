@@ -1,0 +1,56 @@
+name: Solver worker
+
+# Spec 13: the plan generator's worker for the cloud database. Vercel cannot run a job for several minutes, so this
+# workflow checks the queue (generation_jobs) every 5 minutes and computes the queued plans.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+# One worker per database: a new run waits for the running one instead of taking the same queue.
+concurrency:
+  group: solver-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # The database password lives in this environment (see docs/wdrozenie.md).
+    environment: production
+    env:
+      # Session pooler: GitHub runners have no IPv6, which the direct connection needs. libpq reads PGPASSWORD,
+      # so the password never has to be URL-encoded.
+      PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      DATABASE_URL: postgresql://postgres.${{ secrets.SUPABASE_PROJECT_ID }}@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+    steps:
+      # Most runs end here: nothing queued, so nothing is installed.
+      - id: queue
+        name: Queued jobs
+        run: |
+          command -v psql > /dev/null || { sudo apt-get update -q && sudo apt-get install -yq postgresql-client; }
+          queued=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -tAc "select count(*) from public.generation_jobs where status = 'queued'")
+          echo "queued: $queued"
+          echo "queued=$queued" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v5
+        if: steps.queue.outputs.queued != '0'
+      - uses: actions/setup-python@v6
+        if: steps.queue.outputs.queued != '0'
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: solver/requirements.txt
+      - run: pip install -r solver/requirements.txt
+        if: steps.queue.outputs.queued != '0'
+      - name: Compute queued plans
+        if: steps.queue.outputs.queued != '0'
+        # One job per call (--raz), at most 5 per run so the run stays inside its timeout (a job takes up to 400 s).
+        run: |
+          for i in 1 2 3 4 5; do
+            python -m solver.cli worker --raz
+            queued=$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -tAc "select count(*) from public.generation_jobs where status = 'queued'")
+            [ "$queued" = "0" ] && break
+          done

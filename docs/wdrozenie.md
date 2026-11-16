@@ -5,9 +5,10 @@ Aplikacja działa na **Vercelu**, baza danych na **Supabase**. Szczegóły i uza
 | Element | Usługa | Kto wdraża |
 |---------|--------|------------|
 | Aplikacja Next.js | Vercel, projekt połączony z `github.com/planerZajec2026/planner` | integracja Vercela z GitHubem: `main` → Production, pozostałe gałęzie i PR → Preview |
-| Baza danych (schemat ze spec 08) | Supabase | workflow GitHub Actions [`deploy-db.yml`](../.github/workflows/deploy-db.yml) (`supabase db push`) |
+| Baza danych (schemat ze spec 08 i 13) | Supabase | workflow GitHub Actions [`deploy-db.yml`](../.github/workflows/deploy-db.yml) (`supabase db push`) |
+| Worker generatora planu (spec 13) | GitHub Actions | workflow [`solver-worker.yml`](../.github/workflows/solver-worker.yml), co 5 minut z gałęzi `main` |
 
-Do specu 10 aplikacja czyta dane z mocków, więc działa także bez bazy.
+Strony czytają wszystko z bazy (spec 13). Bez danych wejściowych pokazują „Brak danych wejściowych”.
 
 ## Stan konfiguracji
 
@@ -20,10 +21,11 @@ Uzupełniaj na bieżąco: nazwy, regiony, daty i to, **które** sekrety istniej�
 | Region funkcji Vercela | `dub1` (Dublin), ustawiony w [`vercel.json`](../vercel.json) |
 | Node | 22.x (`engines` w `package.json`, tak samo jak w CI) |
 | Środowisko GitHub `production` | sekrety `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_ID`; dodane 2026-10-18. Bez wymaganego recenzenta: migracje wgrywają się bez zatwierdzania |
-| Zmienne w Vercelu (Production, Preview) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; dodane 2026-10-18 |
+| Zmienne w Vercelu (Production, Preview) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; dodane 2026-10-18. `SUPABASE_SERVICE_ROLE_KEY` (tylko serwer); dodany 2026-11-16 |
 | Pierwsze wdrożenie produkcyjne | 2026-10-18, commit `9b82405` (spec 09); wszystkie strony odpowiadają, w JS brak `sb_secret` i `service_role` |
-| Migracje w chmurze | wszystkie 5 ze spec 08, wgrane 2026-10-18 pierwszym ręcznym uruchomieniem `deploy-db.yml`; `supabase migration list` zgodne z repo |
-| Seed demo w chmurze | nie wgrany |
+| Migracje w chmurze | 5 ze spec 08 (2026-10-18, ręczne uruchomienie `deploy-db.yml`) i 6 ze spec 13 (2026-11-16, automatycznie po scaleniu PR #4, w tym `usun_stary_model`) |
+| Dane wejściowe w chmurze | wgrane 2026-11-16 na stronie Import danych; seed z workflow nie był uruchamiany |
+| Worker generatora | `solver-worker.yml` na GitHub Actions, od 2026-11-16; używa sekretów środowiska `production` |
 
 ## Jednorazowa konfiguracja (właściciel projektu)
 
@@ -59,8 +61,20 @@ Decyzja o płatnościach należy do właściciela projektu; kod od niej nie zale
 - **Schemat bazy:** nowa migracja w `supabase/migrations/` (spec 08). Po scaleniu do `main` uruchamia się `deploy-db.yml`: czeka na zatwierdzenie w środowisku `production`, pokazuje oczekujące migracje (`db push --dry-run`) i je stosuje. Nigdy nie wypychaj migracji ręcznie.
 - **Kolejność:** aplikacja i baza wdrażają się niezależnie, w dowolnej kolejności. Dlatego migracje muszą być wstecznie zgodne (expand → migrate → contract).
 - **Dane wejściowe:** strony czytają wszystko z bazy (spec 13). Na świeżym projekcie baza jest pusta, a dane wgrywa się na stronie Import danych albo jednorazowo seedem: Actions → Deploy database → Run workflow, zaznacz `seed` (seed wywołuje `wgraj_dane_planu` z danymi z `requirements/`). Bez tej opcji workflow nigdy nie zmienia danych.
-- **Klucz do zapisu:** import danych i przycisk „Generuj" zapisują do bazy przez Server Action z kluczem `service_role`. Ustaw `SUPABASE_SERVICE_ROLE_KEY` (secret key z Supabase → Settings → API Keys) w Vercelu dla Production i Preview, **bez** prefiksu `NEXT_PUBLIC_` i nigdy w repo. Worker planu działa poza Vercelem (lokalny docker) i łączy się z bazą przez `DATABASE_URL`.
+- **Klucz do zapisu:** import danych i przycisk „Generuj" zapisują do bazy przez Server Action z kluczem `service_role`. Ustaw `SUPABASE_SERVICE_ROLE_KEY` (secret key z Supabase → Settings → API Keys) w Vercelu dla Production i Preview, **bez** prefiksu `NEXT_PUBLIC_` i nigdy w repo. Worker planu działa poza Vercelem i łączy się z bazą przez `DATABASE_URL` (niżej).
 - **Migracja usuwająca stary model** (`usun_stary_model`) kasuje tabele makiety ze spec 08; w chmurze zawierały tylko makietę, bo seed nie był tam wgrywany.
+
+## Worker generatora planu
+
+Przycisk „Generuj” tylko dopisuje zadanie do tabeli `generation_jobs`. Plan liczy worker (`solver/`), a Vercel nie uruchomi procesu na kilka minut, więc w chmurze robi to workflow [`solver-worker.yml`](../.github/workflows/solver-worker.yml).
+
+- **Kiedy działa:** co 5 minut sprawdza kolejkę. Gdy jest pusta, kończy po kilku sekundach. Gdy są zadania, instaluje solver i liczy je po kolei (do 5 na jedno uruchomienie, jedno zadanie to 200–400 s).
+- **Opóźnienie:** GitHub uruchamia zadania z harmonogramu z poślizgiem, więc plan zaczyna się liczyć zwykle 5–15 minut po kliknięciu. Bez czekania: Actions → Solver worker → Run workflow.
+- **Dostęp do bazy:** sekrety `SUPABASE_DB_PASSWORD` i `SUPABASE_PROJECT_ID` ze środowiska `production`, połączenie przez session pooler (`aws-0-eu-west-1.pooler.supabase.com:5432`), bo runnery GitHuba nie mają IPv6.
+- **Wymagany recenzent:** jeśli środowisko `production` dostanie wymaganego recenzenta, każde uruchomienie workera będzie czekać na zatwierdzenie. Przenieś wtedy oba sekrety workera do osobnego środowiska bez recenzenta.
+- **Wyłączanie przez GitHuba:** harmonogram w publicznym repo wyłącza się po 60 dniach bez aktywności w repozytorium. Włącza się go z powrotem w zakładce Actions.
+- **Ograniczenie:** to rozwiązanie na etap projektu. GitHub Actions nie jest przeznaczone do obsługi ruchu produkcyjnego; docelowo worker powinien działać jako stały kontener (ten sam obraz z `solver/Dockerfile`, zmienna `DATABASE_URL`).
+- **Ręcznie z laptopa:** ustaw `DATABASE_URL` na adres session poolera tylko w bieżącym terminalu (nie w `.env`) i uruchom `docker compose up --build solver-worker`.
 
 Sprawdzenie, czy chmura ma wszystkie migracje (lokalnie, po `npx supabase link`):
 
@@ -76,7 +90,8 @@ npx supabase migration list
 ## Bezpieczeństwo
 
 - Do przeglądarki trafiają tylko `NEXT_PUBLIC_SUPABASE_URL` i klucz publishable. Oba są publiczne z założenia; dane chroni RLS (spec 08).
-- W Vercelu ani w kodzie nie ma żadnego klucza secret ani service-role. Jeśli kolejny spec będzie go potrzebował: zmienna tylko po stronie serwera (bez `NEXT_PUBLIC_`), tylko dla Production, opisana tutaj.
+- `SUPABASE_SERVICE_ROLE_KEY` omija RLS. Jest tylko w Vercelu jako zmienna po stronie serwera (bez `NEXT_PUBLIC_`) i używają go wyłącznie Server Actions importu i generatora. Nigdy w repo ani w kodzie przeglądarki.
+- Hasło do bazy zna tylko środowisko `production` na GitHubie (`deploy-db.yml` i `solver-worker.yml`).
 - `SUPABASE_ACCESS_TOKEN` zarządza wszystkimi projektami na koncie właściciela. Jest tylko w środowisku `production` na GitHubie. Wymień go, gdy odchodzi ktoś z dostępem.
 - Pliki `.env*` są w `.gitignore`; `.env.example` zawiera tylko nazwy.
 - Kontrola po buildzie: w `.next/static` nie może być `sb_secret` ani `service_role`.

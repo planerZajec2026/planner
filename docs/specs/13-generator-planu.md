@@ -19,7 +19,7 @@ Dane są spójne: istnieje co najmniej jeden plan spełniający wszystkie ograni
 - **Dane tylko z bazy.** Żadna strona nie czyta makiet: `src/lib/mock-data.ts` zawiera prawdziwe dane z `requirements/` i służy wyłącznie do seedowania bazy (reguła ESLint zabrania importu z `src/`). Gdy w bazie nic nie ma, strony są puste i odsyłają do importu.
 - **Wgrywanie danych przez użytkownika** na stronie `/import-eksport` (plik `.xlsx` lub `.json`), tą samą funkcją bazy co seed.
 
-**Poza zakresem:** edycja planu w UI (następny etap), inne kierunki niż Informatyka, hosting workera poza lokalnym dockerem. **Studia niestacjonarne nie są wspierane**: z aplikacji, bazy i dokumentacji zniknął tryb studiów.
+**Poza zakresem:** edycja planu w UI (następny etap), inne kierunki niż Informatyka, stały hosting workera (na razie GitHub Actions, patrz „Worker i kolejka"). **Studia niestacjonarne nie są wspierane**: z aplikacji, bazy i dokumentacji zniknął tryb studiów.
 
 ## Dane wejściowe
 Pliki w `requirements/`: `dane_planu.xlsx`, `dane_planu.json`, `README.md`. Dane są identyczne w obu formatach (test `src/lib/dane-planu.test.ts` porównuje je tabela po tabeli).
@@ -93,7 +93,7 @@ Używany w CLI, w workerze (plan jest zapisywany razem z raportem) i w testach. 
 - Zadanie `running` starsze niż godzina uchodzi za przerwane i przy starcie workera dostaje `failed`. Zakładamy jeden worker na bazę.
 - Polecenia: `python -m solver.cli worker [--raz] [--poll 5] [--workers N]`; `--raz` przetwarza jedno zadanie i kończy.
 - Połączenie z bazą ma uprawnienia zapisu, więc dane dostępowe istnieją tylko w środowisku workera, nigdy w aplikacji Next.js.
-- Supabase służy jako baza i kolejka. Nie hostuje Pythona (Edge Functions: Deno, krótki limit CPU), więc worker działa poza nim. Później można go przenieść na GitHub Actions (`workflow_dispatch`) lub Cloud Run bez zmiany modelu danych.
+- Supabase służy jako baza i kolejka. Nie hostuje Pythona (Edge Functions: Deno, krótki limit CPU), więc worker działa poza nim. Dla bazy w chmurze worker uruchamia workflow `.github/workflows/solver-worker.yml` (GitHub Actions, co 5 minut, `worker --raz`); opis w [docs/wdrozenie.md](../wdrozenie.md). Później można go przenieść na stały kontener (np. Cloud Run) bez zmiany modelu danych.
 
 ## Schemat Supabase
 Nowe migracje w `supabase/migrations/`, zgodnie z regułami z [spec 08](08-supabase-schemat.md). Tabele mają przyrostek `_plan` tam, gdzie nazwa kolidowała ze starym modelem; ten model usuwa migracja 6.
