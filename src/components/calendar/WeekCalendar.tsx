@@ -26,15 +26,19 @@ export type CalendarEvent = {
 
 type WeekCalendarProps = {
   events: CalendarEvent[];
-  /** Monday of the displayed week. */
-  weekStart: Date;
+  /** Monday of the displayed week. Not needed when `daySubtitles` gives every column's date. */
+  weekStart?: Date;
+  /** Days to show as columns; default Monday–Sunday. The generated timetable (spec 13) has no weekend. */
+  days?: DzienTygodnia[];
+  /** Text under each day name, e.g. the date of that plan day's occurrence; default is the date within `weekStart`. */
+  daySubtitles?: Partial<Record<DzienTygodnia, string>>;
   /** First hour shown; extended automatically if an event starts earlier. */
   hourFrom?: number;
   /** Hour the grid ends at; extended automatically if an event ends later. */
   hourTo?: number;
 };
 
-const DAYS: DzienTygodnia[] = [1, 2, 3, 4, 5, 6, 7];
+const ALL_DAYS: DzienTygodnia[] = [1, 2, 3, 4, 5, 6, 7];
 const SLOT_MINUTES = 15;
 const SLOTS_PER_HOUR = 60 / SLOT_MINUTES;
 /** 56px per hour, as in the design (the day-track gridlines repeat every 56px). */
@@ -43,7 +47,16 @@ const SLOT_HEIGHT = 56 / SLOTS_PER_HOUR;
 const FIRST_SLOT_ROW = 2;
 
 /** Monday–Sunday timetable grid: a time column plus 7 day columns, 15-minute rows. */
-export function WeekCalendar({ events, weekStart, hourFrom = 8, hourTo = 20 }: WeekCalendarProps) {
+export function WeekCalendar({
+  events,
+  weekStart,
+  days: DAYS = ALL_DAYS,
+  daySubtitles,
+  hourFrom = 8,
+  hourTo = 20,
+}: WeekCalendarProps) {
+  /** Grid column of a day: column 1 is the time column. */
+  const column = (dzien: DzienTygodnia) => DAYS.indexOf(dzien) + 2;
   const from = Math.min(hourFrom, ...events.map((e) => Math.floor(timeToMinutes(e.od) / 60)));
   const to = Math.max(hourTo, ...events.map((e) => Math.ceil(timeToMinutes(e.do) / 60)));
   const hours = Array.from({ length: to - from }, (_, i) => from + i);
@@ -54,7 +67,7 @@ export function WeekCalendar({ events, weekStart, hourFrom = 8, hourTo = 20 }: W
 
   const gridStyle: CSSProperties = {
     display: "grid",
-    gridTemplateColumns: "64px repeat(7, minmax(108px, 1fr))",
+    gridTemplateColumns: `64px repeat(${DAYS.length}, minmax(108px, 1fr))`,
     gridTemplateRows: `44px repeat(${hours.length * SLOTS_PER_HOUR}, ${SLOT_HEIGHT}px)`,
   };
 
@@ -66,10 +79,12 @@ export function WeekCalendar({ events, weekStart, hourFrom = 8, hourTo = 20 }: W
           <div
             key={`h${dzien}`}
             className={isWeekend(dzien) ? "day-header weekend" : "day-header"}
-            style={{ gridColumn: dzien + 1, gridRow: 1 }}
+            style={{ gridColumn: column(dzien), gridRow: 1 }}
           >
             {DNI_KROTKIE[dzien - 1]}
-            <span className="sub">{shortDate(addDays(weekStart, dzien - 1))}</span>
+            <span className="sub">
+              {daySubtitles?.[dzien] ?? (weekStart ? shortDate(addDays(weekStart, dzien - 1)) : "")}
+            </span>
           </div>
         ))}
 
@@ -87,14 +102,14 @@ export function WeekCalendar({ events, weekStart, hourFrom = 8, hourTo = 20 }: W
           <div
             key={`d${dzien}`}
             className={isWeekend(dzien) ? "day-track weekend" : "day-track"}
-            style={{ gridColumn: dzien + 1, gridRow: `${FIRST_SLOT_ROW} / ${lastRow}` }}
+            style={{ gridColumn: column(dzien), gridRow: `${FIRST_SLOT_ROW} / ${lastRow}` }}
           />
         ))}
 
         {DAYS.flatMap((dzien) =>
           layoutDay(events.filter((e) => e.dzien === dzien)).map((e) => {
             const style: CSSProperties = {
-              gridColumn: dzien + 1,
+              gridColumn: column(dzien),
               gridRow: `${slotRow(e.start, Math.floor)} / ${Math.max(slotRow(e.end, Math.ceil), slotRow(e.start, Math.floor) + 1)}`,
             };
             if (e.lanes > 1) {

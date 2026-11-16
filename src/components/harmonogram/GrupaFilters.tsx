@@ -6,42 +6,34 @@ import { WeekNav } from "@/components/calendar/WeekNav";
 import { SelectField } from "@/components/ui/SelectField";
 import { resolveGrupaSelection, type GrupaSelectionInput } from "@/lib/grupa-selection";
 import { PRZEJSCIE } from "@/lib/motion";
-import type { Grupa, Kierunek, TrybStudiow } from "@/lib/types";
+import type { Grupa, Kierunek } from "@/lib/types";
 import { useNavigationTransition } from "./PendingNavigation";
-
-const TRYB_OPTIONS: { value: TrybStudiow; label: string }[] = [
-  { value: "niestacjonarne", label: "Niestacjonarne (zaoczne)" },
-  { value: "stacjonarne", label: "Stacjonarne" },
-];
 
 type GrupaFiltersProps = {
   kierunki: Kierunek[];
   grupy: Grupa[];
-  tryb: TrybStudiow;
   kierunekId: string;
   grupaId?: string;
   /** Monday of the displayed week, "YYYY-MM-DD". */
   weekStart: string;
 };
 
-export function GrupaFilters({ kierunki, grupy, tryb, kierunekId, grupaId, weekStart }: GrupaFiltersProps) {
+export function GrupaFilters({ kierunki, grupy, kierunekId, grupaId, weekStart }: GrupaFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, startTransition] = useNavigationTransition();
   const [current, setCurrent] = useOptimistic(
-    resolveGrupaSelection(kierunki, grupy, { tryb, kierunek: kierunekId, grupa: grupaId }),
+    resolveGrupaSelection(kierunki, grupy, { kierunek: kierunekId, grupa: grupaId }),
   );
 
   const update = (change: GrupaSelectionInput) => {
     const next = resolveGrupaSelection(kierunki, grupy, {
-      tryb: current.tryb,
       kierunek: current.kierunekId,
       grupa: current.grupa?.id,
       ...change,
     });
     const params = new URLSearchParams(searchParams);
-    params.set("tryb", next.tryb);
     params.set("kierunek", next.kierunekId);
     if (next.grupa) params.set("grupa", next.grupa.id);
     else params.delete("grupa");
@@ -53,13 +45,6 @@ export function GrupaFilters({ kierunki, grupy, tryb, kierunekId, grupaId, weekS
 
   return (
     <div className="filters-bar">
-      <SelectField
-        id="f-tryb"
-        label="Tryb studiów"
-        options={TRYB_OPTIONS}
-        value={current.tryb}
-        onChange={(e) => update({ tryb: e.target.value })}
-      />
       <SelectField
         id="f-kierunek"
         label="Kierunek"

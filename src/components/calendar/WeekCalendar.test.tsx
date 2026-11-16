@@ -63,4 +63,24 @@ describe("WeekCalendar", () => {
     expect(container.querySelector(".time-col")).toHaveTextContent("7:00");
     expect(blocks(container)[0].style.gridRow).toBe("2 / 6");
   });
+
+  it("shows only the given days with their own subtitles (generated plan, no weekend, no weekStart)", () => {
+    const { container } = render(
+      <WeekCalendar
+        events={[ev("a", 3, "10:15", "12:00")]}
+        days={[1, 2, 3, 4, 5]}
+        daySubtitles={{ 1: "05.01", 3: "08.01" }}
+      />,
+    );
+    const headers = [...container.querySelectorAll(".day-header")];
+    expect(headers.map((h) => h.textContent)).toEqual(["Pon05.01", "Wt", "Śr08.01", "Czw", "Pt"]);
+    expect(headers.some((h) => h.classList.contains("weekend"))).toBe(false);
+  });
+
+  it("places events in the column of their day when only some days are shown", () => {
+    const { container } = render(<WeekCalendar events={[ev("a", 3, "10:15", "12:00")]} days={[1, 2, 3, 4, 5]} />);
+    // Column 1 is the time column, so Wednesday (3rd day) is column 4.
+    expect(blocks(container)[0].style.gridColumn).toMatch(/^4/);
+    expect(container.querySelector<HTMLElement>(".calendar-grid")!.style.gridTemplateColumns).toContain("repeat(5,");
+  });
 });

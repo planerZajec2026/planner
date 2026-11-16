@@ -1,48 +1,33 @@
-// Resolves the "tryb → kierunek → grupa" cascade of the group timetable filters.
+// Resolves the "kierunek → grupa" cascade of the group timetable filters.
 // Shared by the server page (initial render from the URL) and the client filters (on change).
-import type { Grupa, Kierunek, TrybStudiow } from "./types";
+import type { Grupa, Kierunek } from "./types";
 
 export type GrupaSelection = {
-  tryb: TrybStudiow;
   kierunekId: string;
-  /** Groups matching `tryb` and `kierunekId`. */
+  /** Groups of the selected programme. */
   grupy: Grupa[];
-  /** Selected group, or undefined when no group matches. */
+  /** Selected group, or undefined when the programme has none. */
   grupa?: Grupa;
 };
 
 export type GrupaSelectionInput = {
-  tryb?: string;
   kierunek?: string;
   grupa?: string;
 };
 
-const TRYBY: readonly string[] = ["stacjonarne", "niestacjonarne"] satisfies TrybStudiow[];
-
 /**
- * Unknown values are ignored. Missing mode/programme default to the requested group's own,
- * otherwise to the first group matching what was given (or simply the first group).
- * A group that does not match the mode and programme is replaced by the first one that does.
+ * Unknown values are ignored. A missing programme defaults to the requested group's own, otherwise to the first one.
+ * A group outside the programme is replaced by the programme's first group.
  */
-export function resolveGrupaSelection(
-  kierunki: Kierunek[],
-  grupy: Grupa[],
-  input: GrupaSelectionInput,
-): GrupaSelection {
-  const tryb = input.tryb && TRYBY.includes(input.tryb) ? (input.tryb as TrybStudiow) : undefined;
+export function resolveGrupaSelection(kierunki: Kierunek[], grupy: Grupa[], input: GrupaSelectionInput): GrupaSelection {
   const kierunekId = kierunki.some((k) => k.id === input.kierunek) ? input.kierunek : undefined;
 
-  const anchor =
-    grupy.find((g) => g.id === input.grupa) ??
-    grupy.find((g) => (!tryb || g.tryb === tryb) && (!kierunekId || g.kierunekId === kierunekId)) ??
-    grupy[0];
+  const anchor = grupy.find((g) => g.id === input.grupa) ?? grupy.find((g) => !kierunekId || g.kierunekId === kierunekId);
 
-  const resolvedTryb = tryb ?? anchor?.tryb ?? "niestacjonarne";
   const resolvedKierunek = kierunekId ?? anchor?.kierunekId ?? kierunki[0]?.id ?? "";
-  const matching = grupy.filter((g) => g.tryb === resolvedTryb && g.kierunekId === resolvedKierunek);
+  const matching = grupy.filter((g) => g.kierunekId === resolvedKierunek);
 
   return {
-    tryb: resolvedTryb,
     kierunekId: resolvedKierunek,
     grupy: matching,
     grupa: matching.find((g) => g.id === input.grupa) ?? matching[0],

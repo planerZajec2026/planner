@@ -3,9 +3,14 @@ import { expect, test } from "./fixtures";
 /**
  * Guards spec 07's bundle budget. Motion's drag/layout features must load lazily (LazyMotion), which breaks
  * silently if a component imports `m` from the `motion/react` barrel instead of `motion/react-m`
- * (that alone adds ~32 kB gzip to every page). Measured on the spec 07 merge: ~157 kB of JS before `load`.
+ * (that alone adds ~32 kB gzip to every page).
+ *
+ * The figure is the JS fetched before `load`. Pages now stream data from the database (spec 13), so `load` fires later
+ * and the router's prefetches of the other routes' chunks land inside the window: ~188 kB, where the mock-data pages
+ * measured ~157 kB on the spec 07 merge. The pages' own JS did not change (the static shell references ~195 kB gzip
+ * both before and after), so the budget moves with the measurement and still catches the barrel import.
  */
-const MAX_INITIAL_JS_KB = 165;
+const MAX_INITIAL_JS_KB = 200;
 
 for (const route of ["/kierunki", "/prowadzacy", "/import-eksport"]) {
   test(`${route} loads at most ${MAX_INITIAL_JS_KB} kB of JS (compressed) up front`, async ({ page }) => {
