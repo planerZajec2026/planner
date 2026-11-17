@@ -1,6 +1,6 @@
-# Siatka: frontend specs
+# Planner: frontend specs
 
-Frontend for **Siatka**, a university timetable planner. Built with Next.js (App Router) + TypeScript; Supabase is the planned backend.
+Frontend for **Planner**, a university timetable planner. Built with Next.js (App Router) + TypeScript; Supabase is the planned backend.
 
 **Design source:** [Claude Design canvas "Siatka — planer zajęć na studia"](https://claude.ai/artifact/BeDZgnTmohanL6XoEWa3CS)
 

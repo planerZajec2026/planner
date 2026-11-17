@@ -18,8 +18,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "Siatka — plan zajęć uczelni",
-    template: "%s · Siatka",
+    default: "Planner — plan zajęć uczelni",
+    template: "%s · Planner",
   },
   description: "Planer zajęć na studia: kierunki, grupy, prowadzący i harmonogramy.",
 };

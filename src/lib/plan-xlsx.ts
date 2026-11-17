@@ -20,7 +20,7 @@ const KOLUMNY: { header: string; key: keyof WierszEksportu; width: number }[] = 
 /** An .xlsx with the timetable on the first sheet and a short description of the plan on the second. */
 export async function zbudujXlsx(wiersze: WierszEksportu[], informacje: InformacjeOPlanie): Promise<Buffer> {
   const book = new ExcelJS.Workbook();
-  book.creator = "Siatka";
+  book.creator = "Planner";
 
   const plan = book.addWorksheet("Plan", { views: [{ state: "frozen", ySplit: 1 }] });
   plan.columns = KOLUMNY.map(({ header, key, width }) => ({ header, key, width }));

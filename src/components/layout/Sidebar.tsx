@@ -31,7 +31,7 @@ export function Sidebar() {
           <Icon name="calendar" stroke="#fff" />
         </div>
         <div>
-          <h1>Siatka</h1>
+          <h1>Planner</h1>
           <span className="sidebar-sub">Plan zajęć uczelni</span>
         </div>
       </AppLink>
