@@ -9,7 +9,7 @@ import { POST } from "./route";
 function zadanie(naglowki: Record<string, string> = {}) {
   const dane = new FormData();
   dane.set("potwierdzenie", "tak");
-  return new Request("http://localhost:3000/import-eksport/wgraj", {
+  return new Request("http://localhost:3000/import/wgraj", {
     method: "POST",
     body: dane,
     headers: { host: "localhost:3000", origin: "http://localhost:3000", ...naglowki },
@@ -26,7 +26,7 @@ beforeEach(() => {
   wgraj.mockReset();
 });
 
-describe("POST /import-eksport/wgraj", () => {
+describe("POST /import/wgraj", () => {
   it("streams each stage the loader reports, then the result", async () => {
     wgraj.mockImplementation(async (dane: FormData, zglos: (e: string) => void) => {
       expect(dane.get("potwierdzenie")).toBe("tak");

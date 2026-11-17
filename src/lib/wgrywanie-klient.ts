@@ -1,10 +1,10 @@
-import type { ZdarzenieWgrywania } from "@/app/import-eksport/wgraj/route";
+import type { ZdarzenieWgrywania } from "@/app/import/wgraj/route";
 import type { EtapSerwera, StanImportu } from "@/lib/wgrywanie-danych";
 
 /** Where an upload is (spec 15): bytes the browser has sent, then the stage the server reported. */
 export type FazaWgrywania = { krok: "wysylanie"; wyslano: number; razem: number } | { krok: EtapSerwera };
 
-export const ADRES_WGRYWANIA = "/import-eksport/wgraj";
+export const ADRES_WGRYWANIA = "/import/wgraj";
 
 /** Largest file the server takes (Vercel functions accept request bodies up to 4.5 MB). */
 export const MAKS_ROZMIAR = 4 * 1024 * 1024;

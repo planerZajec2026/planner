@@ -37,7 +37,7 @@ export const ROUTES = [
   "/harmonogram-prowadzacych",
   "/plan",
   "/generator",
-  "/import-eksport",
+  "/import",
 ] as const;
 
 /** Calendar blocks as { column, row, title, meta }; column 2 = Monday … 8 = Sunday. */

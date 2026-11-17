@@ -54,9 +54,14 @@ test.describe("phone layout", { tag: "@phone" }, () => {
 });
 
 test.describe("navigation", () => {
-  test("/ redirects to /kierunki", async ({ page }) => {
+  test("/ redirects to /kierunki when data is loaded", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveURL(/\/kierunki$/);
+  });
+
+  test("the old /import-eksport address redirects to /import", async ({ page }) => {
+    await page.goto("/import-eksport");
+    await expect(page).toHaveURL(/\/import$/);
   });
 
   const LABELS: Record<(typeof ROUTES)[number], string> = {
@@ -66,7 +71,7 @@ test.describe("navigation", () => {
     "/harmonogram-prowadzacych": "Harmonogram prowadzących",
     "/plan": "Plan zajęć",
     "/generator": "Generator planu",
-    "/import-eksport": "Import danych",
+    "/import": "Import danych",
   };
 
   for (const route of ROUTES) {

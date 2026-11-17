@@ -14,7 +14,7 @@ test("a file with errors is rejected with the list of problems and changes nothi
   delete dane.sale;
   dane.zajecia[1].liczba_spotkan = "dziewięć";
 
-  await page.goto("/import-eksport");
+  await page.goto("/import");
   await page.getByLabel("Plik z danymi").setInputFiles({ name: "zly.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(dane)) });
   await page.getByLabel(/Rozumiem/).check();
   await page.getByRole("button", { name: "Wgraj dane" }).click();
@@ -28,14 +28,14 @@ test("a file with errors is rejected with the list of problems and changes nothi
 });
 
 test("the upload needs the confirmation", async ({ page }) => {
-  await page.goto("/import-eksport");
+  await page.goto("/import");
   await page.getByLabel("Plik z danymi").setInputFiles({ name: "dane_planu.json", mimeType: "application/json", buffer: Buffer.from(json) });
   await page.getByRole("button", { name: "Wgraj dane" }).click();
   await expect(page.getByText(/Potwierdź, że wgranie danych/)).toBeVisible();
 });
 
 test("loading dane_planu.xlsx replaces the data and drops the generated plan", async ({ page }) => {
-  await page.goto("/import-eksport");
+  await page.goto("/import");
   await expect(page.getByText(/W bazie jest już 174 zajęć do zaplanowania/)).toBeVisible();
   await page.getByLabel("Plik z danymi").setInputFiles({ name: "dane_planu.xlsx", mimeType: "application/octet-stream", buffer: xlsx });
   await page.getByLabel(/Rozumiem/).check();
@@ -52,7 +52,7 @@ test("loading dane_planu.xlsx replaces the data and drops the generated plan", a
 });
 
 test("the same data loads from the JSON file too", async ({ page }) => {
-  await page.goto("/import-eksport");
+  await page.goto("/import");
   await page.getByLabel("Plik z danymi").setInputFiles({ name: "dane_planu.json", mimeType: "application/json", buffer: Buffer.from(json) });
   await page.getByLabel(/Rozumiem/).check();
   await page.getByRole("button", { name: "Wgraj dane" }).click();
