@@ -11,7 +11,7 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/harmonogram", label: "Harmonogram grup", icon: "calendar" },
   { href: "/prowadzacy", label: "Prowadzący", icon: "users" },
   { href: "/harmonogram-prowadzacych", label: "Harmonogram prowadzących", icon: "badge" },
-  { href: "/import-eksport", label: "Import danych", icon: "upload" },
+  { href: "/import", label: "Import danych", icon: "upload" },
   { href: "/plan", label: "Plan zajęć", icon: "table" },
   { href: "/generator", label: "Generator planu", icon: "check" },
 ];
@@ -31,7 +31,7 @@ export function Sidebar() {
           <Icon name="calendar" stroke="#fff" />
         </div>
         <div>
-          <h1>Siatka</h1>
+          <h1>Planner</h1>
           <span className="sidebar-sub">Plan zajęć uczelni</span>
         </div>
       </AppLink>

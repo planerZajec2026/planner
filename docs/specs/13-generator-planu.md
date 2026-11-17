@@ -153,4 +153,4 @@ Testy: `npm run lint`, `npm run test`, `npm run db:test`, `npm run test:e2e` (wy
 7. Testy (pytest, vitest, e2e) i dokumentacja.
 8. Prawdziwe dane zamiast makiety: `mock-data.ts` z `requirements/`, seed przez `wgraj_dane_planu`, strony czytają z bazy, wgrywanie danych w aplikacji, koniec wsparcia dla studiów niestacjonarnych, e2e na lokalnym Supabase.
 
-Następny etap po tym specu: edycja planu w UI.
+Następny etap po tym specu: edycja planu w UI ([spec 14](14-edycja-planu.md)).

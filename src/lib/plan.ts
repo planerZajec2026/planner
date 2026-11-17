@@ -64,6 +64,8 @@ export type PlanWiersz = {
   sala: string;
   tygodnie: number[];
   czestotliwosc: Czestotliwosc;
+  /** When the placement was last changed by hand (spec 14); null or missing = it comes from the generator. */
+  edytowano?: string | null;
 };
 
 export type KalendarzDzien = { data: string; planDnia: number | null; nrTygodnia: number | null };
@@ -181,6 +183,8 @@ export type WierszEksportu = {
   do: string;
   sala: string;
   tygodnie: string;
+  /** "tak" when the placement was changed by hand, otherwise empty. */
+  zmiana: string;
 };
 
 export function doEksportu(wiersze: PlanWiersz[], etykiety: Etykiety): WierszEksportu[] {
@@ -197,6 +201,7 @@ export function doEksportu(wiersze: PlanWiersz[], etykiety: Etykiety): WierszEks
       do: czas.do,
       sala: w.sala,
       tygodnie: opisTygodni(w),
+      zmiana: w.edytowano ? "tak" : "",
     };
   });
 }
@@ -208,6 +213,7 @@ export type PlanRowDb = {
   slot: number;
   sala_id: string;
   tygodnie: number[];
+  edytowano?: string | null;
   zajecia_plan: {
     forma: string;
     rocznik_id: string;
@@ -234,6 +240,7 @@ export function wierszZBazy(r: PlanRowDb): PlanWiersz {
     sala: r.sala_id,
     tygodnie: [...r.tygodnie].sort((a, b) => a - b),
     czestotliwosc: z.czestotliwosc as Czestotliwosc,
+    edytowano: r.edytowano ?? null,
   };
 }
 
@@ -285,6 +292,8 @@ export function doJson(wiersze: PlanWiersz[]) {
       sala: w.sala,
       czestotliwosc: w.czestotliwosc,
       tygodnie: w.tygodnie,
+      zmienione_recznie: Boolean(w.edytowano),
+      edytowano: w.edytowano ?? null,
     };
   });
 }

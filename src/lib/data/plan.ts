@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { wierszZBazy, type Etykiety, type KalendarzDzien, type PlanRowDb, type PlanWiersz } from "@/lib/plan";
+import { odczytajPostep, type Postep } from "@/lib/postep";
 
 export type StatusZadania = "queued" | "running" | "done" | "failed";
 
@@ -7,12 +8,18 @@ export type Zadanie = {
   id: string;
   status: StatusZadania;
   limitCzasu: number | null;
+  /** Weights the job was generated with, only those that differ from the defaults. */
+  wagi: Record<string, number>;
   utworzono: string;
   rozpoczeto: string | null;
   zakonczono: string | null;
   blad: string | null;
   raport: RaportZadania | null;
   wynikMiekkich: number | null;
+  /** How many manual edits were saved to this plan (spec 14). */
+  zmianyReczne: number;
+  /** What the worker last reported while the job ran (spec 15); null before its first report. */
+  postep: Postep | null;
 };
 
 /** What the worker stores in `generation_jobs.raport`. */
@@ -37,28 +44,34 @@ export type AktywnyPlan = {
 type ZadanieDb = {
   id: string;
   status: StatusZadania;
-  parametry: { limit_czasu?: number } | null;
+  parametry: { limit_czasu?: number; wagi?: Record<string, number> } | null;
   utworzono: string;
   rozpoczeto: string | null;
   zakonczono: string | null;
   blad: string | null;
   raport: RaportZadania | null;
   wynik_miekkich: number | null;
+  zmiany_reczne: number;
+  postep: unknown;
 };
 
-const ZADANIE_KOLUMNY = "id, status, parametry, utworzono, rozpoczeto, zakonczono, blad, raport, wynik_miekkich";
+const ZADANIE_KOLUMNY =
+  "id, status, parametry, utworzono, rozpoczeto, zakonczono, blad, raport, wynik_miekkich, zmiany_reczne, postep";
 
 function zadanie(r: ZadanieDb): Zadanie {
   return {
     id: r.id,
     status: r.status,
     limitCzasu: r.parametry?.limit_czasu ?? null,
+    wagi: r.parametry?.wagi ?? {},
     utworzono: r.utworzono,
     rozpoczeto: r.rozpoczeto,
     zakonczono: r.zakonczono,
     blad: r.blad,
     raport: r.raport,
     wynikMiekkich: r.wynik_miekkich,
+    zmianyReczne: r.zmiany_reczne ?? 0,
+    postep: odczytajPostep(r.postep),
   };
 }
 
@@ -91,7 +104,7 @@ export async function getAktywnyPlan(): Promise<AktywnyPlan | null> {
     supabase
       .from("plan_zajec")
       .select(
-        `zajecia_id, dzien, slot, sala_id, tygodnie,
+        `zajecia_id, dzien, slot, sala_id, tygodnie, edytowano,
          zajecia_plan!inner (
            forma, rocznik_id, sloty_na_spotkanie, czestotliwosc,
            przedmioty_plan!inner (nazwa),
@@ -120,6 +133,19 @@ export async function getAktywnyPlan(): Promise<AktywnyPlan | null> {
     sale: [...new Set(wiersze.map((w) => w.sala))].sort((a, b) => a.localeCompare(b, "pl")),
     kalendarz: (kalendarz.data ?? []).map((k) => ({ data: k.data, planDnia: k.plan_dnia, nrTygodnia: k.nr_tygodnia })),
   };
+}
+
+/** How many manual edits the active plan has (spec 14); 0 also when there is no plan. */
+export async function getZmianyReczne(): Promise<number> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("generation_jobs")
+    .select("zmiany_reczne")
+    .eq("status", "done")
+    .order("zakonczono", { ascending: false })
+    .limit(1);
+  if (error) throw new Error(`Nie udało się pobrać planu: ${error.message}`);
+  return data?.[0]?.zmiany_reczne ?? 0;
 }
 
 /** How many classes to schedule are loaded; 0 means the input data has not been loaded yet. */

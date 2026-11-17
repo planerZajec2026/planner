@@ -4,7 +4,7 @@ import { AppLink } from "@/components/ui/AppLink";
 export function BrakDanych() {
   return (
     <div className="empty-state">
-      Brak danych wejściowych. <AppLink href="/import-eksport">Wgraj je w Imporcie danych</AppLink>, a potem wygeneruj plan
+      Brak danych wejściowych. <AppLink href="/import">Wgraj je w Imporcie danych</AppLink>, a potem wygeneruj plan
       w Generatorze.
     </div>
   );

@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"generation_jobs": {
                   Row: {
-                    "blad": string | null,"id": string,"parametry": NonNullable<Json>,"raport": Json | null,"rozpoczeto": string | null,"status": Database["public"]['Enums']["status_zadania"],"utworzono": string,"wynik_miekkich": number | null,"zakonczono": string | null
+                    "blad": string | null,"id": string,"parametry": NonNullable<Json>,"postep": Json | null,"raport": Json | null,"rozpoczeto": string | null,"status": Database["public"]['Enums']["status_zadania"],"utworzono": string,"wynik_miekkich": number | null,"zakonczono": string | null,"zmiany_reczne": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null
+                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"postep"?: Json | null,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
                   }
                   Update: {
-                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null
+                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"postep"?: Json | null,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
                   }
                   Relationships: [
                     
@@ -167,14 +167,14 @@ isOneToOne: false
                   ]
                 },"plan_zajec": {
                   Row: {
-                    "dzien": number,"job_id": string,"sala_id": string,"slot": number,"tygodnie": (number)[],"zajecia_id": string
+                    "dzien": number,"edytowano": string | null,"job_id": string,"sala_id": string,"slot": number,"tygodnie": (number)[],"zajecia_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "dzien": number,"job_id": string,"sala_id": string,"slot": number,"tygodnie": (number)[],"zajecia_id": string
+                    "dzien": number,"edytowano"?: string | null,"job_id": string,"sala_id": string,"slot": number,"tygodnie": (number)[],"zajecia_id": string
                   }
                   Update: {
-                    "dzien"?: number,"job_id"?: string,"sala_id"?: string,"slot"?: number,"tygodnie"?: (number)[],"zajecia_id"?: string
+                    "dzien"?: number,"edytowano"?: string | null,"job_id"?: string,"sala_id"?: string,"slot"?: number,"tygodnie"?: (number)[],"zajecia_id"?: string
                   }
                   Relationships: [
                     {
@@ -459,6 +459,9 @@ isOneToOne: false
           Functions: {
             "wgraj_dane_planu":
 { Args: { "payload": Json }; Returns: Json
+                           },
+"zapisz_przydzialy":
+{ Args: { "p_job_id": string,"p_przydzialy": Json,"p_wersja": number }; Returns: boolean
                            }
           }
           Enums: {

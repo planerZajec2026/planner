@@ -8,8 +8,11 @@ import { LIMIT_DOMYSLNY, LIMIT_MAX, LIMIT_MIN, WAGA_MAX, WAGI } from "@/lib/gene
 
 const POCZATEK: StanFormularza = { status: "poczatek" };
 
-/** Parameters of a generation job: time limit and the weights of the soft constraints. */
-export function GeneratorForm() {
+/**
+ * Parameters of a generation job: time limit and the weights of the soft constraints. `trwajace` are the ids of jobs
+ * still queued or running: the "added to the queue" note stays only while its job is one of them.
+ */
+export function GeneratorForm({ trwajace }: { trwajace: string[] }) {
   const [stan, akcja, trwa] = useActionState(zlecGenerowanie, POCZATEK);
   const bledy = stan.status === "blad" ? stan.bledy : undefined;
 
@@ -79,7 +82,7 @@ export function GeneratorForm() {
       </div>
 
       <div aria-live="polite">
-        {stan.status === "zlecone" && <div className="success-banner">{stan.komunikat}</div>}
+        {stan.status === "zlecone" && trwajace.includes(stan.id) && <div className="success-banner">{stan.komunikat}</div>}
         {stan.status === "blad" && stan.komunikat && <div className="conflict-banner">{stan.komunikat}</div>}
         {stan.status === "blad" && !stan.komunikat && (
           <div className="conflict-banner">Popraw zaznaczone pola i spróbuj ponownie.</div>

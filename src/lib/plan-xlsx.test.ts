@@ -13,6 +13,7 @@ const wiersz = {
   do: "12:00",
   sala: "A281",
   tygodnie: "co tydzień",
+  zmiana: "",
 };
 
 describe("zbudujXlsx", () => {
@@ -25,7 +26,7 @@ describe("zbudujXlsx", () => {
 
     const plan = book.getWorksheet("Plan")!;
     expect(plan.rowCount).toBe(3);
-    expect(plan.getRow(1).values).toEqual([undefined, "Id", "Przedmiot", "Forma", "Grupy", "Prowadzący", "Dzień", "Od", "Do", "Sala", "Tygodnie"]);
+    expect(plan.getRow(1).values).toEqual([undefined, "Id", "Przedmiot", "Forma", "Grupy", "Prowadzący", "Dzień", "Od", "Do", "Sala", "Tygodnie", "Zmiana ręczna"]);
     expect(plan.getRow(2).getCell(9).value).toBe("A281");
     expect(plan.getRow(3).getCell(1).value).toBe("Z002");
     expect(plan.getRow(2).getCell(7).value).toBe("10:15");

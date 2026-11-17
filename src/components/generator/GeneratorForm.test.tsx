@@ -17,7 +17,7 @@ const wyslij = () => userEvent.click(screen.getByRole("button", { name: "Generuj
 
 describe("GeneratorForm", () => {
   it("proponuje domyślny limit czasu i domyślne wagi", () => {
-    render(<GeneratorForm />);
+    render(<GeneratorForm trwajace={[]} />);
 
     const limit = screen.getByLabelText("Limit czasu (sekundy)");
     expect(limit).toHaveValue(LIMIT_DOMYSLNY);
@@ -29,8 +29,8 @@ describe("GeneratorForm", () => {
   });
 
   it("wysyła wartości z formularza do akcji", async () => {
-    zlec.mockResolvedValue({ status: "zlecone", komunikat: "ok" } satisfies StanFormularza);
-    render(<GeneratorForm />);
+    zlec.mockResolvedValue({ status: "zlecone", komunikat: "ok", id: "j1" } satisfies StanFormularza);
+    render(<GeneratorForm trwajace={[]} />);
 
     const limit = screen.getByLabelText("Limit czasu (sekundy)");
     await userEvent.clear(limit);
@@ -44,11 +44,15 @@ describe("GeneratorForm", () => {
   });
 
   it("pokazuje potwierdzenie po zleceniu zadania", async () => {
-    zlec.mockResolvedValue({ status: "zlecone", komunikat: "Zadanie dodane do kolejki." } satisfies StanFormularza);
-    render(<GeneratorForm />);
+    zlec.mockResolvedValue({ status: "zlecone", komunikat: "Zadanie dodane do kolejki.", id: "j1" } satisfies StanFormularza);
+    const { rerender } = render(<GeneratorForm trwajace={[]} />);
+    rerender(<GeneratorForm trwajace={["j1"]} />);
     await wyslij();
 
     expect(await screen.findByText("Zadanie dodane do kolejki.")).toBeInTheDocument();
+    // The job finished: the refreshed page no longer lists it as waiting or running.
+    rerender(<GeneratorForm trwajace={[]} />);
+    expect(screen.queryByText("Zadanie dodane do kolejki.")).not.toBeInTheDocument();
   });
 
   it("opisuje błąd przy właściwym polu", async () => {
@@ -56,7 +60,7 @@ describe("GeneratorForm", () => {
       status: "blad",
       bledy: { limit: "Podaj liczbę sekund od 200 do 400.", wagi: { poza_godzinami: "Podaj liczbę całkowitą od 0 do 1000." } },
     } satisfies StanFormularza);
-    render(<GeneratorForm />);
+    render(<GeneratorForm trwajace={[]} />);
     await wyslij();
 
     const limit = await screen.findByLabelText("Limit czasu (sekundy)");
@@ -68,7 +72,7 @@ describe("GeneratorForm", () => {
 
   it("pokazuje komunikat błędu serwera", async () => {
     zlec.mockResolvedValue({ status: "blad", komunikat: "W kolejce jest już 3 zadań." } satisfies StanFormularza);
-    render(<GeneratorForm />);
+    render(<GeneratorForm trwajace={[]} />);
     await wyslij();
 
     expect(await screen.findByText("W kolejce jest już 3 zadań.")).toBeInTheDocument();

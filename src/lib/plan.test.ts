@@ -163,6 +163,11 @@ describe("doEksportu", () => {
     expect(pierwszy).toMatchObject({ id: "Z1", dzien: "Poniedziałek", od: "08:15", do: "10:00", forma: "Wykład" });
     expect(drugi).toMatchObject({ id: "Z2", dzien: "Środa", tygodnie: "co tydzień" });
   });
+
+  it("oznacza zajęcia zmienione ręcznie (spec 14)", () => {
+    const wiersze = [wiersz({ zajeciaId: "Z1" }), wiersz({ zajeciaId: "Z2", edytowano: "2026-11-16T10:00:00+00:00" })];
+    expect(doEksportu(wiersze, { grupy: {}, prowadzacy: {} }).map((w) => w.zmiana)).toEqual(["", "tak"]);
+  });
 });
 
 describe("parametry w adresie", () => {
@@ -234,6 +239,12 @@ describe("doJson", () => {
       czestotliwosc: "co_tydzien",
     });
     expect(z.tygodnie).toHaveLength(14);
+    expect(z).toMatchObject({ zmienione_recznie: false, edytowano: null });
+  });
+
+  it("podaje, czy i kiedy zajęcia zmieniono ręcznie (spec 14)", () => {
+    const [z] = doJson([wiersz({ edytowano: "2026-11-16T10:00:00+00:00" })]);
+    expect(z).toMatchObject({ zmienione_recznie: true, edytowano: "2026-11-16T10:00:00+00:00" });
   });
 });
 

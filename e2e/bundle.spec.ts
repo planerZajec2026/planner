@@ -12,7 +12,7 @@ import { expect, test } from "./fixtures";
  */
 const MAX_INITIAL_JS_KB = 200;
 
-for (const route of ["/kierunki", "/prowadzacy", "/import-eksport"]) {
+for (const route of ["/kierunki", "/prowadzacy", "/import"]) {
   test(`${route} loads at most ${MAX_INITIAL_JS_KB} kB of JS (compressed) up front`, async ({ page }) => {
     await page.goto(route, { waitUntil: "load" });
     const kb = await page.evaluate(

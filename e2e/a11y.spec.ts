@@ -38,7 +38,7 @@ test("the generator's form errors have no serious accessibility violations", asy
 });
 
 test("the import page with a rejected file has no serious accessibility violations", async ({ page }) => {
-  await page.goto("/import-eksport");
+  await page.goto("/import");
   await page.getByLabel("Plik z danymi").setInputFiles({ name: "zly.json", mimeType: "application/json", buffer: Buffer.from("{}") });
   await page.getByLabel(/Rozumiem/).check();
   await page.getByRole("button", { name: "Wgraj dane" }).click();

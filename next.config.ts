@@ -4,9 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
-  experimental: {
-    // The import page uploads a dane_planu workbook or JSON file through a Server Action (the default limit is 1 MB).
-    serverActions: { bodySizeLimit: "5mb" },
+  async redirects() {
+    // The page was /import-eksport while it also exported data; old links and bookmarks still land on it.
+    return [{ source: "/import-eksport", destination: "/import", permanent: true }];
   },
 };
 

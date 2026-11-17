@@ -76,3 +76,48 @@ def test_prawdziwe_dane_daja_plan_bez_naruszen_twardych():
     assert len(wynik.plan) == len(dane.zajecia) == 174
     # Plan z samej wykonalności miał ok. 16 tys. punktów kary.
     assert raport.wynik_miekkich < 16000
+
+
+def test_solver_zglasza_etapy_i_coraz_lepsze_plany(dane):
+    zgloszenia: list[tuple[str, dict]] = []
+    wynik = generuj(dane, limit_czasu=10, workers=1, postep=lambda etap, **pola: zgloszenia.append((etap, pola)))
+
+    etapy = [etap for etap, _ in zgloszenia]
+    assert etapy[:2] == ["szukanie", "optymalizacja"]
+    assert set(etapy[2:]) == {"optymalizacja"}
+
+    plany = [pola for _, pola in zgloszenia if pola]
+    assert plany, "etap 2 powinien zgłosić co najmniej plan startowy"
+    assert [p["rozwiazania"] for p in plany] == list(range(1, len(plany) + 1))
+    kary = [p["kara"] for p in plany]
+    assert kary == sorted(kary, reverse=True), "każdy zgłoszony plan jest nie gorszy od poprzedniego"
+    assert {p["kara_startowa"] for p in plany} == {kary[0]}
+    assert kary[-1] == wynik.cel
+    assert all(p["dolna_granica"] <= p["kara"] for p in plany)
+
+
+def test_bez_rozwiazania_solver_zglasza_tylko_szukanie():
+    d = zbuduj(
+        zajecia_lista=[
+            zajecia("Z1", sloty_na_spotkanie=12, grupy=["R2-ALL"]),
+            zajecia("Z2", sloty_na_spotkanie=12, grupy=["R2-ALL"]),
+        ],
+        dezyderaty_terminy=[
+            {"prowadzacy": "P01", "dzien": dzien, "slot": 1, "typ": "wykluczony"} for dzien in (2, 3, 4, 5)
+        ],
+    )
+    etapy: list[str] = []
+    wynik = generuj(d, limit_czasu=10, workers=1, postep=lambda etap, **pola: etapy.append(etap))
+
+    assert not wynik.znaleziono
+    assert etapy == ["szukanie"]
+
+
+def test_blad_w_zgloszeniu_postepu_nie_przerywa_liczenia(dane):
+    def zepsuty(etap, **pola):
+        if pola:
+            raise RuntimeError("zapis postępu się nie udał")
+
+    wynik = generuj(dane, limit_czasu=10, workers=1, postep=zepsuty)
+    assert wynik.znaleziono
+    assert waliduj(dane, wynik.plan).naruszenia == []

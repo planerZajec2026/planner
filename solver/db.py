@@ -115,6 +115,18 @@ def zakoncz_przerwane(conn: psycopg.Connection) -> int:
         ).rowcount
 
 
+def zapisz_postep(conn: psycopg.Connection, job_id: str, postep: dict[str, Any]) -> None:
+    """Zapisuje postęp liczonego zadania (spec 15). Czas zapisu podaje baza, żeby nie zależał od zegara workera."""
+    conn.execute(
+        """
+        update public.generation_jobs
+        set postep = %s || jsonb_build_object('zaktualizowano', now())
+        where id = %s and status = 'running'
+        """,
+        (Jsonb(postep), job_id),
+    )
+
+
 def zapisz_wynik(
     conn: psycopg.Connection, job_id: str, plan: list[Przydzial], raport: dict[str, Any], wynik_miekkich: int
 ) -> None:

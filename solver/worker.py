@@ -12,6 +12,7 @@ import psycopg
 
 from . import db
 from .model import generuj
+from .progress import ETAP_ZAPIS, Raporter
 from .validator import waliduj
 from .weights import DOMYSLNE_WAGI
 
@@ -54,8 +55,15 @@ def przetworz_zadanie(conn: psycopg.Connection, workers: int | None = None) -> b
     log.info("zadanie %s: start", job_id)
     try:
         limit, wagi = odczytaj_parametry(zadanie["parametry"])
+        postep = Raporter(lambda stan: db.zapisz_postep(conn, job_id, stan), limit)
+        postep.zapisz()
         dane = db.wczytaj_z_bazy(conn)
-        wynik = generuj(dane, limit, workers or min(os.cpu_count() or 1, 8), wagi=wagi)
+        # Wątek postępu pisze tym samym połączeniem, więc działa tylko wtedy, gdy główny wątek stoi w solverze
+        # i nie ma otwartej transakcji: nieudany zapis postępu nie może unieważnić zapisu wyniku.
+        with postep:
+            wynik = generuj(dane, limit, workers or min(os.cpu_count() or 1, 8), wagi=wagi, postep=postep)
+        postep(ETAP_ZAPIS)
+        postep.zapisz()
         if not wynik.znaleziono:
             db.zapisz_blad(conn, job_id, f"Solver nie znalazł planu (status {wynik.status})")
             return True

@@ -18,10 +18,10 @@ Create the Next.js app skeleton. Every later spec builds on it: shared layout, d
 - Load Poppins (600) and Inter (300–600) with `next/font/google` and expose them as CSS variables used by `globals.css`.
 
 ### Layout
-- `src/app/layout.tsx`: `<html lang="pl">`, metadata title "Siatka — plan zajęć uczelni", renders `AppShell`.
+- `src/app/layout.tsx`: `<html lang="pl">`, metadata title "Planner — plan zajęć uczelni", renders `AppShell`.
 - `AppShell` renders `Sidebar` plus `<main className="content">`.
 - `Sidebar` contains:
-  - brand mark (calendar icon) with "Siatka" / "Plan zajęć uczelni";
+  - brand mark (calendar icon) with "Planner" / "Plan zajęć uczelni";
   - nav items: Kierunki i grupy → `/kierunki`, Harmonogram grup → `/harmonogram`, Prowadzący → `/prowadzacy`, Harmonogram prowadzących → `/harmonogram-prowadzacych`, Import i eksport danych → `/import-eksport`;
   - the active item is chosen with `usePathname`;
   - footer "Rok akademicki 2026/2027 / Semestr zimowy" (TODO(backend): current academic year/semester).
