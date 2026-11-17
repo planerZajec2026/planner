@@ -32,6 +32,7 @@ Frontend for **Siatka**, a university timetable planner. Built with Next.js (App
 | 10–12 | [Plan: odczyt, zapis z logowaniem, eksport do Excela](10-11-12-plan.md) | — | outlines only |
 | 13 | [Generator planu zajęć](13-generator-planu.md) | `feat/13-generator-planu` | `/generator`, `/plan`, `/import-eksport` |
 | 14 | [Ręczna edycja planu](14-edycja-planu.md) | `feat/14-edycja-planu` | `/plan/edycja`, `/plan` |
+| 15 | [Postęp generowania i miejsca do poprawy](15-postep-i-problemy.md) | `feat/15-postep-i-problemy` | `/generator`, `/plan/edycja` |
 
 ## Workflow
 

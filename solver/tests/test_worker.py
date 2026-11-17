@@ -123,6 +123,53 @@ def test_zadanie_przechodzi_do_done_i_zapisuje_plan(conn, zadanie, krotki_limit)
     assert liczba == 174
     spotkania = conn.execute("select count(*) as n from public.plan_spotkania where job_id = %s", (job_id,)).fetchone()
     assert spotkania["n"] > 174
+    # Ostatni zapis postępu (spec 15) pochodzi z etapu zapisu wyniku.
+    assert job["postep"]["etap"] == "zapis"
+    assert job["postep"]["limit_s"] == 30
+    assert job["postep"]["uplynelo_s"] > 0
+    assert job["postep"]["zaktualizowano"]
+
+
+@pytestmark_db
+def test_postep_trafia_do_bazy_w_trakcie_liczenia(conn, zadanie, krotki_limit, monkeypatch):
+    """Wątek postępu musi pisać, gdy główny wątek stoi w solverze, inaczej pasek stałby do końca w miejscu."""
+    w_bazie: list[dict] = []
+    zapisz = db.zapisz_postep
+
+    def zapisz_i_odczytaj(polaczenie, job_id, stan):
+        zapisz(polaczenie, job_id, stan)
+        wiersz = polaczenie.execute("select status, postep from public.generation_jobs where id = %s", (job_id,)).fetchone()
+        w_bazie.append({"status": wiersz["status"], **wiersz["postep"]})
+
+    monkeypatch.setattr(db, "zapisz_postep", zapisz_i_odczytaj)
+    zadanie({"limit_czasu": 20})
+    assert przetworz_zadanie(conn, workers=4)
+
+    assert {w["status"] for w in w_bazie} == {"running"}
+    assert w_bazie[0]["etap"] == "wczytywanie"
+    w_solverze = [w for w in w_bazie if w["etap"] == "optymalizacja"]
+    assert len(w_solverze) >= 3, [w["etap"] for w in w_bazie]
+    czasy = [w["uplynelo_s"] for w in w_solverze]
+    assert czasy == sorted(czasy) and czasy[-1] > czasy[0] > 0
+    # Liczby lepszych planów tu nie sprawdzamy: przy tak krótkim limicie solver kończy, zanim zgłosi pierwszy
+    # (samo przygotowanie etapu 2 trwa na prawdziwych danych ok. 30 s). Zgłoszenia pokrywa test_model.py.
+    assert w_bazie[-1]["etap"] == "zapis"
+
+
+@pytestmark_db
+def test_brak_kolumny_postepu_nie_psuje_zadania(conn, zadanie, krotki_limit, monkeypatch):
+    """Worker może wdrożyć się przed migracją: zadanie ma się wtedy policzyć bez postępu."""
+
+    def brak_kolumny(polaczenie, job_id, stan):
+        polaczenie.execute("update public.generation_jobs set nie_ma_takiej_kolumny = 1 where id = %s", (job_id,))
+
+    monkeypatch.setattr(db, "zapisz_postep", brak_kolumny)
+    job_id = zadanie({"limit_czasu": 10})
+    assert przetworz_zadanie(conn, workers=4)
+
+    job = conn.execute("select status, blad, postep from public.generation_jobs where id = %s", (job_id,)).fetchone()
+    assert job["status"] == "done", job["blad"]
+    assert job["postep"] is None
 
 
 @pytestmark_db

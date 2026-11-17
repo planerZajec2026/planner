@@ -7,7 +7,9 @@ więc dla każdego zasobu i tygodnia dodajemy `NoOverlap` na przedziałach, któ
 
 from __future__ import annotations
 
+import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -32,6 +34,40 @@ class Wynik:
     @property
     def znaleziono(self) -> bool:
         return bool(self.plan)
+
+
+# postep(etap, **pola): etap to "szukanie" (etap 1) albo "optymalizacja" (etap 2).
+Postep = Callable[..., None]
+
+_log = logging.getLogger("solver.model")
+
+
+class _LepszePlany(cp_model.CpSolverSolutionCallback):
+    """Zgłasza każdy plan lepszy od poprzedniego, który solver znajdzie w etapie 2.
+
+    Pierwszym jest zwykle plan startowy z etapu 1, więc jego kara to punkt odniesienia dla postępu."""
+
+    def __init__(self, postep: Postep):
+        super().__init__()
+        self._postep = postep
+        self._liczba = 0
+        self._startowa: int | None = None
+
+    def on_solution_callback(self) -> None:
+        try:
+            kara = round(self.ObjectiveValue())
+            self._liczba += 1
+            if self._startowa is None:
+                self._startowa = kara
+            self._postep(
+                "optymalizacja",
+                rozwiazania=self._liczba,
+                kara=kara,
+                kara_startowa=self._startowa,
+                dolna_granica=round(self.BestObjectiveBound()),
+            )
+        except Exception:  # noqa: BLE001 - postęp jest informacją dodatkową i nie może przerwać liczenia
+            _log.warning("nie udało się zgłosić postępu", exc_info=True)
 
 
 class Planista:
@@ -345,10 +381,16 @@ class Planista:
         solver.parameters.log_search_progress = log
         return solver
 
-    def rozwiaz(self, limit_czasu: float = 60, workers: int = 8, log: bool = False) -> Wynik:
+    def rozwiaz(
+        self, limit_czasu: float = 60, workers: int = 8, log: bool = False, postep: Postep | None = None
+    ) -> Wynik:
         """Etap 1: plan spełniający ograniczenia twarde (bez celu, zwykle ułamek sekundy).
-        Etap 2: ten plan jest rozwiązaniem startowym, a solver minimalizuje karę za miękkie do końca limitu."""
+        Etap 2: ten plan jest rozwiązaniem startowym, a solver minimalizuje karę za miękkie do końca limitu.
+
+        `postep(etap, **pola)` dostaje zmianę etapu i każdy lepszy plan z etapu 2. Solver woła go z własnych wątków."""
+        zglos = postep or (lambda etap, **pola: None)
         poczatek = time.monotonic()
+        zglos("szukanie")
         solver = self._solver(min(limit_czasu / 2, 60), workers, log)
         status = solver.Solve(self.m)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
@@ -364,10 +406,11 @@ class Planista:
             for c, v in wartosci.items():
                 self.m.AddHint(v, int(c == t_startowe[zid]))
         self.m.Minimize(self._kary)
+        zglos("optymalizacja")
         solver = self._solver(max(limit_czasu - (time.monotonic() - poczatek), 1), workers, log)
         # Bez repair_hint: w OR-Tools 9.15 przy 8 wątkach na 1-2 rdzeniach zabija proces
         # ("Check failed: heuristics.fixed_search != nullptr"). Podpowiedź i tak jest planem startowym.
-        status = solver.Solve(self.m)
+        status = solver.Solve(self.m, _LepszePlany(zglos))
         nazwa = solver.StatusName(status)
         if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
             return Wynik("FEASIBLE", plan_startowy, time.monotonic() - poczatek)
@@ -399,5 +442,6 @@ def generuj(
     workers: int = 8,
     log: bool = False,
     wagi: dict[str, int] | None = None,
+    postep: Postep | None = None,
 ) -> Wynik:
-    return Planista(dane, wagi).rozwiaz(limit_czasu, workers, log)
+    return Planista(dane, wagi).rozwiaz(limit_czasu, workers, log, postep)

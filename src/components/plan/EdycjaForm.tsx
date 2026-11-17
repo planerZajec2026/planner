@@ -56,7 +56,17 @@ function ListaNaruszen({ tytul, lista }: { tytul: string; lista: Naruszenie[] })
  * Moves one class of the plan to another day, hour, room or weeks (spec 14). The conflicts and the grid of free
  * times are computed in the browser as hints; the Server Action checks again and decides.
  */
-export function EdycjaForm({ kontekst, zajeciaId, powrot }: { kontekst: KontekstEdycji; zajeciaId: string; powrot: string }) {
+export function EdycjaForm({
+  kontekst,
+  zajeciaId,
+  powrot,
+  powrotEtykieta = "Wróć do planu",
+}: {
+  kontekst: KontekstEdycji;
+  zajeciaId: string;
+  powrot: string;
+  powrotEtykieta?: string;
+}) {
   const [stan, akcja, trwa] = useActionState(zapiszPrzydzial, POCZATEK);
   const i = useMemo(() => przygotuj(kontekst), [kontekst]);
   const z = kontekst.zajecia[zajeciaId];
@@ -234,7 +244,7 @@ export function EdycjaForm({ kontekst, zajeciaId, powrot }: { kontekst: Kontekst
           >
             Przywróć obecny termin
           </Button>
-          <ButtonLink href={powrot}>Wróć do planu</ButtonLink>
+          <ButtonLink href={powrot}>{powrotEtykieta}</ButtonLink>
         </div>
 
         <div aria-live="polite">

@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"generation_jobs": {
                   Row: {
-                    "blad": string | null,"id": string,"parametry": NonNullable<Json>,"raport": Json | null,"rozpoczeto": string | null,"status": Database["public"]['Enums']["status_zadania"],"utworzono": string,"wynik_miekkich": number | null,"zakonczono": string | null,"zmiany_reczne": number
+                    "blad": string | null,"id": string,"parametry": NonNullable<Json>,"postep": Json | null,"raport": Json | null,"rozpoczeto": string | null,"status": Database["public"]['Enums']["status_zadania"],"utworzono": string,"wynik_miekkich": number | null,"zakonczono": string | null,"zmiany_reczne": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
+                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"postep"?: Json | null,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
                   }
                   Update: {
-                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
+                    "blad"?: string | null,"id"?: string,"parametry"?: NonNullable<Json>,"postep"?: Json | null,"raport"?: Json | null,"rozpoczeto"?: string | null,"status"?: Database["public"]['Enums']["status_zadania"],"utworzono"?: string,"wynik_miekkich"?: number | null,"zakonczono"?: string | null,"zmiany_reczne"?: number
                   }
                   Relationships: [
                     

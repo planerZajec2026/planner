@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { wierszZBazy, type Etykiety, type KalendarzDzien, type PlanRowDb, type PlanWiersz } from "@/lib/plan";
+import { odczytajPostep, type Postep } from "@/lib/postep";
 
 export type StatusZadania = "queued" | "running" | "done" | "failed";
 
@@ -7,6 +8,8 @@ export type Zadanie = {
   id: string;
   status: StatusZadania;
   limitCzasu: number | null;
+  /** Weights the job was generated with, only those that differ from the defaults. */
+  wagi: Record<string, number>;
   utworzono: string;
   rozpoczeto: string | null;
   zakonczono: string | null;
@@ -15,6 +18,8 @@ export type Zadanie = {
   wynikMiekkich: number | null;
   /** How many manual edits were saved to this plan (spec 14). */
   zmianyReczne: number;
+  /** What the worker last reported while the job ran (spec 15); null before its first report. */
+  postep: Postep | null;
 };
 
 /** What the worker stores in `generation_jobs.raport`. */
@@ -39,7 +44,7 @@ export type AktywnyPlan = {
 type ZadanieDb = {
   id: string;
   status: StatusZadania;
-  parametry: { limit_czasu?: number } | null;
+  parametry: { limit_czasu?: number; wagi?: Record<string, number> } | null;
   utworzono: string;
   rozpoczeto: string | null;
   zakonczono: string | null;
@@ -47,15 +52,18 @@ type ZadanieDb = {
   raport: RaportZadania | null;
   wynik_miekkich: number | null;
   zmiany_reczne: number;
+  postep: unknown;
 };
 
-const ZADANIE_KOLUMNY = "id, status, parametry, utworzono, rozpoczeto, zakonczono, blad, raport, wynik_miekkich, zmiany_reczne";
+const ZADANIE_KOLUMNY =
+  "id, status, parametry, utworzono, rozpoczeto, zakonczono, blad, raport, wynik_miekkich, zmiany_reczne, postep";
 
 function zadanie(r: ZadanieDb): Zadanie {
   return {
     id: r.id,
     status: r.status,
     limitCzasu: r.parametry?.limit_czasu ?? null,
+    wagi: r.parametry?.wagi ?? {},
     utworzono: r.utworzono,
     rozpoczeto: r.rozpoczeto,
     zakonczono: r.zakonczono,
@@ -63,6 +71,7 @@ function zadanie(r: ZadanieDb): Zadanie {
     raport: r.raport,
     wynikMiekkich: r.wynik_miekkich,
     zmianyReczne: r.zmiany_reczne ?? 0,
+    postep: odczytajPostep(r.postep),
   };
 }
 

@@ -5,10 +5,25 @@ import { join } from "node:path";
 import type { DanePlanu } from "@/lib/dane-planu";
 import type { Czestotliwosc, Forma } from "@/lib/plan";
 import type { KontekstEdycji, Przydzial, TypPowiazania, ZajeciaPlanu } from "@/lib/plan-edycja";
+import type { DaneProblemow } from "@/lib/plan-problemy";
 
 const plik = (sciezka: string) => JSON.parse(readFileSync(join(process.cwd(), sciezka), "utf8"));
 
 export const JOB_ID = "00000000-0000-0000-0000-00000000e2e0";
+
+/** The same plan with what the soft constraints need on top (spec 15). */
+export function daneProblemowTestowe(): DaneProblemow {
+  const dane = plik("requirements/dane_planu.json") as DanePlanu;
+  const k = kontekstTestowy();
+  return {
+    zajecia: k.zajecia,
+    plan: k.plan,
+    sale: k.sale,
+    etykiety: k.etykiety,
+    nadrzedne: Object.fromEntries(dane.grupy.map((g) => [g.id, g.grupa_nadrzedna])),
+    preferencje: Object.fromEntries(dane.dezyderaty_ogolne.map((d) => [d.prowadzacy, d.preferencja_dni])),
+  };
+}
 
 /** A fresh context on every call, so tests can change it freely. */
 export function kontekstTestowy(): KontekstEdycji {

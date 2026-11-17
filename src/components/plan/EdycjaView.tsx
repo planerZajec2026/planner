@@ -6,9 +6,15 @@ import { single, type SearchParams } from "@/lib/search-params";
 import { createClient } from "@/lib/supabase/server";
 import { EdycjaForm } from "./EdycjaForm";
 
-/** `?powrot=` is the plan's own query string (its filters); anything else is dropped. */
-function adresPowrotu(powrot: string | undefined): string {
-  return powrot && /^\?[\w%=&.+-]*$/.test(powrot) ? `/plan${powrot}` : "/plan";
+export type Powrot = { href: string; etykieta: string };
+
+/**
+ * `?powrot=` is the plan's own query string (its filters), or `generator` when the class was opened from the list
+ * of problems after generation (spec 15); anything else is dropped.
+ */
+export function adresPowrotu(powrot: string | undefined): Powrot {
+  if (powrot === "generator") return { href: "/generator", etykieta: "Wróć do generatora" };
+  return { href: powrot && /^\?[\w%=&.+-]*$/.test(powrot) ? `/plan${powrot}` : "/plan", etykieta: "Wróć do planu" };
 }
 
 /** One class of the active plan with the form that moves it (spec 14), from `?zajecia=<id>`. */
@@ -16,7 +22,7 @@ export async function EdycjaView({ searchParams }: { searchParams: Promise<Searc
   const sp = await searchParams;
   const zajeciaId = single(sp.zajecia) ?? "";
   const powrot = adresPowrotu(single(sp.powrot));
-  const wrocDoPlanu = <AppLink href={powrot}>Wróć do planu</AppLink>;
+  const wrocDoPlanu = <AppLink href={powrot.href}>{powrot.etykieta}</AppLink>;
 
   const wynik = zajeciaId ? await getKontekstEdycji(await createClient(), zajeciaId) : ({ status: "brak-zajec" } as const);
   if (wynik.status === "brak-planu") {
@@ -76,7 +82,7 @@ export async function EdycjaView({ searchParams }: { searchParams: Promise<Searc
       </div>
 
       {/* The key resets the selection when another class is opened; a saved edit keeps it and gets fresh data. */}
-      <EdycjaForm key={zajeciaId} kontekst={kontekst} zajeciaId={zajeciaId} powrot={powrot} />
+      <EdycjaForm key={zajeciaId} kontekst={kontekst} zajeciaId={zajeciaId} powrot={powrot.href} powrotEtykieta={powrot.etykieta} />
     </>
   );
 }

@@ -222,7 +222,7 @@ export function tenSamPrzydzial(a: Przydzial, b: Przydzial): boolean {
 }
 
 /** "Analiza matematyczna (Wykład, Z001)". */
-export function opisZajec(z: ZajeciaPlanu): string {
+export function opisZajec(z: Pick<ZajeciaPlanu, "id" | "przedmiot" | "forma">): string {
   return `${z.przedmiot} (${FORMA_LABEL[z.forma] ?? z.forma}, ${z.id})`;
 }
 
