@@ -5,9 +5,10 @@
 ## Cel
 Generowanie trwa kilka minut (limit 200–400 s plus start workera) i do tej pory strona pokazywała tylko „Liczy się”. Planista nie wiedział, czy coś się dzieje. Po wygenerowaniu widział jedną liczbę, karę miękkich, ale nie wiedział, które zajęcia ją podnoszą.
 
-Ten spec dodaje dwie rzeczy:
+Ten spec dodaje trzy rzeczy:
 1. **Pasek postępu** liczonego zadania. Każda pokazana liczba pochodzi z workera. Przeglądarka niczego nie szacuje ani nie animuje między raportami poza płynnym przejściem paska do nowej wartości.
 2. **Listę „Do poprawy”** przy aktywnym planie: miejsca, które najbardziej podnoszą karę miękkich, z linkami do edycji zajęć ([spec 14](14-edycja-planu.md)) i powrotem do generatora.
+3. **Postęp wgrywania pliku** w `/import-eksport` i strefę wyboru pliku zamiast gołego `<input type="file">`.
 
 ## Zakres
 - Kolumna `generation_jobs.postep` i zapis postępu przez worker.
@@ -74,6 +75,18 @@ Pozycje są posortowane od największej kary (po wagach). Każda ma zajęcia, kt
 - Sekcja wczytuje się w `<Suspense>`; karta zadania pokazuje się bez czekania na nią.
 - Strona edycji z `powrot=generator` ma link „Wróć do generatora” do `/generator` zamiast „Wróć do planu”.
 
+## Wgrywanie pliku
+
+### Strefa wyboru
+Pole „Plik z danymi” to strefa, którą można kliknąć albo upuścić na nią plik. Prawdziwy `<input type="file">` zostaje w niej (ukryty wizualnie), więc działa z klawiatury i czytnikiem ekranu. Po wyborze strefa pokazuje nazwę i rozmiar pliku. Przeglądarka sprawdza przed wysłaniem plik, rozmiar (do 4 MB, limit ciała żądania na Vercelu to 4,5 MB) i potwierdzenie.
+
+### Postęp
+Wgrywanie idzie przez route handler `POST /import-eksport/wgraj` zamiast Server Action, bo Server Action nie daje postępu.
+1. **Wysyłanie**: pasek z liczbą bajtów wysłanych przez przeglądarkę (`XMLHttpRequest.upload.onprogress`, `fetch` nie raportuje wysyłania).
+2. **Sprawdzanie** i 3. **zapis do bazy**: serwer strumieniuje odpowiedź NDJSON, jedną linię na rozpoczęty etap (`{"etap":"sprawdzanie"}`, `{"etap":"zapis"}`), a na końcu `{"wynik":…}`. Te etapy nie mają mierzalnej części pracy, więc pasek jest nieokreślony (bez `aria-valuenow`) i tylko pokazuje, że etap trwa.
+
+Route handler sprawdza nagłówek `Origin` (Server Action robi to sam). Logika wgrywania jest w `src/lib/wgrywanie-danych.ts`.
+
 ## Kryteria akceptacji
 - [x] Liczone zadanie pokazuje pasek oparty na `uplynelo_s / limit_s` z raportu workera; bez raportu nie ma paska.
 - [x] Worker zapisuje postęp co ~2 s i przy każdej zmianie etapu; błąd zapisu nie przerywa liczenia (testy `solver/tests/test_progress.py`, `test_worker.py`).
@@ -82,6 +95,7 @@ Pozycje są posortowane od największej kary (po wagach). Każda ma zajęcia, kt
 - [x] Aktywny plan ma listę „Do poprawy” z linkami do edycji zajęć; edycja wraca do generatora.
 - [x] Lista uwzględnia ręczne zmiany (liczy się z `plan_zajec`).
 - [x] Prawdziwy przebieg lokalny: worker zapisał postęp, strona pokazała etap 2, czas, karę i pasek rosnący co odświeżenie.
+- [x] Wgrywanie pokazuje wysłane bajty, potem etap serwera; wynik i błędy jak wcześniej (testy `wgrywanie-klient`, `wgraj/route`, `ImportDanychForm`, e2e `wgrywanie-danych`).
 - [x] `npm run lint`, `npm run build`, `npm test`, `npm run db:test`, `npm run test:e2e`, testy solvera przechodzą.
 
 ## Wdrożenie

@@ -136,6 +136,10 @@ button { font-family:inherit; }
 .postep-pasek { height:8px; border-radius:9999px; background:var(--silver); overflow:hidden; }
 .postep-wypelnienie { height:100%; border-radius:inherit; background:var(--action-blue); transition:width 1s linear; }
 .postep-opis { margin:0; font-size:13px; line-height:1.5; color:var(--slate); }
+.postep-wypelnienie.szybkie { transition-duration:.2s; }
+/* A stage with no measurable share of work: the bar only shows that something runs. */
+.postep-pasek.nieokreslony .postep-wypelnienie { width:35%; animation:postep-przesuw 1.4s ease-in-out infinite; }
+@keyframes postep-przesuw { from { transform:translateX(-100%); } to { transform:translateX(290%); } }
 
 /* Soft-constraint problems of the active plan, linked to the editor (spec 15). */
 .problemy { display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--silver); padding-top:14px; }
@@ -174,6 +178,13 @@ button { font-family:inherit; }
 .dropzone .icon { color:var(--ink); }
 .dropzone strong { color:var(--ink); font-size:15px; font-weight:600; }
 .dropzone .filetypes { font-size:12px; color:var(--stone); }
+.dropzone:hover:not(.drag-over):not(.wybrany) { border-color:var(--stone); }
+.dropzone:focus-within { outline:2px solid var(--action-blue); outline-offset:2px; }
+.dropzone > :not(input) { pointer-events:none; }
+.dropzone strong { overflow-wrap:anywhere; }
+.dropzone.wybrany { border-style:solid; border-color:var(--action-blue); background:var(--white); }
+.dropzone.wybrany .icon { color:var(--action-blue); }
+.dropzone.zablokowana { cursor:progress; opacity:.6; }
 
 .json-sample { background:var(--ink); color:#E7E7E7; border-radius:10px; padding:16px 18px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; line-height:1.65; overflow-x:auto; white-space:pre; margin:0; }
 
@@ -338,6 +349,7 @@ button { font-family:inherit; }
   ::view-transition-new(.tydzien-nastepny), ::view-transition-new(.tydzien-poprzedni) { animation: var(--dur-enter) var(--ease-out) both vt-fade-in; }
   ::view-transition-group(*) { animation-duration:0s !important; }
   .postep-wypelnienie { transition:none; }
+  .postep-pasek.nieokreslony .postep-wypelnienie { animation:none; width:100%; opacity:.45; }
 }
 
 /* Phone width: sidebar stacks above content and the whole page scrolls, 16px gutters. */
