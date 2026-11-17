@@ -14,6 +14,7 @@ const KOLUMNY: { header: string; key: keyof WierszEksportu; width: number }[] = 
   { header: "Do", key: "do", width: 8 },
   { header: "Sala", key: "sala", width: 10 },
   { header: "Tygodnie", key: "tygodnie", width: 44 },
+  { header: "Zmiana ręczna", key: "zmiana", width: 15 },
 ];
 
 /** An .xlsx with the timetable on the first sheet and a short description of the plan on the second. */

@@ -29,6 +29,7 @@ export async function GET(request: Request) {
           id: zadanie.id,
           zakonczono: zadanie.zakonczono,
           wynik_miekkich: zadanie.wynikMiekkich,
+          zmiany_reczne: zadanie.zmianyReczne,
           raport: zadanie.raport,
         },
         filtry,
@@ -44,6 +45,7 @@ export async function GET(request: Request) {
     { Pole: "Zakończono", Wartość: zadanie.zakonczono ? dataGodzina.format(new Date(zadanie.zakonczono)) : "" },
     { Pole: "Liczba zajęć w pliku", Wartość: String(wiersze.length) },
     { Pole: "Kara miękkich (mniej = lepiej)", Wartość: String(zadanie.wynikMiekkich ?? "") },
+    { Pole: "Zmiany ręczne po wygenerowaniu", Wartość: String(zadanie.zmianyReczne) },
     { Pole: "Filtry", Wartość: Object.entries(filtry).filter(([, v]) => v !== undefined).map(([k, v]) => `${k}=${v}`).join(", ") || "brak (cały plan)" },
   ];
   const bufor = await zbudujXlsx(doEksportu(wiersze, plan.etykiety), informacje);

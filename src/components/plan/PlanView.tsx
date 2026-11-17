@@ -58,6 +58,7 @@ export async function PlanView({ searchParams }: { searchParams: Promise<SearchP
   const wybrane = filtruj(wiersze, { ...filtry, tydzien: undefined, dzien: widok === "tabela" ? filtry.dzien : undefined });
   const zFiltrem = wybrane.length !== wiersze.length || Object.values({ ...filtry, tydzien: undefined }).some(Boolean);
   const dlaEksportu = { ...filtry, tydzien: undefined, dzien: widok === "tabela" ? filtry.dzien : undefined };
+  const zmienione = wiersze.filter((w) => w.edytowano).length;
 
   return (
     <>
@@ -102,6 +103,7 @@ export async function PlanView({ searchParams }: { searchParams: Promise<SearchP
           <div className="grupa-students">
             Plan z {zadanie.zakonczono ? dataGodzina.format(new Date(zadanie.zakonczono)) : "—"}
             {zadanie.wynikMiekkich != null ? ` · kara miękkich ${zadanie.wynikMiekkich.toLocaleString("pl-PL")}` : ""}
+            {zmienione > 0 ? ` · zmienione ręcznie: ${zmienione}` : ""}
           </div>
         </div>
         <div className="header-actions" style={{ marginLeft: "auto" }}>
@@ -116,7 +118,7 @@ export async function PlanView({ searchParams }: { searchParams: Promise<SearchP
       </div>
 
       {widok === "tabela" ? (
-        <PlanTable wiersze={wybrane} etykiety={etykiety} />
+        <PlanTable wiersze={wybrane} etykiety={etykiety} powrot={zapytanie(dlaEksportu)} />
       ) : (
         <Tydzien plan={plan} wybrane={wybrane} filtry={filtry} />
       )}
