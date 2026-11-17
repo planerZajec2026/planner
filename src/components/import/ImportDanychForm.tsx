@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, type DragEvent, type FormEvent } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { Icon } from "@/components/ui/Icon";
 import { MAKS_ROZMIAR, rozmiarPliku, wyslijDane, type FazaWgrywania } from "@/lib/wgrywanie-klient";
@@ -145,13 +145,20 @@ export function ImportDanychForm({ maDane }: { maDane: boolean }) {
       <div aria-live="polite">
         {faza && <span className="visually-hidden">{opisFazy(faza).tytul}</span>}
         {stan.status === "wgrano" && (
-          <div className="success-banner">
-            <Icon name="check" />
-            Wgrano dane:{" "}
-            {NAZWY.filter(([klucz]) => klucz in stan.podsumowanie)
-              .map(([klucz, nazwa]) => `${stan.podsumowanie[klucz]} ${nazwa}`)
-              .join(", ")}
-            . Teraz możesz wygenerować plan.
+          <div className="form-panel" style={{ gap: 12 }}>
+            <div className="success-banner">
+              <Icon name="check" />
+              Wgrano dane:{" "}
+              {NAZWY.filter(([klucz]) => klucz in stan.podsumowanie)
+                .map(([klucz, nazwa]) => `${stan.podsumowanie[klucz]} ${nazwa}`)
+                .join(", ")}
+              . Teraz możesz wygenerować plan.
+            </div>
+            {/* The next step after loading data; the pulse draws the eye a few times, then stops. */}
+            <ButtonLink href="/generator" variant="primary" className="btn-puls" style={{ alignSelf: "flex-start" }}>
+              Przejdź do generatora
+              <Icon name="chevron-right" />
+            </ButtonLink>
           </div>
         )}
         {stan.status === "blad" && (

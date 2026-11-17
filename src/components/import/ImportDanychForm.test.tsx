@@ -63,6 +63,7 @@ describe("ImportDanychForm", () => {
 
     expect(await screen.findByText(/174 zajęć do zaplanowania, 55 sal, 51 grup/)).toBeInTheDocument();
     expect(odswiez).toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Przejdź do generatora" })).toHaveAttribute("href", "/generator");
   });
 
   it("wypisuje błędy z pliku", async () => {

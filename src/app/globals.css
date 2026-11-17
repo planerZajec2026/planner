@@ -139,6 +139,9 @@ button { font-family:inherit; }
 .postep-wypelnienie.szybkie { transition-duration:.2s; }
 /* A stage with no measurable share of work: the bar only shows that something runs. */
 .postep-pasek.nieokreslony .postep-wypelnienie { width:35%; animation:postep-przesuw 1.4s ease-in-out infinite; }
+/* Next-step button after an import: a soft ring grows out of it a few times (no transform, so layout stays put). */
+.btn-puls { animation:puls-pierscien 1.8s var(--ease-out) 0.3s 4; }
+@keyframes puls-pierscien { from { box-shadow:0 0 0 0 rgba(0,153,255,.45); } to { box-shadow:0 0 0 10px rgba(0,153,255,0); } }
 @keyframes postep-przesuw { from { transform:translateX(-100%); } to { transform:translateX(290%); } }
 
 /* Soft-constraint problems of the active plan, linked to the editor (spec 15). */
@@ -348,6 +351,7 @@ button { font-family:inherit; }
   ::view-transition-old(.tydzien-nastepny), ::view-transition-old(.tydzien-poprzedni) { animation: var(--dur-exit) var(--ease-in) both vt-fade-out; }
   ::view-transition-new(.tydzien-nastepny), ::view-transition-new(.tydzien-poprzedni) { animation: var(--dur-enter) var(--ease-out) both vt-fade-in; }
   ::view-transition-group(*) { animation-duration:0s !important; }
+  .btn-puls { animation:none; }
   .postep-wypelnienie { transition:none; }
   .postep-pasek.nieokreslony .postep-wypelnienie { animation:none; width:100%; opacity:.45; }
 }

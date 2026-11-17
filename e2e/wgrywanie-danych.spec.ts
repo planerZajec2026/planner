@@ -57,4 +57,9 @@ test("the same data loads from the JSON file too", async ({ page }) => {
   await page.getByLabel(/Rozumiem/).check();
   await page.getByRole("button", { name: "Wgraj dane" }).click();
   await expect(page.getByText(/174 zajęć do zaplanowania, 55 sal/)).toBeVisible();
+
+  // The next step is one click away.
+  await page.getByRole("link", { name: "Przejdź do generatora" }).click();
+  await expect(page).toHaveURL(/\/generator$/);
+  await expect(page.getByRole("button", { name: "Generuj plan" })).toBeVisible();
 });
