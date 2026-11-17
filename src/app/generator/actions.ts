@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export type StanFormularza =
   | { status: "poczatek" }
-  | { status: "zlecone"; komunikat: string }
+  | { status: "zlecone"; komunikat: string; id: string }
   | { status: "blad"; komunikat?: string; bledy?: BledyFormularza };
 
 /** Queues a generation job. The worker picks it up from `generation_jobs`; the list on the page then follows it. */
@@ -34,9 +34,9 @@ export async function zlecGenerowanie(_poprzedni: StanFormularza, formData: Form
     };
   }
 
-  const { error } = await supabase.from("generation_jobs").insert({ parametry: wynik.parametry });
-  if (error) return { status: "blad", komunikat: "Nie udało się zlecić generowania planu." };
+  const { data, error } = await supabase.from("generation_jobs").insert({ parametry: wynik.parametry }).select("id").single();
+  if (error || !data) return { status: "blad", komunikat: "Nie udało się zlecić generowania planu." };
 
   revalidatePath("/generator");
-  return { status: "zlecone", komunikat: "Zadanie dodane do kolejki. Worker zacznie liczyć, gdy będzie wolny." };
+  return { status: "zlecone", komunikat: "Zadanie dodane do kolejki. Worker zacznie liczyć, gdy będzie wolny.", id: data.id };
 }

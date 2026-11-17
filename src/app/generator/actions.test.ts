@@ -3,6 +3,7 @@ import { LIMIT_DOMYSLNY, MAKS_OCZEKUJACYCH, WAGI } from "@/lib/generator";
 
 const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
+  zapis: vi.fn(),
   oczekujace: { count: 0 as number | null, error: null as { message: string } | null },
   admin: vi.fn(),
   revalidatePath: vi.fn(),
@@ -27,7 +28,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.oczekujace.count = 0;
   mocks.oczekujace.error = null;
-  mocks.insert.mockResolvedValue({ error: null });
+  mocks.zapis.mockResolvedValue({ data: { id: "j1" }, error: null });
+  mocks.insert.mockReturnValue({ select: () => ({ single: mocks.zapis }) });
   mocks.admin.mockReturnValue({
     from: () => ({
       select: () => ({ in: () => Promise.resolve({ ...mocks.oczekujace }) }),
@@ -40,7 +42,7 @@ describe("zlecGenerowanie", () => {
   it("dodaje zadanie z parametrami z formularza i odświeża stronę", async () => {
     const stan = await zlecGenerowanie(POCZATEK, formularz({ limit_czasu: "300", waga_poza_godzinami: "9" }));
 
-    expect(stan.status).toBe("zlecone");
+    expect(stan).toEqual({ status: "zlecone", komunikat: expect.any(String), id: "j1" });
     expect(mocks.insert).toHaveBeenCalledWith({ parametry: { limit_czasu: 300, wagi: { poza_godzinami: 9 } } });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/generator");
   });
@@ -81,7 +83,7 @@ describe("zlecGenerowanie", () => {
     expect((await zlecGenerowanie(POCZATEK, formularz())).status).toBe("blad");
 
     mocks.oczekujace.error = null;
-    mocks.insert.mockResolvedValue({ error: { message: "boom" } });
+    mocks.zapis.mockResolvedValue({ data: null, error: { message: "boom" } });
     const stan = await zlecGenerowanie(POCZATEK, formularz());
     expect(stan).toMatchObject({ status: "blad", komunikat: expect.any(String) });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();

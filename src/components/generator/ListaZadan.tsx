@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Tag } from "@/components/ui/Tag";
-import { getZadania, type StatusZadania, type Zadanie } from "@/lib/data/plan";
+import type { StatusZadania, Zadanie } from "@/lib/data/plan";
 import { WAGA_LABEL } from "@/lib/generator";
 import { AutoOdswiezanie } from "./AutoOdswiezanie";
 import { PostepZadania } from "./PostepZadania";
@@ -47,8 +47,7 @@ async function czasZapytania(): Promise<number> {
 }
 
 /** The latest generation jobs with their status, the progress of a running one and, once done, the validator's report. */
-export async function ListaZadan() {
-  const zadania = await getZadania(8);
+export async function ListaZadan({ zadania }: { zadania: Zadanie[] }) {
   const teraz = await czasZapytania();
   const najnowszeGotowe = aktywnyPlan(zadania);
 

@@ -5,7 +5,7 @@ import { ListaZadan } from "@/components/generator/ListaZadan";
 import { BrakDanych } from "@/components/layout/BrakDanych";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { getLiczbaZajec, getZmianyReczne } from "@/lib/data/plan";
+import { getLiczbaZajec, getZadania, getZmianyReczne } from "@/lib/data/plan";
 
 export const metadata: Metadata = { title: "Generator planu" };
 
@@ -25,7 +25,7 @@ export default function GeneratorPage() {
 }
 
 async function Zawartosc() {
-  const [liczbaZajec, zmianyReczne] = await Promise.all([getLiczbaZajec(), getZmianyReczne()]);
+  const [liczbaZajec, zmianyReczne, zadania] = await Promise.all([getLiczbaZajec(), getZmianyReczne(), getZadania(8)]);
   if (liczbaZajec === 0) return <BrakDanych />;
   return (
     <>
@@ -34,8 +34,8 @@ async function Zawartosc() {
           Aktywny plan ma zmiany ręczne (zapisano ich {zmianyReczne}). Nowe generowanie utworzy plan bez tych zmian.
         </div>
       )}
-      <GeneratorForm />
-      <ListaZadan />
+      <GeneratorForm trwajace={zadania.filter((z) => z.status === "queued" || z.status === "running").map((z) => z.id)} />
+      <ListaZadan zadania={zadania} />
     </>
   );
 }
