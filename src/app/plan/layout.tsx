@@ -1,15 +1,7 @@
 import type { ReactNode } from "react";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { PageTransition } from "@/components/layout/PageTransition";
 
+/** Each page under /plan has its own header: the plan, and the board that edits it (spec 16). */
 export default function PlanLayout({ children }: { children: ReactNode }) {
-  return (
-    <PageTransition>
-      <PageHeader
-        title="Plan zajęć"
-        description="Wygenerowany plan semestru zimowego 2026/27: wszystkie zajęcia z dniem, godziną, salą i tygodniami."
-      />
-      {children}
-    </PageTransition>
-  );
+  return <PageTransition>{children}</PageTransition>;
 }

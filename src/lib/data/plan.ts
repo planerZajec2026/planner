@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { etykietaGrupy } from "@/lib/labels";
 import { wierszZBazy, type Etykiety, type KalendarzDzien, type PlanRowDb, type PlanWiersz } from "@/lib/plan";
 import { odczytajPostep, type Postep } from "@/lib/postep";
 
@@ -127,7 +128,7 @@ export async function getAktywnyPlan(): Promise<AktywnyPlan | null> {
     zadanie: job,
     wiersze,
     etykiety: {
-      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, `${g.rocznik_id} · ${g.nazwa}`])),
+      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, etykietaGrupy(g.rocznik_id, g.nazwa)])),
       prowadzacy: Object.fromEntries((prowadzacy.data ?? []).map((p) => [p.id, p.nazwa])),
     },
     sale: [...new Set(wiersze.map((w) => w.sala))].sort((a, b) => a.localeCompare(b, "pl")),

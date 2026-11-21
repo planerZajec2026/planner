@@ -10,11 +10,12 @@ export const KIERUNKI: Kierunek[] = [
 const rok = (id: string, kierunekId: string, nazwa: string) => ({ rocznikId: id, kierunekId, rocznikNazwa: nazwa });
 
 export const GRUPY: Grupa[] = [
-  { id: "FIZ-R1-ALL", kod: "FIZ-R1-ALL", ...rok("FIZ-R1", "fizyka", "Fizyka I st., rok I, sem. I"), liczbaStudentow: 40 },
-  { id: "INF1-R1-ALL", kod: "INF1-R1-ALL", ...rok("INF1-R1", "informatyka", "Informatyka I st., rok I, sem. I"), liczbaStudentow: 118 },
+  { id: "FIZ-R1-ALL", kod: "FIZ-R1-ALL", etykieta: "FIZ-R1 · Cały rocznik", ...rok("FIZ-R1", "fizyka", "Fizyka I st., rok I, sem. I"), liczbaStudentow: 40 },
+  { id: "INF1-R1-ALL", kod: "INF1-R1-ALL", etykieta: "INF1-R1 · Cały rocznik", ...rok("INF1-R1", "informatyka", "Informatyka I st., rok I, sem. I"), liczbaStudentow: 118 },
   {
     id: "INF1-R1-G1",
     kod: "INF1-R1-G1",
+    etykieta: "INF1-R1 · Grupa 1",
     ...rok("INF1-R1", "informatyka", "Informatyka I st., rok I, sem. I"),
     nadrzednaId: "INF1-R1-ALL",
     liczbaStudentow: 24,
@@ -22,6 +23,7 @@ export const GRUPY: Grupa[] = [
   {
     id: "INF1-R1-G2",
     kod: "INF1-R1-G2",
+    etykieta: "INF1-R1 · Grupa 2",
     ...rok("INF1-R1", "informatyka", "Informatyka I st., rok I, sem. I"),
     nadrzednaId: "INF1-R1-ALL",
     liczbaStudentow: 1,

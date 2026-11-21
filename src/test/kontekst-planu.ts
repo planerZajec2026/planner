@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DanePlanu } from "@/lib/dane-planu";
+import { etykietaGrupy } from "@/lib/labels";
 import type { Czestotliwosc, Forma } from "@/lib/plan";
 import type { KontekstEdycji, Przydzial, TypPowiazania, ZajeciaPlanu } from "@/lib/plan-edycja";
 import type { DaneOceny, DaneProblemow } from "@/lib/plan-problemy";
@@ -86,7 +87,7 @@ export function kontekstTestowy(): KontekstEdycji {
     blokady: dane.blokady_stale.map((b) => ({ grupa: b.grupa, dzien: b.dzien, slotOd: b.slot_od, slotDo: b.slot_do })),
     wykluczone,
     etykiety: {
-      grupy: Object.fromEntries(dane.grupy.map((g) => [g.id, `${g.rocznik} · ${g.nazwa}`])),
+      grupy: Object.fromEntries(dane.grupy.map((g) => [g.id, etykietaGrupy(g.rocznik, g.nazwa)])),
       prowadzacy: Object.fromEntries(dane.prowadzacy.map((p) => [p.id, p.nazwa])),
     },
   };

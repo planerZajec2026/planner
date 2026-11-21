@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { etykietaGrupy } from "@/lib/labels";
 import type { Czestotliwosc, Forma } from "@/lib/plan";
 import { razem, type KontekstEdycji, type Przydzial, type TypPowiazania, type ZajeciaPlanu } from "@/lib/plan-edycja";
 import type { DaneOceny } from "@/lib/plan-problemy";
@@ -64,16 +65,18 @@ function zajeciaZBazy(r: WierszPlanu): ZajeciaPlanu {
   };
 }
 
+const blad = (co: string, e: { message: string }) => new Error(`Nie udało się pobrać ${co}: ${e.message}`);
+
+type TerminRady = { dzien: number; slot_od: number; slot_do: number };
+
+/** The active plan without collisions and excluded hours, which each caller loads for the classes it checks. */
+type Baza = { kontekst: KontekstEdycji; ocena: DaneOceny; radni: Set<string>; rada: TerminRady[] };
+
 /**
- * The active plan with everything needed to check an edit of one class (spec 14). The caller passes the client:
- * the page reads with the visitor's rights, the Server Action with service_role.
- *
  * The plan's version is read before the placements. If someone saves an edit in between, the context holds newer
  * placements with an older version, and a save from it is refused: never the other way round.
  */
-export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zajeciaId: string): Promise<WynikKontekstu> {
-  const blad = (co: string, e: { message: string }) => new Error(`Nie udało się pobrać ${co}: ${e.message}`);
-
+async function wczytajBaze(supabase: SupabaseClient<Database>): Promise<Baza | null> {
   const { data: zadania, error } = await supabase
     .from("generation_jobs")
     .select("id, zmiany_reczne, parametry, wynik_miekkich")
@@ -81,7 +84,7 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
     .order("zakonczono", { ascending: false })
     .limit(1);
   if (error) throw blad("planu", error);
-  if (!zadania || zadania.length === 0) return { status: "brak-planu" };
+  if (!zadania || zadania.length === 0) return null;
   const job = zadania[0];
 
   const [plan, sale, blokady, rada, grupy, prowadzacy, preferencje] = await Promise.all([
@@ -118,7 +121,6 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
   const wiersze = plan.data as unknown as WierszPlanu[];
   const zajecia: Record<string, ZajeciaPlanu> = {};
   for (const r of wiersze) zajecia[r.zajecia_id] = zajeciaZBazy(r);
-  if (!zajecia[zajeciaId]) return { status: "brak-zajec" };
 
   const kontekst: KontekstEdycji = {
     jobId: job.id,
@@ -144,14 +146,54 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
     blokady: (blokady.data ?? []).map((b) => ({ grupa: b.grupa_id, dzien: b.dzien, slotOd: b.slot_od, slotDo: b.slot_do })),
     wykluczone: {},
     etykiety: {
-      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, `${g.rocznik_id} · ${g.nazwa}`])),
+      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, etykietaGrupy(g.rocznik_id, g.nazwa)])),
       prowadzacy: Object.fromEntries((prowadzacy.data ?? []).map((p) => [p.id, p.nazwa])),
     },
   };
 
+  const ocena: DaneOceny = {
+    nadrzedne: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, g.grupa_nadrzedna])),
+    preferencje: Object.fromEntries((preferencje.data ?? []).map((p) => [p.prowadzacy_id, p.preferencja_dni])),
+    wagi: (job.parametry as { wagi?: Record<string, number> } | null)?.wagi ?? {},
+    wynikPoGenerowaniu: job.wynik_miekkich,
+  };
+
+  const radni = new Set((prowadzacy.data ?? []).filter((p) => p.czlonek_rady_wydzialu).map((p) => p.id));
+  return { kontekst, ocena, radni, rada: rada.data ?? [] };
+}
+
+/** Fills the context's collisions and excluded hours from the rows a caller loaded. */
+function uzupelnij(
+  { kontekst, radni, rada }: Baza,
+  kolizje: { grupa_a: string; grupa_b: string }[],
+  dezyderaty: { prowadzacy_id: string; dzien: number; slot: number }[],
+  prowadzacy: string[],
+) {
+  const pary = new Map<string, [string, string]>();
+  for (const k of kolizje) pary.set(`${k.grupa_a}\u0000${k.grupa_b}`, [k.grupa_a, k.grupa_b]);
+  kontekst.kolizje = [...pary.values()];
+
+  const dodaj = (prow: string, dzien: number, slot: number) => (kontekst.wykluczone[prow] ??= []).push([dzien, slot]);
+  for (const d of dezyderaty) dodaj(d.prowadzacy_id, d.dzien, d.slot);
+  // The Faculty Council blocks its members just like an excluded hour (solver/data.py).
+  for (const prow of prowadzacy.filter((p) => radni.has(p))) {
+    for (const r of rada) for (let s = r.slot_od; s <= r.slot_do; s++) dodaj(prow, r.dzien, s);
+  }
+}
+
+/**
+ * The active plan with everything needed to check an edit of one class (spec 14). The caller passes the client:
+ * the page reads with the visitor's rights, the Server Action with service_role.
+ */
+export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zajeciaId: string): Promise<WynikKontekstu> {
+  const baza = await wczytajBaze(supabase);
+  if (!baza) return { status: "brak-planu" };
+  const { kontekst, ocena } = baza;
+  if (!kontekst.zajecia[zajeciaId]) return { status: "brak-zajec" };
+
   // Collisions and excluded hours only for the classes that move: the checks need nothing else, and the queries
   // stay far below the API's row limit.
-  const ruszane = razem(kontekst, zajeciaId).map((id) => zajecia[id]);
+  const ruszane = razem(kontekst, zajeciaId).map((id) => kontekst.zajecia[id]);
   const grupyRuszane = [...new Set(ruszane.flatMap((z) => z.grupy))];
   const prowRuszani = [...new Set(ruszane.flatMap((z) => z.prowadzacy))];
 
@@ -164,24 +206,34 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
   if (kolizjeB.error) throw blad("kolizji grup", kolizjeB.error);
   if (dezyderaty.error) throw blad("dezyderatów", dezyderaty.error);
 
-  const pary = new Map<string, [string, string]>();
-  for (const k of [...(kolizjeA.data ?? []), ...(kolizjeB.data ?? [])]) pary.set(`${k.grupa_a}\u0000${k.grupa_b}`, [k.grupa_a, k.grupa_b]);
-  kontekst.kolizje = [...pary.values()];
+  uzupelnij(baza, [...(kolizjeA.data ?? []), ...(kolizjeB.data ?? [])], dezyderaty.data ?? [], prowRuszani);
+  return { status: "ok", kontekst, ocena };
+}
 
-  const dodaj = (prow: string, dzien: number, slot: number) => (kontekst.wykluczone[prow] ??= []).push([dzien, slot]);
-  for (const d of dezyderaty.data ?? []) dodaj(d.prowadzacy_id, d.dzien, d.slot);
-  // The Faculty Council blocks its members just like an excluded hour (solver/data.py).
-  const radni = new Set((prowadzacy.data ?? []).filter((p) => p.czlonek_rady_wydzialu).map((p) => p.id));
-  for (const prow of prowRuszani.filter((p) => radni.has(p))) {
-    for (const r of rada.data ?? []) for (let s = r.slot_od; s <= r.slot_do; s++) dodaj(prow, r.dzien, s);
+export type WynikKontekstuPlanu = { status: "brak-planu" } | { status: "ok"; kontekst: KontekstEdycji; ocena: DaneOceny };
+
+/** Rows the API returns at most per request (PostgREST `max_rows`): a longer table would be cut off silently. */
+const LIMIT_WIERSZY = 1000;
+
+/**
+ * The active plan with the collisions and excluded hours of every class, so the board (spec 16) can check a move of
+ * any of them. The data has 173 collisions and 288 excluded hours; more than `LIMIT_WIERSZY` is an error, not a cut.
+ */
+export async function getKontekstPlanu(supabase: SupabaseClient<Database>): Promise<WynikKontekstuPlanu> {
+  const baza = await wczytajBaze(supabase);
+  if (!baza) return { status: "brak-planu" };
+
+  const [kolizje, dezyderaty] = await Promise.all([
+    supabase.from("kolizje_grup").select("grupa_a, grupa_b", { count: "exact" }),
+    supabase.from("dezyderaty_terminy").select("prowadzacy_id, dzien, slot", { count: "exact" }),
+  ]);
+  if (kolizje.error) throw blad("kolizji grup", kolizje.error);
+  if (dezyderaty.error) throw blad("dezyderatów", dezyderaty.error);
+  if ((kolizje.count ?? 0) > LIMIT_WIERSZY || (dezyderaty.count ?? 0) > LIMIT_WIERSZY) {
+    throw new Error(`Za dużo kolizji grup (${kolizje.count}) albo dezyderatów (${dezyderaty.count}) do wczytania naraz.`);
   }
 
-  const ocena: DaneOceny = {
-    nadrzedne: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, g.grupa_nadrzedna])),
-    preferencje: Object.fromEntries((preferencje.data ?? []).map((p) => [p.prowadzacy_id, p.preferencja_dni])),
-    wagi: (job.parametry as { wagi?: Record<string, number> } | null)?.wagi ?? {},
-    wynikPoGenerowaniu: job.wynik_miekkich,
-  };
-
-  return { status: "ok", kontekst, ocena };
+  const prowadzacy = [...new Set(Object.values(baza.kontekst.zajecia).flatMap((z) => z.prowadzacy))];
+  uzupelnij(baza, kolizje.data ?? [], dezyderaty.data ?? [], prowadzacy);
+  return { status: "ok", kontekst: baza.kontekst, ocena: baza.ocena };
 }

@@ -36,6 +36,7 @@ export const ROUTES = [
   "/prowadzacy",
   "/harmonogram-prowadzacych",
   "/plan",
+  "/plan/edycja",
   "/generator",
   "/import",
 ] as const;

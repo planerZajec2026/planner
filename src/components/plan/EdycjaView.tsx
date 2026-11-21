@@ -1,10 +1,9 @@
 import { AppLink } from "@/components/ui/AppLink";
-import { getKontekstEdycji } from "@/lib/data/plan-edycja";
-import { FORMA_LABEL, opisTygodni } from "@/lib/plan";
-import { opisTerminu } from "@/lib/plan-edycja";
+import { getKontekstPlanu } from "@/lib/data/plan-edycja";
 import { single, type SearchParams } from "@/lib/search-params";
 import { createClient } from "@/lib/supabase/server";
-import { EdycjaForm } from "./EdycjaForm";
+import { odczytajFiltr, opcjeFiltra } from "@/lib/tablica-planu";
+import { EdycjaPlanu } from "./tablica/EdycjaPlanu";
 
 export type Powrot = { href: string; etykieta: string };
 
@@ -17,14 +16,16 @@ export function adresPowrotu(powrot: string | undefined): Powrot {
   return { href: powrot && /^\?[\w%=&.+-]*$/.test(powrot) ? `/plan${powrot}` : "/plan", etykieta: "Wróć do planu" };
 }
 
-/** One class of the active plan with the form that moves it (spec 14), from `?zajecia=<id>`. */
+/**
+ * The whole active plan on the editing board (spec 16), filtered by `?grupa=` / `?prowadzacy=` / `?sala=` and
+ * `?tydzien=`, with the class from `?zajecia=` selected and its form (spec 14) below.
+ */
 export async function EdycjaView({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
-  const zajeciaId = single(sp.zajecia) ?? "";
+  const zajeciaId = single(sp.zajecia);
   const powrot = adresPowrotu(single(sp.powrot));
-  const wrocDoPlanu = <AppLink href={powrot.href}>{powrot.etykieta}</AppLink>;
 
-  const wynik = zajeciaId ? await getKontekstEdycji(await createClient(), zajeciaId) : ({ status: "brak-zajec" } as const);
+  const wynik = await getKontekstPlanu(await createClient());
   if (wynik.status === "brak-planu") {
     return (
       <div className="empty-state">
@@ -33,56 +34,38 @@ export async function EdycjaView({ searchParams }: { searchParams: Promise<Searc
       </div>
     );
   }
-  if (wynik.status === "brak-zajec") {
-    return (
-      <div className="empty-state">
-        {zajeciaId ? `Zajęć ${zajeciaId} nie ma w aktualnym planie.` : "Nie wybrano zajęć do edycji."} {wrocDoPlanu}.
-      </div>
-    );
-  }
 
   const { kontekst, ocena } = wynik;
-  const z = kontekst.zajecia[zajeciaId];
-  const obecny = kontekst.plan.find((p) => p.zajeciaId === zajeciaId)!;
+  const brakZajec = zajeciaId !== undefined && !kontekst.zajecia[zajeciaId];
+  const opcje = opcjeFiltra(kontekst, ocena.nadrzedne);
+  const filtr = odczytajFiltr(
+    { grupa: single(sp.grupa), prowadzacy: single(sp.prowadzacy), sala: single(sp.sala), tydzien: single(sp.tydzien) },
+    opcje,
+    kontekst,
+    brakZajec ? undefined : zajeciaId,
+  );
 
   return (
     <>
-      <div className="card">
-        <div className="section-title card-head">Edycja zajęć {z.id}</div>
-        <dl className="edycja-meta">
-          <div>
-            <dt>Przedmiot</dt>
-            <dd>{z.przedmiot}</dd>
-          </div>
-          <div>
-            <dt>Forma</dt>
-            <dd>{FORMA_LABEL[z.forma] ?? z.forma}</dd>
-          </div>
-          <div>
-            <dt>Grupy</dt>
-            <dd>{z.grupy.map((g) => kontekst.etykiety.grupy[g] ?? g).join(", ")}</dd>
-          </div>
-          <div>
-            <dt>Prowadzący</dt>
-            <dd>{z.prowadzacy.map((p) => kontekst.etykiety.prowadzacy[p] ?? p).join(", ")}</dd>
-          </div>
-          <div>
-            <dt>Długość</dt>
-            <dd>
-              {z.sloty} × 45 min, {z.miejsca} osób
-            </dd>
-          </div>
-          <div>
-            <dt>Obecny termin</dt>
-            <dd>
-              {opisTerminu(obecny, z.sloty)}, sala {obecny.sala}, {opisTygodni({ tygodnie: obecny.tygodnie, czestotliwosc: z.czestotliwosc })}
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      {/* The key resets the selection when another class is opened; a saved edit keeps it and gets fresh data. */}
-      <EdycjaForm key={zajeciaId} kontekst={kontekst} ocena={ocena} zajeciaId={zajeciaId} powrot={powrot.href} powrotEtykieta={powrot.etykieta} />
+      {brakZajec && (
+        <div className="conflict-banner">
+          Zajęć {zajeciaId} nie ma w aktualnym planie. <AppLink href={powrot.href}>{powrot.etykieta}</AppLink>.
+        </div>
+      )}
+      {filtr ? (
+        <EdycjaPlanu
+          // A new filter starts the board afresh; a save keeps it, with its message and selection.
+          key={`${filtr.rodzaj}|${filtr.id}|${filtr.tydzien ?? ""}`}
+          kontekst={kontekst}
+          ocena={ocena}
+          filtr={filtr}
+          opcje={opcje}
+          zaznaczone={brakZajec ? undefined : zajeciaId}
+          powrot={powrot}
+        />
+      ) : (
+        <div className="empty-state">Plan nie ma żadnych zajęć.</div>
+      )}
     </>
   );
 }

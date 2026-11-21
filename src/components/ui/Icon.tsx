@@ -56,6 +56,7 @@ const PATHS = {
   "chevron-left": <path d="M15 6l-6 6 6 6" />,
   "chevron-right": <path d="M9 6l6 6-6 6" />,
   x: <path d="M6 6l12 12M18 6L6 18" />,
+  move: <path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3" />,
   alert: (
     <>
       <circle cx="12" cy="12" r="9" />

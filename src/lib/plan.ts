@@ -365,7 +365,10 @@ export function spotkaniaDoEventow(spotkania: Spotkanie[], etykiety: Etykiety, o
 }
 
 /** Everything the calendar's class popup lists below the time: form, room, people, groups and weeks. */
-export function szczegolyZajec(w: PlanWiersz, etykiety: Etykiety): Szczegol[] {
+export function szczegolyZajec(
+  w: Pick<PlanWiersz, "forma" | "sala" | "prowadzacy" | "grupy" | "tygodnie" | "czestotliwosc" | "edytowano">,
+  etykiety: Etykiety,
+): Szczegol[] {
   const szczegoly: Szczegol[] = [
     { etykieta: "Forma", wartosc: FORMA_LABEL[w.forma] ?? w.forma },
     { etykieta: "Sala", wartosc: w.sala },

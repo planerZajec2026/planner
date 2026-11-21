@@ -17,6 +17,7 @@ import {
   type PlanFiltry,
   type PlanWiersz,
 } from "@/lib/plan";
+import { wgEtykiety } from "@/lib/labels";
 import { single, type SearchParams } from "@/lib/search-params";
 import { PlanTable } from "./PlanTable";
 
@@ -61,8 +62,8 @@ export async function PlanView({ searchParams }: { searchParams: Promise<SearchP
 
   const rocznikOpcje = [...new Set(wiersze.map((w) => w.rocznikId))].sort().map((r) => ({ value: r, label: r }));
   const grupyOpcje = Object.entries(etykiety.grupy)
-    .sort(([, a], [, b]) => a.localeCompare(b, "pl"))
-    .map(([value, label]) => ({ value, label }));
+    .map(([value, label]) => ({ value, label }))
+    .sort(wgEtykiety);
   const prowadzacyOpcje = Object.entries(etykiety.prowadzacy)
     .sort(([a], [b]) => a.localeCompare(b, "pl"))
     .map(([value, label]) => ({ value, label }));

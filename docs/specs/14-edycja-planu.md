@@ -10,12 +10,12 @@ Po każdej zmianie plan nadal spełnia wszystkie ograniczenia twarde 1–10 ze s
 ## Zakres
 - Strona edycji jednych zajęć: dzień, slot startowy, sala, tygodnie.
 - Sprawdzanie ograniczeń twardych w TypeScripcie: na żywo w formularzu i ponownie na serwerze przed zapisem.
-- Siatka wolnych terminów: dla każdego dnia i godziny liczba sal, w których te zajęcia mogą się odbyć.
+- Siatka wolnych terminów: dla każdego dnia i godziny liczba sal, w których te zajęcia mogą się odbyć. Usunięta w [spec 16](16-tablica-edycji.md): wolne terminy pokazuje teraz przeciąganie na tablicy.
 - Zapis jedną funkcją bazy, która pilnuje, żeby dwie równoczesne edycje nie zepsuły planu.
 - Oznaczenie zajęć zmienionych ręcznie na `/plan` i w eksporcie.
 
 **Poza zakresem:**
-- przeciąganie zajęć w kalendarzu (drag and drop),
+- przeciąganie zajęć w kalendarzu (drag and drop): dodał je [spec 16](16-tablica-edycji.md), a formularz z tego specu jest pod tablicą,
 - historia zmian i cofanie do terminu z generatora,
 - zapis mimo konfliktu („wymuś”),
 - przeliczanie kary miękkich po edycji: dodał je [spec 15](15-postep-i-problemy.md) („Kara po ręcznych zmianach”),
@@ -107,7 +107,7 @@ Worker nie wymaga zmian: wstawia wiersze `plan_zajec` z jawną listą kolumn.
 - Formularz: Dzień, Początek, Sala, Tygodnie; „Zapisz zmianę”, „Przywróć obecny termin”, „Wróć do planu”.
 - Lista konfliktów dla wybranego terminu, aktualizowana na żywo. Z konfliktami nie da się zapisać.
 - Informacja o zajęciach powiązanych.
-- „Wolne terminy”: tabela dni × godzin. Komórka pokazuje liczbę sal, w których zajęcia mogą się odbyć w tym terminie; kliknięcie ustawia dzień i godzinę, a salę zostawia, gdy jest wolna, albo wybiera pierwszą wolną.
+- ~~„Wolne terminy”~~ (usunięte w spec 16): tabela dni × godzin. Komórka pokazuje liczbę sal, w których zajęcia mogą się odbyć w tym terminie; kliknięcie ustawia dzień i godzinę, a salę zostawia, gdy jest wolna, albo wybiera pierwszą wolną.
 - Nieznane `zajecia` albo brak planu: komunikat i link do `/plan`.
 
 Sala w formularzu: „A283 · aula · 120 miejsc”. Sale, które nie pasują do zajęć (ograniczenia 6 i 7), nie są proponowane; obecna sala jest na liście zawsze.
@@ -138,4 +138,4 @@ npm run dev                             # /generator → Generuj plan → /plan 
 5. Znaczniki na `/plan`, eksport, ostrzeżenie w generatorze.
 6. Testy e2e i dokumentacja.
 
-Następne etapy po tym specu: historia zmian z cofaniem, przeciąganie w kalendarzu. Karę po edycji i miejsca do poprawy pokazuje [spec 15](15-postep-i-problemy.md).
+Następne etapy po tym specu: historia zmian z cofaniem, przeciąganie w kalendarzu ([spec 16](16-tablica-edycji.md)). Karę po edycji i miejsca do poprawy pokazuje [spec 15](15-postep-i-problemy.md).

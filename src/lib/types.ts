@@ -8,8 +8,10 @@ export type Kierunek = {
 
 export type Grupa = {
   id: string;
-  /** Group code shown in the UI, e.g. "INF1-R1-G1". */
+  /** Group code, e.g. "INF1-R1-G1": the group list on /kierunki shows it. */
   kod: string;
+  /** How selectors name the group, e.g. "INF1-R1 · Grupa 1" (`etykietaGrupy`). */
+  etykieta: string;
   kierunekId: string;
   rocznikId: string;
   /** e.g. "Informatyka I st., rok I, sem. I" */
