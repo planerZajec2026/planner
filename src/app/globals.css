@@ -293,6 +293,21 @@ button { font-family:inherit; }
 .conflict-banner p { margin:0; opacity:0.92; }
 .btn-danger-ghost { background:var(--white); color:var(--danger-text); border:1px solid var(--danger-border); }
 .btn-danger-ghost:hover { background:var(--danger-bg); }
+/* Only for the final confirmation of a destructive action (spec 17). */
+.btn-danger { background:var(--danger-text); color:var(--white); }
+.btn-danger:hover:not(:disabled) { background:#912018; }
+
+/* Import page (spec 17): clearing the whole database, confirmed by typing a phrase. */
+.strefa-zagrozenia { border:1px solid var(--danger-border); }
+.strefa-zagrozenia .section-title { color:var(--danger-text); }
+.strefa-wiersz { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 24px; }
+.strefa-wiersz .card-note { margin:4px 0 0; }
+.potwierdzenie-dialog { width:min(480px, calc(100vw - 32px)); }
+.potwierdzenie-dialog .class-dialog-head { align-items:flex-start; }
+.potwierdzenie-dialog .conflict-banner ul { margin:6px 0; padding-left:20px; }
+.potwierdzenie-etykieta { font-size:13.5px; color:var(--graphite); }
+.potwierdzenie-pole { font:inherit; font-size:14px; padding:9px 12px; border:1px solid var(--silver); border-radius:8px; color:var(--ink); background:var(--white); }
+.potwierdzenie-pole:focus-visible { outline:2px solid var(--action-blue); outline-offset:1px; }
 
 .import-summary { display:flex; flex-wrap:wrap; gap:28px; margin-bottom:14px; }
 .import-stat { font-size:13px; color:var(--slate); }

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CzyszczenieBazy } from "@/components/import/CzyszczenieBazy";
 import { ImportDanychForm } from "@/components/import/ImportDanychForm";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { getLiczbaZajec } from "@/lib/data/plan";
+import { getStanBazy } from "@/lib/data/plan";
 
 export const metadata: Metadata = { title: "Import danych" };
 
@@ -23,7 +24,8 @@ export default function ImportPage() {
 }
 
 async function Formularz() {
-  const liczba = await getLiczbaZajec();
+  const stan = await getStanBazy();
+  const liczba = stan.zajecia;
   return (
     <>
       {liczba > 0 ? (
@@ -32,6 +34,7 @@ async function Formularz() {
         <div className="info-banner">Baza jest pusta. Wgraj dane, żeby wygenerować plan.</div>
       )}
       <ImportDanychForm maDane={liczba > 0} />
+      <CzyszczenieBazy stan={stan} />
     </>
   );
 }

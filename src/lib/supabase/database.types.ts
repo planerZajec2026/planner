@@ -460,6 +460,9 @@ isOneToOne: false
             "wgraj_dane_planu":
 { Args: { "payload": Json }; Returns: Json
                            },
+"wyczysc_dane_planu":
+{ Args: never; Returns: Json
+                           },
 "zapisz_przydzialy":
 { Args: { "p_job_id": string,"p_przydzialy": Json,"p_wersja": number }; Returns: boolean
                            }
