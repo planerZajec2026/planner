@@ -126,6 +126,8 @@ test("a link to a class that is not in the plan says so instead of failing", asy
 
 test("the edit page fits a phone screen", { tag: "@phone" }, async ({ page }) => {
   await page.goto(`/plan/edycja?zajecia=${ZAJECIA}`);
-  await expect(page.getByRole("table")).toBeVisible();
+  // The board (spec 16) scrolls inside its card; the page itself must not.
+  await expect(page.locator(".tablica-grid")).toBeVisible();
+  await expect(page.getByText(`Edycja zajęć ${ZAJECIA}`)).toBeVisible();
   expect(await page.evaluate(() => document.scrollingElement!.scrollWidth > window.innerWidth)).toBe(false);
 });
