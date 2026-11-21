@@ -6,7 +6,7 @@ Aplikacja działa na **Vercelu**, baza danych na **Supabase**. Szczegóły i uza
 |---------|--------|------------|
 | Aplikacja Next.js | Vercel, projekt połączony z `github.com/planerZajec2026/planner` | integracja Vercela z GitHubem: `main` → Production, pozostałe gałęzie i PR → Preview |
 | Baza danych (schemat ze spec 08 i 13) | Supabase | workflow GitHub Actions [`deploy-db.yml`](../.github/workflows/deploy-db.yml) (`supabase db push`) |
-| Worker generatora planu (spec 13) | GitHub Actions | workflow [`solver-worker.yml`](../.github/workflows/solver-worker.yml), co 5 minut z gałęzi `main` |
+| Worker generatora planu (spec 13) | GitHub Actions | workflow [`solver-worker.yml`](../.github/workflows/solver-worker.yml), z gałęzi `main`, uruchamiany przez bazę przy każdym nowym zadaniu (zapasowo co 5 minut) |
 
 Strony czytają wszystko z bazy (spec 13). Bez danych wejściowych pokazują „Brak danych wejściowych”.
 
@@ -68,8 +68,10 @@ Decyzja o płatnościach należy do właściciela projektu; kod od niej nie zale
 
 Przycisk „Generuj” tylko dopisuje zadanie do tabeli `generation_jobs`. Plan liczy worker (`solver/`), a Vercel nie uruchomi procesu na kilka minut, więc w chmurze robi to workflow [`solver-worker.yml`](../.github/workflows/solver-worker.yml).
 
-- **Kiedy działa:** co 5 minut sprawdza kolejkę. Gdy jest pusta, kończy po kilku sekundach. Gdy są zadania, instaluje solver i liczy je po kolei (do 5 na jedno uruchomienie, jedno zadanie to 200–400 s).
-- **Opóźnienie:** GitHub uruchamia zadania z harmonogramu z poślizgiem, więc plan zaczyna się liczyć zwykle 5–15 minut po kliknięciu. Bez czekania: Actions → Solver worker → Run workflow.
+- **Kiedy działa:** każde nowe zadanie `queued` uruchamia workflow od razu: wyzwalacz `generation_jobs_uruchom_workera` (migracja `uruchamianie_workera`) wysyła przez pg_net `workflow_dispatch` do GitHuba. Worker startuje zwykle w ciągu minuty. Gdy kolejka jest pusta, kończy po kilku sekundach. Gdy są zadania, instaluje solver i liczy je po kolei (do 5 na jedno uruchomienie, jedno zadanie to 200–400 s).
+- **Harmonogram jako zapas:** workflow ma też `*/5`, ale GitHub uruchamia zadania z harmonogramu z dużym poślizgiem (w praktyce co kilka godzin). Łapie on zadania, których wywołanie się nie udało. Bez czekania: Actions → Solver worker → Run workflow.
+- **Token do uruchamiania:** fine-grained token GitHuba tylko dla tego repozytorium z uprawnieniem **Actions: Read and write** (konto właściciela albo organizacji `planerZajec2026`, z datą ważności). Trzyma go wyłącznie Vault w Supabase. Jednorazowo w SQL Editorze projektu: `select vault.create_secret('<token>', 'github_worker_token');`, a przy wymianie: `select vault.update_secret((select id from vault.secrets where name = 'github_worker_token'), '<nowy token>');`. Bez tokenu wyzwalacz nic nie robi i zostaje tylko harmonogram.
+- **Sprawdzenie wywołań:** `select created, status_code, content from net._http_response order by created desc limit 5;` w SQL Editorze. `204` to uruchomiony workflow; `401`/`403` to zły albo wygasły token lub brak uprawnienia; `404` to token bez dostępu do repozytorium.
 - **Dostęp do bazy:** sekrety `SUPABASE_DB_PASSWORD` i `SUPABASE_PROJECT_ID` ze środowiska `production`, połączenie przez session pooler (`aws-0-eu-west-1.pooler.supabase.com:5432`), bo runnery GitHuba nie mają IPv6.
 - **Wymagany recenzent:** jeśli środowisko `production` dostanie wymaganego recenzenta, każde uruchomienie workera będzie czekać na zatwierdzenie. Przenieś wtedy oba sekrety workera do osobnego środowiska bez recenzenta.
 - **Wyłączanie przez GitHuba:** harmonogram w publicznym repo wyłącza się po 60 dniach bez aktywności w repozytorium. Włącza się go z powrotem w zakładce Actions.
@@ -92,6 +94,7 @@ npx supabase migration list
 - Do przeglądarki trafiają tylko `NEXT_PUBLIC_SUPABASE_URL` i klucz publishable. Oba są publiczne z założenia; dane chroni RLS (spec 08).
 - `SUPABASE_SERVICE_ROLE_KEY` omija RLS. Jest tylko w Vercelu jako zmienna po stronie serwera (bez `NEXT_PUBLIC_`) i używają go wyłącznie Server Actions importu i generatora. Nigdy w repo ani w kodzie przeglądarki.
 - Hasło do bazy zna tylko środowisko `production` na GitHubie (`deploy-db.yml` i `solver-worker.yml`).
+- Token uruchamiający workera (`github_worker_token`) jest tylko w Vault w Supabase. Funkcji, która go czyta (`uruchom_workera`), nie mogą wywołać role API. Token pozwala tylko uruchamiać workflowy tego repozytorium; wymień go, gdy wygaśnie albo odchodzi ktoś z dostępem do bazy.
 - `SUPABASE_ACCESS_TOKEN` zarządza wszystkimi projektami na koncie właściciela. Jest tylko w środowisku `production` na GitHubie. Wymień go, gdy odchodzi ktoś z dostępem.
 - Pliki `.env*` są w `.gitignore`; `.env.example` zawiera tylko nazwy.
 - Kontrola po buildzie: w `.next/static` nie może być `sb_secret` ani `service_role`.

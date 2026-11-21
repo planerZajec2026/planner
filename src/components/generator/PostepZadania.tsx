@@ -13,8 +13,8 @@ export function PostepZadania({ zadanie: z, teraz }: { zadanie: Zadanie; teraz: 
   if (z.status === "queued") {
     return (
       <p className="postep-opis">
-        Zadanie czeka, aż worker je pobierze. Worker na serwerze uruchamia się co kilka minut, więc start może chwilę
-        potrwać.
+        Zadanie czeka, aż worker je pobierze. Worker na serwerze startuje zwykle w ciągu minuty od zlecenia, a sama
+        instalacja solvera zajmuje kolejną minutę.
       </p>
     );
   }
