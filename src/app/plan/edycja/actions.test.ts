@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WynikKontekstu } from "@/lib/data/plan-edycja";
 import { przygotuj, wolneTerminy, type Cel, type KontekstEdycji } from "@/lib/plan-edycja";
-import { JOB_ID, kontekstTestowy } from "@/test/kontekst-planu";
+import { JOB_ID, kontekstTestowy, ocenaTestowa } from "@/test/kontekst-planu";
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
@@ -47,7 +47,7 @@ beforeEach(() => {
   k = kontekstTestowy();
   mocks.rpc.mockResolvedValue({ data: true, error: null });
   mocks.admin.mockReturnValue({ rpc: mocks.rpc });
-  mocks.kontekst.mockImplementation(async (): Promise<WynikKontekstu> => ({ status: "ok", kontekst: k }));
+  mocks.kontekst.mockImplementation(async (): Promise<WynikKontekstu> => ({ status: "ok", kontekst: k, ocena: ocenaTestowa() }));
 });
 
 describe("zapiszPrzydzial", () => {

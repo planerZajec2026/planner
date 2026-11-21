@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { StanEdycji } from "@/app/plan/edycja/actions";
 import { dzienLabel, poczatekSlotu } from "@/lib/plan";
 import { przygotuj, wolneTerminy, type KontekstEdycji } from "@/lib/plan-edycja";
-import { JOB_ID, kontekstTestowy } from "@/test/kontekst-planu";
+import { ocenaPlanu } from "@/lib/plan-problemy";
+import { JOB_ID, kontekstTestowy, ocenaTestowa } from "@/test/kontekst-planu";
 
 const zapisz = vi.hoisted(() => vi.fn());
 
@@ -173,6 +174,38 @@ describe("EdycjaForm", () => {
     expect(screen.getByText(/Najpierw wybierz poprawne tygodnie/)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(zapiszBtn()).toBeDisabled();
+  });
+
+  describe("kara miękkich", () => {
+    it("bez zmiany pokazuje karę planu teraz", () => {
+      render(<EdycjaForm kontekst={k} ocena={ocenaTestowa()} zajeciaId="Z002" powrot="/plan" />);
+      expect(screen.getByText(/Kara miękkich planu:/)).toHaveTextContent("Kara miękkich planu: 5088. Wybierz inny termin");
+    });
+
+    it("po wyborze terminu pokazuje karę po zmianie i różnicę", async () => {
+      render(<EdycjaForm kontekst={k} ocena={ocenaTestowa()} zajeciaId="Z002" powrot="/plan" />);
+      const { t, nazwa, sala } = wolny("Z002");
+      await userEvent.click(screen.getByRole("button", { name: nazwa }));
+
+      const po = ocenaPlanu(k, ocenaTestowa(), [{ ...obecny("Z002"), dzien: t.dzien, slot: t.slot, sala }]).wynik;
+      const roznica = po - 5088;
+      const panel = screen.getByText(/^Kara miękkich: 5088 →/).closest(".kara-zmiana")!;
+      expect(panel).toHaveTextContent(`→ ${po.toLocaleString("pl-PL")}`);
+      expect(panel).toHaveTextContent(
+        roznica < 0 ? "Ta zmiana zmniejsza karę." : roznica > 0 ? "Ta zmiana zwiększa karę." : "Ta zmiana nie zmienia kary.",
+      );
+      expect(panel).toHaveClass("kara-zmiana", roznica < 0 ? "lepiej" : roznica > 0 ? "gorzej" : "kara-zmiana");
+    });
+
+    it("podaje karę po wygenerowaniu, gdy ręczne zmiany ją zmieniły", () => {
+      render(<EdycjaForm kontekst={k} ocena={{ ...ocenaTestowa(), wynikPoGenerowaniu: 6000 }} zajeciaId="Z002" powrot="/plan" />);
+      expect(screen.getByText(/Kara miękkich planu:/)).toHaveTextContent("5088 (po wygenerowaniu 6000)");
+    });
+
+    it("bez danych oceny nie pokazuje kary", () => {
+      pokaz("Z002");
+      expect(screen.queryByText(/Kara miękkich/)).toBeNull();
+    });
   });
 
   it("siatka oznacza obecny termin i terminy zajęte", () => {

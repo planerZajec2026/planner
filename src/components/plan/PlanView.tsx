@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { WeekCalendar } from "@/components/calendar/WeekCalendar";
 import { AppLink } from "@/components/ui/AppLink";
 import { SelectField, type Option } from "@/components/ui/SelectField";
-import { getAktywnyPlan, type AktywnyPlan } from "@/lib/data/plan";
+import { getAktywnyPlan, type AktywnyPlan, type Zadanie } from "@/lib/data/plan";
+import { getProblemyPlanu } from "@/lib/data/plan-problemy";
 import {
   DNI_PLANU,
   doEventow,
@@ -26,6 +28,18 @@ const widokiOpcje: Option[] = [
   { value: "tabela", label: "Tabela" },
   { value: "tydzien", label: "Kalendarz tygodniowy" },
 ];
+
+const liczba = (n: number) => n.toLocaleString("pl-PL");
+
+const karaPoGenerowaniu = (z: Zadanie) => (z.wynikMiekkich != null ? ` · kara miękkich ${liczba(z.wynikMiekkich)}` : "");
+
+/** The penalty of the plan with its manual edits (spec 15): the stored score is the one after generation. */
+async function KaraTeraz({ zadanie }: { zadanie: Zadanie }) {
+  const { wynik } = await getProblemyPlanu(zadanie.id, zadanie.wagi);
+  const poGenerowaniu =
+    zadanie.wynikMiekkich != null && zadanie.wynikMiekkich !== wynik ? `, po wygenerowaniu ${liczba(zadanie.wynikMiekkich)}` : "";
+  return ` · kara miękkich ${liczba(wynik)} (teraz${poGenerowaniu})`;
+}
 
 /** Filters, export links and the plan itself (table or weekly calendar) from `?widok=&grupa=&prowadzacy=&sala=…`. */
 export async function PlanView({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -102,7 +116,13 @@ export async function PlanView({ searchParams }: { searchParams: Promise<SearchP
           </strong>
           <div className="grupa-students">
             Plan z {zadanie.zakonczono ? dataGodzina.format(new Date(zadanie.zakonczono)) : "—"}
-            {zadanie.wynikMiekkich != null ? ` · kara miękkich ${zadanie.wynikMiekkich.toLocaleString("pl-PL")}` : ""}
+            {zadanie.zmianyReczne > 0 ? (
+              <Suspense fallback={karaPoGenerowaniu(zadanie)}>
+                <KaraTeraz zadanie={zadanie} />
+              </Suspense>
+            ) : (
+              karaPoGenerowaniu(zadanie)
+            )}
             {zmienione > 0 ? ` · zmienione ręcznie: ${zmienione}` : ""}
           </div>
         </div>

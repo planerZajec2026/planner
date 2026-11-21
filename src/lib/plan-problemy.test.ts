@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { daneProblemowTestowe } from "@/test/kontekst-planu";
-import { przodkowie, problemyPlanu, zaokraglij, type DaneProblemow } from "./plan-problemy";
+import { daneProblemowTestowe, kontekstTestowy, ocenaTestowa } from "@/test/kontekst-planu";
+import { karaWgRodzaju, ocenaPlanu, przodkowie, problemyPlanu, RODZAJE, zaokraglij, type DaneProblemow } from "./plan-problemy";
 
 describe("problemyPlanu on the real data", () => {
   // The numbers solver/validator.py reports for e2e/fixtures/plan.json (its `raport.miekkie` and `wynik_miekkich`).
@@ -121,6 +121,33 @@ describe("problemyPlanu on a small plan", () => {
     expect(problemyPlanu(d).problemy.filter((p) => p.rodzaj === "preferencja_dni")).toEqual([
       expect.objectContaining({ kto: "dr A", jednostki: 2, kara: 10, opis: "Woli zajęcia skumulowane, a ma je w 2 dniach" }),
     ]);
+  });
+});
+
+describe("ocenaPlanu (the edit page's penalty before and after a move)", () => {
+  it("scores the edit context's plan like the validator", () => {
+    expect(ocenaPlanu(kontekstTestowy(), ocenaTestowa()).wynik).toBe(5088);
+  });
+
+  it("applies the new placements before scoring", () => {
+    const k = kontekstTestowy();
+    const z001 = k.plan.find((p) => p.zajeciaId === "Z001")!;
+    const zmiana = { ...z001, slot: 1 };
+    const d = daneProblemowTestowe();
+    d.plan = d.plan.map((p) => (p.zajeciaId === "Z001" ? zmiana : p));
+
+    const po = ocenaPlanu(k, ocenaTestowa(), [zmiana]);
+    expect(po.wynik).toBe(problemyPlanu(d).wynik);
+    expect(po.wynik).not.toBe(5088);
+    // The context itself is not changed.
+    expect(ocenaPlanu(k, ocenaTestowa()).wynik).toBe(5088);
+  });
+
+  it("splits the weighted score by kind", () => {
+    const { miekkie, wynik } = ocenaPlanu(kontekstTestowy(), ocenaTestowa());
+    const wgRodzaju = karaWgRodzaju(miekkie, {});
+    expect(RODZAJE.reduce((s, r) => s + wgRodzaju[r], 0)).toBe(wynik);
+    expect(karaWgRodzaju(miekkie, { zla_wielkosc_sali: 0 }).zla_wielkosc_sali).toBe(0);
   });
 });
 

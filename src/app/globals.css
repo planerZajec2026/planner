@@ -120,7 +120,16 @@ button { font-family:inherit; }
 .class-block.compact .title { -webkit-line-clamp:1; line-clamp:1; }
 .class-block.compact .meta { font-size:11px; }
 
-.class-dialog { border:0; padding:0; border-radius:12px; background:var(--white); color:var(--graphite); box-shadow:rgba(34,42,53,0.18) 0px 12px 32px 0px; width:min(420px, calc(100vw - 32px)); max-height:calc(100dvh - 32px); }
+/* Edit page (spec 15): the plan's penalty before and after the chosen move. */
+.kara-zmiana { margin:0; padding:12px 14px; border-radius:10px; background:var(--paper); font-size:13.5px; color:var(--graphite); }
+.kara-zmiana p { margin:0; }
+.kara-zmiana strong { color:var(--ink); }
+.kara-zmiana.lepiej { background:var(--success-bg); color:var(--success-text); }
+.kara-zmiana.gorzej { background:var(--danger-bg); color:var(--danger-text); }
+.kara-zmiana.lepiej strong, .kara-zmiana.gorzej strong { color:inherit; }
+.kara-zmiana .kara-rodzaje { margin-top:4px; font-size:12.5px; }
+
+.class-dialog {border:0; padding:0; border-radius:12px; background:var(--white); color:var(--graphite); box-shadow:rgba(34,42,53,0.18) 0px 12px 32px 0px; width:min(420px, calc(100vw - 32px)); max-height:calc(100dvh - 32px); }
 .class-dialog::backdrop { background:rgba(16,16,16,0.35); }
 .class-dialog[open] { animation:vt-fade-in var(--dur-enter) var(--ease-out); }
 .class-dialog-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:10px; }
