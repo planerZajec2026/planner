@@ -49,7 +49,7 @@ Migracja `20261117100000_postep_generowania.sql`, tylko rozszerzająca: stary wo
 Kara modelu solvera nie jest tą samą liczbą co kara miękkich z walidatora (`wynik_miekkich`), dlatego strona podpisuje ją „kara wg solvera”.
 
 ### Strona
-- `queued`: tekst, że zadanie czeka na worker, który na serwerze startuje co kilka minut.
+- `queued`: tekst, że zadanie czeka na worker, który na serwerze startuje zwykle w ciągu minuty (uruchamia go wyzwalacz w bazie, zob. [wdrozenie.md](../wdrozenie.md)).
 - `running` bez raportu: worker zaczyna pracę.
 - `running` z raportem: tytuł etapu („Etap 1 z 2: plan bez naruszeń”, „Etap 2 z 2: optymalizacja”), „czas solvera: X z L s”, pasek `role="progressbar"`, opis (w etapie 2 przed pierwszym lepszym planem: solver analizuje model, co trwa zwykle kilkadziesiąt sekund), statystyki kary wg solvera.
 - Gdy ostatni raport jest starszy niż 30 s: ostrzeżenie, że worker mógł przestać działać.
