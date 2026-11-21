@@ -33,6 +33,7 @@ Frontend for **Planner**, a university timetable planner. Built with Next.js (Ap
 | 13 | [Generator planu zajęć](13-generator-planu.md) | `feat/13-generator-planu` | `/generator`, `/plan`, `/import-eksport` |
 | 14 | [Ręczna edycja planu](14-edycja-planu.md) | `feat/14-edycja-planu` | `/plan/edycja`, `/plan` |
 | 15 | [Postęp generowania i miejsca do poprawy](15-postep-i-problemy.md) | `feat/15-postep-i-problemy` | `/generator`, `/plan/edycja` |
+| 16 | [Tablica edycji planu](16-tablica-edycji.md) | `feat/16-tablica-edycji` | `/plan/edycja` |
 
 ## Workflow
 

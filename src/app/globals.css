@@ -20,6 +20,15 @@
   --danger-border: #f6cfcb;
   --success-bg: #ecfdf3;
   --success-text: #067647;
+  /* Class type tags (lecture, exercises, lab, seminar): each text colour is at least 5:1 on its background. */
+  --tag-wyklad-bg: #e6f0fd;
+  --tag-wyklad-text: #1d4ed8;
+  --tag-cwiczenia-bg: #e3f5e9;
+  --tag-cwiczenia-text: #067647;
+  --tag-laboratorium-bg: #efe9fd;
+  --tag-laboratorium-text: #6d28d9;
+  --tag-seminarium-bg: #fdf0df;
+  --tag-seminarium-text: #9a4a06;
   --shadow-card: rgba(34,42,53,0.05) 0px 4px 8px 0px;
   --shadow-hover: rgba(36,36,36,0.7) 0px 1px 5px -4px, rgba(36,36,36,0.05) 0px 4px 8px 0px;
   /* Motion tokens (spec 07). Mirrored for Motion in src/lib/motion.ts — keep both in sync. */
@@ -120,6 +129,43 @@ button { font-family:inherit; }
 .class-block.compact .title { -webkit-line-clamp:1; line-clamp:1; }
 .class-block.compact .meta { font-size:11px; }
 
+/* Editing board (spec 16): days × 45-minute slots; while a class is dragged every start time shows what a move there does. */
+.tablica-sekcja { display:flex; flex-direction:column; gap:12px; min-width:0; }
+.tablica-pasek { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; }
+.tablica-pasek .card-note { margin:0; }
+.tablica-legenda { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12.5px; color:var(--slate); }
+.tablica-legenda li { display:flex; align-items:center; gap:6px; }
+.tablica-probka { width:14px; height:14px; border-radius:4px; display:inline-block; }
+.tablica-grid { position:relative; display:grid; grid-template-columns:72px repeat(5, minmax(128px, 1fr)); grid-template-rows:44px repeat(12, 46px); min-width:720px; }
+.tablica-grid.przeciaganie { cursor:grabbing; }
+.tablica-slot { font-size:11.5px; color:var(--stone); text-align:right; padding:3px 10px 0 0; }
+.tablica-dzien { background-image:repeating-linear-gradient(to bottom, var(--silver) 0, var(--silver) 1px, transparent 1px, transparent 46px); }
+.tablica-obszar { pointer-events:none; }
+.tablica-komorka { margin:1px; border-radius:6px; pointer-events:none; }
+.tablica-komorka.wolny, .tablica-probka.wolny { background:rgba(6,118,71,0.16); }
+.tablica-komorka.bez-sali, .tablica-probka.bez-sali { background:rgba(217,119,6,0.2); }
+.tablica-komorka.konflikt, .tablica-probka.konflikt { background:repeating-linear-gradient(135deg, rgba(180,35,24,0.18) 0 5px, rgba(180,35,24,0.06) 5px 10px); }
+.tablica-kafelek { position:relative; z-index:1; touch-action:none; user-select:none; -webkit-user-select:none; }
+.tablica-kafelek.zaznaczony { box-shadow:0 0 0 2px var(--ink), var(--shadow-card); }
+.tablica-grid.przeciaganie .tablica-kafelek { opacity:0.55; }
+.tablica-grid.przeciaganie .tablica-kafelek.przeciagany { opacity:0.25; }
+.tablica-cel { position:relative; z-index:2; pointer-events:none; margin:2px; border-radius:10px; border:2px dashed var(--danger-text); }
+.tablica-cel.wolny { border-color:var(--success-text); background:rgba(6,118,71,0.1); }
+.tablica-cel.bez-sali { border-color:#b45309; }
+/* Where the dragged class is now: its own colour, distinct from the states of the start times. */
+.tablica-zrodlo { position:relative; z-index:2; pointer-events:none; margin:2px; border-radius:10px; border:2px solid var(--action-blue); background:rgba(0,153,255,0.18); }
+.tablica-probka.zrodlo { background:rgba(0,153,255,0.3); border:1.5px solid var(--action-blue); box-sizing:border-box; }
+.tablica-kopia { position:fixed; z-index:50; pointer-events:none; margin:0; opacity:0.92; box-shadow:var(--shadow-hover); }
+.przeniesienie-dialog { width:min(560px, calc(100vw - 32px)); }
+.przeniesienie-tabela { width:100%; border-collapse:collapse; table-layout:fixed; font-size:13.5px; }
+.przeniesienie-tabela tbody th, .przeniesienie-tabela thead td { width:84px; }
+.przeniesienie-tabela td { overflow-wrap:anywhere; }
+.przeniesienie-tabela th, .przeniesienie-tabela td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--silver); vertical-align:middle; }
+.przeniesienie-tabela thead th { font-size:12px; font-weight:500; color:var(--slate); }
+.przeniesienie-tabela tbody th { font-weight:500; color:var(--slate); white-space:nowrap; }
+.przeniesienie-tabela tr.zmiana td:last-child { font-weight:600; color:var(--ink); }
+.przeniesienie-tabela select { font:inherit; width:100%; padding:4px 6px; border:1px solid var(--silver); border-radius:6px; background:var(--white); color:var(--graphite); }
+
 /* Edit page (spec 15): the plan's penalty before and after the chosen move. */
 .kara-zmiana { margin:0; padding:12px 14px; border-radius:10px; background:var(--paper); font-size:13.5px; color:var(--graphite); }
 .kara-zmiana p { margin:0; }
@@ -135,6 +181,11 @@ button { font-family:inherit; }
 .class-dialog-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:10px; }
 .class-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .class-dialog-head .block-tag { font-size:11px; font-weight:500; background:var(--paper); color:var(--graphite); border-radius:9999px; padding:3px 10px; }
+/* After the two rules above, so the type colour wins on calendar blocks and in the dialogs alike. */
+.block-tag.typ-wyklad { background:var(--tag-wyklad-bg); color:var(--tag-wyklad-text); }
+.block-tag.typ-cwiczenia { background:var(--tag-cwiczenia-bg); color:var(--tag-cwiczenia-text); }
+.block-tag.typ-laboratorium { background:var(--tag-laboratorium-bg); color:var(--tag-laboratorium-text); }
+.block-tag.typ-seminarium { background:var(--tag-seminarium-bg); color:var(--tag-seminarium-text); }
 .class-dialog-head .btn-icon { cursor:pointer; }
 .class-dialog h2 { font-size:18px; line-height:1.3; letter-spacing:-0.3px; }
 .class-dialog-termin { margin:0; font-size:14px; font-weight:500; color:var(--ink); }
@@ -300,17 +351,6 @@ button { font-family:inherit; }
 .tygodnie-lista label { display:inline-flex; align-items:center; gap:6px; min-width:54px; padding:7px 10px; border:1px solid var(--silver); border-radius:8px; font-size:13px; font-variant-numeric:tabular-nums; color:var(--graphite); cursor:pointer; }
 .tygodnie-lista label:has(input:checked) { border-color:var(--ink); background:var(--paper); }
 .tygodnie-lista label:has(input:focus-visible) { outline:2px solid var(--action-blue); outline-offset:1px; }
-.terminy-wrap { min-width:0; max-width:100%; overflow-x:auto; }
-.terminy { width:100%; border-collapse:separate; border-spacing:4px; font-size:13px; }
-.terminy th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--stone); padding:4px 6px; text-align:center; white-space:nowrap; }
-.terminy tbody th { text-align:right; font-size:12.5px; font-weight:500; letter-spacing:0; font-variant-numeric:tabular-nums; color:var(--graphite); }
-.terminy td { padding:0; }
-.termin { width:100%; min-width:64px; padding:8px 6px; border-radius:8px; border:1px solid var(--silver); background:var(--white); color:var(--graphite); font:inherit; font-variant-numeric:tabular-nums; cursor:pointer; }
-.termin-wolny { background:var(--success-bg); color:var(--success-text); border-color:transparent; }
-.termin-zajety { background:var(--paper); color:var(--slate); border-color:transparent; }
-.termin-obecny { border:2px solid var(--ink); font-weight:700; }
-.termin:hover { border-color:var(--ink); }
-.termin:focus-visible, .termin[aria-pressed="true"] { outline:2px solid var(--action-blue); outline-offset:1px; }
 
 .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 

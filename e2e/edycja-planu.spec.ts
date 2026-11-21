@@ -35,10 +35,11 @@ test("a class is opened from the plan and the form starts from its current place
   // The way back keeps the plan's filters.
   await expect(page.getByRole("link", { name: "Wróć do planu" }).last()).toHaveAttribute("href", `/plan?prowadzacy=${PROWADZACY}`);
 
-  // A free time from the grid fills the day and the hour; nothing is saved until the button is pressed.
+  // Another free room at the same time; nothing is saved until the button is pressed.
   const dzien = await page.getByLabel("Dzień").inputValue();
   const poczatek = await page.getByLabel("Początek").inputValue();
-  await page.getByRole("button", { name: /wolne sale: [1-9]\d*$/ }).first().click();
+  const sala = await page.getByLabel("Sala").inputValue();
+  await page.getByLabel("Sala").selectOption(await wolnaSala(page, [sala]));
   await expect(page.getByText(/nie łamie żadnych ograniczeń/)).toBeVisible();
   // The penalty is recomputed for the chosen time (spec 15).
   await expect(page.locator(".kara-zmiana")).toContainText(/^Kara miękkich: [\d\s]+ → [\d\s]+ \(([+−][\d\s]+|0)\)/);
@@ -48,6 +49,7 @@ test("a class is opened from the plan and the form starts from its current place
   await page.getByRole("button", { name: "Przywróć obecny termin" }).click();
   await expect(page.getByLabel("Dzień")).toHaveValue(dzien);
   await expect(page.getByLabel("Początek")).toHaveValue(poczatek);
+  await expect(page.getByLabel("Sala")).toHaveValue(sala);
   await expect(zapisz(page)).toBeDisabled();
 });
 
@@ -60,7 +62,6 @@ test("a conflicting time is explained and cannot be saved", async ({ page }) => 
   await expect(page.getByText("Tego terminu nie da się zapisać")).toBeVisible();
   await expect(page.getByText(/Rada Wydziału/)).toBeVisible();
   await expect(zapisz(page)).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Wtorek 16:15: termin zajęty" })).toHaveAttribute("aria-pressed", "true");
 
   const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id)).toEqual([]);

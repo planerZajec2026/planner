@@ -70,6 +70,7 @@ test.describe("navigation", () => {
     "/prowadzacy": "Prowadzący",
     "/harmonogram-prowadzacych": "Harmonogram prowadzących",
     "/plan": "Plan zajęć",
+    "/plan/edycja": "Edycja planu",
     "/generator": "Generator planu",
     "/import": "Import danych",
   };

@@ -88,6 +88,8 @@ describe("WeekCalendar", () => {
     expect(krotkie).toHaveTextContent("Wykład: Zajęcia a");
     expect(dlugie).not.toHaveClass("compact");
     expect(dlugie.querySelector(".block-tag")).toHaveTextContent("Wykład");
+    // Each class type has its own tag colour.
+    expect(dlugie.querySelector(".block-tag")).toHaveClass("typ-wyklad");
   });
 
   describe("details popup", () => {

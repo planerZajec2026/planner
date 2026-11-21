@@ -13,11 +13,15 @@ const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/harmonogram-prowadzacych", label: "Harmonogram prowadzących", icon: "badge" },
   { href: "/import", label: "Import danych", icon: "upload" },
   { href: "/plan", label: "Plan zajęć", icon: "table" },
+  { href: "/plan/edycja", label: "Edycja planu", icon: "move" },
   { href: "/generator", label: "Generator planu", icon: "check" },
 ];
 
+const pasuje = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+/** The nav item whose address is the longest match: /plan/edycja marks "Edycja planu", not also "Plan zajęć". */
 function isActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return pasuje(pathname, href) && !NAV.some((inny) => inny.href.length > href.length && pasuje(pathname, inny.href));
 }
 
 export function Sidebar() {

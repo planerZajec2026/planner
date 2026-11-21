@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { etykietaGrupy } from "@/lib/labels";
 import type { Grupa, Kierunek } from "@/lib/types";
 
 /** "Informatyka" → "informatyka": the programme's id in URLs. The source data has no separate id for it. */
@@ -14,6 +15,7 @@ export function kierunekId(nazwa: string): string {
 
 type GrupaDb = {
   id: string;
+  nazwa: string;
   rocznik_id: string;
   grupa_nadrzedna: string | null;
   liczba_studentow: number;
@@ -34,12 +36,13 @@ export async function getGrupy(): Promise<Grupa[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("grupy_plan")
-    .select("id, rocznik_id, grupa_nadrzedna, liczba_studentow, roczniki!inner (kierunek, nazwa)")
+    .select("id, nazwa, rocznik_id, grupa_nadrzedna, liczba_studentow, roczniki!inner (kierunek, nazwa)")
     .order("id");
   if (error) throw new Error(`Nie udało się pobrać grup: ${error.message}`);
   return (data as unknown as GrupaDb[]).map((g) => ({
     id: g.id,
     kod: g.id,
+    etykieta: etykietaGrupy(g.rocznik_id, g.nazwa),
     kierunekId: kierunekId(g.roczniki.kierunek),
     rocznikId: g.rocznik_id,
     rocznikNazwa: g.roczniki.nazwa,

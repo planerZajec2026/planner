@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { StanEdycji } from "@/app/plan/edycja/actions";
-import { dzienLabel, poczatekSlotu } from "@/lib/plan";
+import { dzienLabel } from "@/lib/plan";
 import { przygotuj, wolneTerminy, type KontekstEdycji } from "@/lib/plan-edycja";
 import { ocenaPlanu } from "@/lib/plan-problemy";
 import { JOB_ID, kontekstTestowy, ocenaTestowa } from "@/test/kontekst-planu";
@@ -25,12 +25,18 @@ const obecny = (id: string) => k.plan.find((p) => p.zajeciaId === id)!;
 const pokaz = (id: string) => render(<EdycjaForm kontekst={k} zajeciaId={id} powrot="/plan?sala=A281" />);
 const zapiszBtn = () => screen.getByRole("button", { name: "Zapisz zmianę" });
 
-/** The first free time other than the current one, as the grid shows it. */
+/** The first free time other than the current one, with a free room. */
 function wolny(id: string) {
   const p = obecny(id);
   const t = wolneTerminy(przygotuj(k), id, p.tygodnie).find((x) => x.sale.length > 0 && (x.dzien !== p.dzien || x.slot !== p.slot))!;
-  const nazwa = `${dzienLabel(t.dzien)} ${poczatekSlotu(t.slot)}: wolne sale: ${t.sale.length}`;
-  return { t, nazwa, sala: t.sale.includes(p.sala) ? p.sala : t.sale[0] };
+  return { t, sala: t.sale.includes(p.sala) ? p.sala : t.sale[0] };
+}
+
+/** Chooses a time and room in the form's selects. */
+async function wybierz(dzien: number, slot: number, sala: string) {
+  await userEvent.selectOptions(screen.getByLabelText("Dzień"), String(dzien));
+  await userEvent.selectOptions(screen.getByLabelText("Początek"), String(slot));
+  await userEvent.selectOptions(screen.getByLabelText("Sala"), sala);
 }
 
 describe("EdycjaForm", () => {
@@ -75,14 +81,13 @@ describe("EdycjaForm", () => {
     expect(screen.queryByText("Tego terminu nie da się zapisać")).not.toBeInTheDocument();
   });
 
-  it("kliknięcie wolnego terminu ustawia dzień, godzinę i wolną salę, a zapis wysyła je do akcji", async () => {
+  it("wolny termin wybrany w polach daje się zapisać, a zapis wysyła go do akcji", async () => {
     zapisz.mockResolvedValue({ status: "zapisano", komunikat: "Zapisano zmianę." } satisfies StanEdycji);
     pokaz("Z002");
-    const { t, nazwa, sala } = wolny("Z002");
+    const { t, sala } = wolny("Z002");
 
-    await userEvent.click(screen.getByRole("button", { name: nazwa }));
+    await wybierz(t.dzien, t.slot, sala);
 
-    expect(screen.getByRole("button", { name: nazwa })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByLabelText("Dzień")).toHaveValue(String(t.dzien));
     expect(screen.getByLabelText("Początek")).toHaveValue(String(t.slot));
     expect(screen.getByLabelText("Sala")).toHaveValue(sala);
@@ -114,8 +119,8 @@ describe("EdycjaForm", () => {
       naruszenia: [{ ograniczenie: 4, opis: "Sala B551 jest w tym czasie zajęta: ktoś był szybszy.", zajecia: ["Z002"] }],
     } satisfies StanEdycji);
     pokaz("Z002");
-    const { t, nazwa } = wolny("Z002");
-    await userEvent.click(screen.getByRole("button", { name: nazwa }));
+    const { t, sala } = wolny("Z002");
+    await wybierz(t.dzien, t.slot, sala);
     await userEvent.click(zapiszBtn());
 
     expect(await screen.findByText(/ktoś był szybszy/)).toBeInTheDocument();
@@ -160,7 +165,7 @@ describe("EdycjaForm", () => {
     expect(screen.getByRole("button", { name: "Przywróć obecny termin" })).toBeEnabled();
   });
 
-  it("wybrane tygodnie zaznacza się pojedynczo, a zła liczba tygodni blokuje zapis i siatkę", async () => {
+  it("wybrane tygodnie zaznacza się pojedynczo, a zła liczba tygodni blokuje zapis", async () => {
     pokaz("Z105");
     const p = obecny("Z105");
     const z = k.zajecia.Z105;
@@ -171,8 +176,7 @@ describe("EdycjaForm", () => {
     await userEvent.click(screen.getByRole("checkbox", { name: String(p.tygodnie[0]) }));
 
     expect(screen.getByText(`Tygodnie: wybrano ${z.liczbaSpotkan - 1} z ${z.liczbaSpotkan}`)).toBeInTheDocument();
-    expect(screen.getByText(/Najpierw wybierz poprawne tygodnie/)).toBeInTheDocument();
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByText("Tego terminu nie da się zapisać")).toBeInTheDocument();
     expect(zapiszBtn()).toBeDisabled();
   });
 
@@ -184,8 +188,8 @@ describe("EdycjaForm", () => {
 
     it("po wyborze terminu pokazuje karę po zmianie i różnicę", async () => {
       render(<EdycjaForm kontekst={k} ocena={ocenaTestowa()} zajeciaId="Z002" powrot="/plan" />);
-      const { t, nazwa, sala } = wolny("Z002");
-      await userEvent.click(screen.getByRole("button", { name: nazwa }));
+      const { t, sala } = wolny("Z002");
+      await wybierz(t.dzien, t.slot, sala);
 
       const po = ocenaPlanu(k, ocenaTestowa(), [{ ...obecny("Z002"), dzien: t.dzien, slot: t.slot, sala }]).wynik;
       const roznica = po - 5088;
@@ -206,17 +210,5 @@ describe("EdycjaForm", () => {
       pokaz("Z002");
       expect(screen.queryByText(/Kara miękkich/)).toBeNull();
     });
-  });
-
-  it("siatka oznacza obecny termin i terminy zajęte", () => {
-    pokaz("Z001");
-    const p = obecny("Z001");
-
-    expect(screen.getByRole("button", { name: new RegExp(`^${dzienLabel(p.dzien)} ${poczatekSlotu(p.slot)}: .*obecny termin$`) })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    // Tuesday 16:15 is the Faculty Council.
-    expect(screen.getByRole("button", { name: "Wtorek 16:15: termin zajęty" })).toHaveTextContent("—");
   });
 });

@@ -1,4 +1,5 @@
 import type { Forma } from "@/lib/plan";
+import { etykietaGrupy } from "@/lib/labels";
 import { problemyPlanu, type DaneProblemow, type ProblemyPlanu, type ZajeciaProblemu } from "@/lib/plan-problemy";
 import { createClient } from "@/lib/supabase/server";
 
@@ -70,7 +71,7 @@ export async function getProblemyPlanu(jobId: string, wagi: Record<string, numbe
     nadrzedne: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, g.grupa_nadrzedna])),
     preferencje: Object.fromEntries((preferencje.data ?? []).map((p) => [p.prowadzacy_id, p.preferencja_dni])),
     etykiety: {
-      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, `${g.rocznik_id} · ${g.nazwa}`])),
+      grupy: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, etykietaGrupy(g.rocznik_id, g.nazwa)])),
       prowadzacy: Object.fromEntries((prowadzacy.data ?? []).map((p) => [p.id, p.nazwa])),
     },
   };

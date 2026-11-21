@@ -81,6 +81,15 @@ export const TYP_SALI_LABEL: Record<string, string> = {
 const typSali = (typ: string) => TYP_SALI_LABEL[typ] ?? typ;
 const rosnaco = (a: number, b: number) => a - b;
 
+function miejsca(n: number | null): string {
+  if (n == null) return "liczba miejsc nieznana";
+  const slowo = n === 1 ? "miejsce" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "miejsca" : "miejsc";
+  return `${n} ${slowo}`;
+}
+
+/** "A283 · aula · 120 miejsc". */
+export const opisSali = (s: SalaPlanu) => `${s.id} · ${typSali(s.typ)} · ${miejsca(s.pojemnosc)}`;
+
 /** Weeks of the class's range without the unavailable ones. */
 export function dostepneTygodnie(z: ZajeciaPlanu): number[] {
   const tygodnie: number[] = [];

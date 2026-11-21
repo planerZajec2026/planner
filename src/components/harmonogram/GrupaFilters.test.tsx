@@ -24,7 +24,8 @@ describe("GrupaFilters", () => {
     render(filters());
     expect(screen.getByLabelText("Kierunek")).toHaveValue("informatyka");
     expect(screen.getByLabelText("Grupa")).toHaveValue("INF1-R1-G1");
-    expect(optionLabels("Grupa")).toEqual(["INF1-R1-ALL", "INF1-R1-G1", "INF1-R1-G2"]);
+    // Groups are named the same way in every selector (rocznik · nazwa).
+    expect(optionLabels("Grupa")).toEqual(["INF1-R1 · Cały rocznik", "INF1-R1 · Grupa 1", "INF1-R1 · Grupa 2"]);
   });
 
   it("has no study-mode filter", () => {

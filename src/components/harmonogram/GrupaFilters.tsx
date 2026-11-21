@@ -5,6 +5,7 @@ import { useOptimistic } from "react";
 import { WeekNav } from "@/components/calendar/WeekNav";
 import { SelectField } from "@/components/ui/SelectField";
 import { resolveGrupaSelection, type GrupaSelectionInput } from "@/lib/grupa-selection";
+import { wgEtykiety } from "@/lib/labels";
 import { PRZEJSCIE } from "@/lib/motion";
 import type { Grupa, Kierunek } from "@/lib/types";
 import { useNavigationTransition } from "./PendingNavigation";
@@ -55,7 +56,7 @@ export function GrupaFilters({ kierunki, grupy, kierunekId, grupaId, weekStart }
       <SelectField
         id="f-grupa"
         label="Grupa"
-        options={current.grupy.map((g) => ({ value: g.id, label: g.kod }))}
+        options={current.grupy.map((g) => ({ value: g.id, label: g.etykieta })).sort(wgEtykiety)}
         placeholder="Brak grup"
         value={current.grupa?.id ?? ""}
         disabled={current.grupy.length === 0}
