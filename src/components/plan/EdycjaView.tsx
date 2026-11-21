@@ -41,7 +41,7 @@ export async function EdycjaView({ searchParams }: { searchParams: Promise<Searc
     );
   }
 
-  const { kontekst } = wynik;
+  const { kontekst, ocena } = wynik;
   const z = kontekst.zajecia[zajeciaId];
   const obecny = kontekst.plan.find((p) => p.zajeciaId === zajeciaId)!;
 
@@ -82,7 +82,7 @@ export async function EdycjaView({ searchParams }: { searchParams: Promise<Searc
       </div>
 
       {/* The key resets the selection when another class is opened; a saved edit keeps it and gets fresh data. */}
-      <EdycjaForm key={zajeciaId} kontekst={kontekst} zajeciaId={zajeciaId} powrot={powrot.href} powrotEtykieta={powrot.etykieta} />
+      <EdycjaForm key={zajeciaId} kontekst={kontekst} ocena={ocena} zajeciaId={zajeciaId} powrot={powrot.href} powrotEtykieta={powrot.etykieta} />
     </>
   );
 }

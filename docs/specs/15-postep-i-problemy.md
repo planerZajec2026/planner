@@ -20,7 +20,6 @@ Ten spec dodaje trzy rzeczy:
 - szacowanie, kiedy solver skończy (kończy zawsze po limicie czasu, chyba że udowodni optimum),
 - anulowanie liczonego zadania,
 - automatyczne poprawianie miejsc z listy,
-- przeliczanie kary po każdym zapisie na stronie edycji (lista w generatorze liczy się od nowa przy każdym wejściu).
 
 ## Postęp
 
@@ -72,8 +71,15 @@ Pozycje są posortowane od największej kary (po wagach). Każda ma zajęcia, kt
 ### Strona
 - Karta aktywnego planu (najpóźniej zakończone zadanie `done`) ma sekcję „Do poprawy”: 8 pierwszych pozycji, do 32 kolejnych w zwiniętym „Pokaż N kolejnych miejsc”, liczbę pominiętych.
 - Tekst podaje karę teraz i, gdy ręczne zmiany ją zmieniły, karę po wygenerowaniu.
+- Nad listą: „kara teraz (z ręcznymi zmianami)”, „zmiana od wygenerowania” (gdy różna od zera) i rozbicie teraz na rodzaje. Statystyka z zadania jest podpisana „kara po wygenerowaniu”, a rozbicie z raportu workera pokazują tylko starsze zadania.
 - Sekcja wczytuje się w `<Suspense>`; karta zadania pokazuje się bez czekania na nią.
 - Strona edycji z `powrot=generator` ma link „Wróć do generatora” do `/generator` zamiast „Wróć do planu”.
+
+### Kara po ręcznych zmianach
+`generation_jobs.wynik_miekkich` to kara planu w chwili wygenerowania i się nie zmienia. Karę planu z ręcznymi zmianami liczy `problemyPlanu` przy każdym wyświetleniu:
+- **Strona edycji:** `ocenaPlanu` (`src/lib/plan-problemy.ts`) liczy w przeglądarce karę obecnego planu i planu z wybranym terminem przy każdej zmianie pola. Panel pod konfliktami pokazuje „Kara miękkich: przed → po (różnica)”, czy zmiana karę zmniejsza, zwiększa czy nie zmienia, oraz które rodzaje kar się zmieniły (z wagami). Bez zmiany pokazuje karę planu teraz. `getKontekstEdycji` zwraca do tego `ocena`: grupy nadrzędne, preferencje dni, wagi zadania i karę po wygenerowaniu.
+- **`/plan`:** podsumowanie podaje karę teraz (i po wygenerowaniu, gdy się różni), jeśli plan ma ręczne zmiany; bez zmian pokazuje zapisaną karę bez liczenia.
+- Eksport nadal podaje karę po wygenerowaniu.
 
 ## Wgrywanie pliku
 

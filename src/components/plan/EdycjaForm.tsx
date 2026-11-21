@@ -4,6 +4,7 @@ import { startTransition, useActionState, useMemo, useState, type FormEvent } fr
 import { zapiszPrzydzial, type StanEdycji } from "@/app/plan/edycja/actions";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { WAGA_LABEL } from "@/lib/generator";
 import { DNI_PLANU, dzienLabel, koniecSlotu, LICZBA_SLOTOW, opisTygodni, poczatekSlotu } from "@/lib/plan";
 import {
   bladTygodni,
@@ -25,6 +26,7 @@ import {
   type SalaPlanu,
   type WolnyTermin,
 } from "@/lib/plan-edycja";
+import { karaWgRodzaju, ocenaPlanu, RODZAJE, type DaneOceny, type ProblemyPlanu } from "@/lib/plan-problemy";
 
 const POCZATEK: StanEdycji = { status: "poczatek" };
 
@@ -52,17 +54,58 @@ function ListaNaruszen({ tytul, lista }: { tytul: string; lista: Naruszenie[] })
   );
 }
 
+const liczba = (n: number) => n.toLocaleString("pl-PL");
+const zeZnakiem = (n: number) => (n > 0 ? `+${liczba(n)}` : n < 0 ? `−${liczba(-n)}` : "0");
+
+/** The plan's soft-constraint penalty now and with the chosen placement, so a move that lowers it is easy to find. */
+function ZmianaKary({ przed, po, ocena }: { przed: ProblemyPlanu; po: ProblemyPlanu | null; ocena: DaneOceny }) {
+  const poGenerowaniu =
+    ocena.wynikPoGenerowaniu != null && ocena.wynikPoGenerowaniu !== przed.wynik
+      ? ` (po wygenerowaniu ${liczba(ocena.wynikPoGenerowaniu)})`
+      : "";
+  if (!po) {
+    return (
+      <p className="kara-zmiana">
+        Kara miękkich planu: <strong>{liczba(przed.wynik)}</strong>
+        {poGenerowaniu}. Wybierz inny termin, żeby zobaczyć, jak go zmieni.
+      </p>
+    );
+  }
+
+  const roznica = po.wynik - przed.wynik;
+  const rodzajePrzed = karaWgRodzaju(przed.miekkie, ocena.wagi);
+  const rodzajePo = karaWgRodzaju(po.miekkie, ocena.wagi);
+  const zmienione = RODZAJE.filter((r) => rodzajePo[r] !== rodzajePrzed[r]);
+  return (
+    <div className={["kara-zmiana", roznica < 0 ? "lepiej" : roznica > 0 ? "gorzej" : ""].join(" ").trim()}>
+      <p>
+        Kara miękkich: {liczba(przed.wynik)} → <strong>{liczba(po.wynik)}</strong> ({zeZnakiem(roznica)})
+        {poGenerowaniu}.{" "}
+        {roznica < 0 ? "Ta zmiana zmniejsza karę." : roznica > 0 ? "Ta zmiana zwiększa karę." : "Ta zmiana nie zmienia kary."}
+      </p>
+      {zmienione.length > 0 && (
+        <p className="kara-rodzaje">
+          {zmienione.map((r) => `${WAGA_LABEL[r] ?? r}: ${zeZnakiem(rodzajePo[r] - rodzajePrzed[r])}`).join(" · ")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /**
  * Moves one class of the plan to another day, hour, room or weeks (spec 14). The conflicts and the grid of free
- * times are computed in the browser as hints; the Server Action checks again and decides.
+ * times are computed in the browser as hints; the Server Action checks again and decides. With `ocena` the form
+ * also shows how the move changes the plan's soft-constraint penalty (spec 15).
  */
 export function EdycjaForm({
   kontekst,
+  ocena,
   zajeciaId,
   powrot,
   powrotEtykieta = "Wróć do planu",
 }: {
   kontekst: KontekstEdycji;
+  ocena?: DaneOceny;
   zajeciaId: string;
   powrot: string;
   powrotEtykieta?: string;
@@ -84,6 +127,11 @@ export function EdycjaForm({
   const konflikty = useMemo(() => naruszenia(i, zmiany), [i, zmiany]);
   const terminy = useMemo(() => wolneTerminy(i, zajeciaId, cel.tygodnie), [i, zajeciaId, cel.tygodnie]);
   const zmieniono = !tenSamPrzydzial({ zajeciaId, ...cel }, obecny);
+  const karaPrzed = useMemo(() => (ocena ? ocenaPlanu(kontekst, ocena) : null), [kontekst, ocena]);
+  const karaPo = useMemo(
+    () => (ocena && zmieniono ? ocenaPlanu(kontekst, ocena, zmiany) : null),
+    [kontekst, ocena, zmieniono, zmiany],
+  );
 
   const przenoszone = razem(kontekst, zajeciaId).map((id) => kontekst.zajecia[id]);
   const powiazane = przenoszone.filter((inne) => inne.id !== zajeciaId);
@@ -232,6 +280,12 @@ export function EdycjaForm({
             </p>
           )}
         </div>
+
+        {ocena && karaPrzed && (
+          <div aria-live="polite">
+            <ZmianaKary przed={karaPrzed} po={karaPo} ocena={ocena} />
+          </div>
+        )}
 
         <div className="form-actions">
           <Button type="submit" disabled={trwa || !zmieniono || konflikty.length > 0}>

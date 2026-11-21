@@ -30,6 +30,7 @@ test("a class is opened from the plan and the form starts from its current place
   await expect(page).toHaveURL(new RegExp(`/plan/edycja\\?zajecia=${ZAJECIA}`));
   await expect(page.getByText(`Edycja zajęć ${ZAJECIA}`)).toBeVisible();
   await expect(page.getByText(/To obecny termin zajęć/)).toBeVisible();
+  await expect(page.getByText(/^Kara miękkich planu: [\d\s]+/)).toBeVisible();
   await expect(zapisz(page)).toBeDisabled();
   // The way back keeps the plan's filters.
   await expect(page.getByRole("link", { name: "Wróć do planu" }).last()).toHaveAttribute("href", `/plan?prowadzacy=${PROWADZACY}`);
@@ -39,6 +40,9 @@ test("a class is opened from the plan and the form starts from its current place
   const poczatek = await page.getByLabel("Początek").inputValue();
   await page.getByRole("button", { name: /wolne sale: [1-9]\d*$/ }).first().click();
   await expect(page.getByText(/nie łamie żadnych ograniczeń/)).toBeVisible();
+  // The penalty is recomputed for the chosen time (spec 15).
+  await expect(page.locator(".kara-zmiana")).toContainText(/^Kara miękkich: [\d\s]+ → [\d\s]+ \(([+−][\d\s]+|0)\)/);
+  await expect(page.locator(".kara-zmiana")).toContainText(/Ta zmiana (zmniejsza|zwiększa|nie zmienia) kar/);
   await expect(zapisz(page)).toBeEnabled();
 
   await page.getByRole("button", { name: "Przywróć obecny termin" }).click();

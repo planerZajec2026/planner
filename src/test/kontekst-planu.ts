@@ -5,7 +5,7 @@ import { join } from "node:path";
 import type { DanePlanu } from "@/lib/dane-planu";
 import type { Czestotliwosc, Forma } from "@/lib/plan";
 import type { KontekstEdycji, Przydzial, TypPowiazania, ZajeciaPlanu } from "@/lib/plan-edycja";
-import type { DaneProblemow } from "@/lib/plan-problemy";
+import type { DaneOceny, DaneProblemow } from "@/lib/plan-problemy";
 
 const plik = (sciezka: string) => JSON.parse(readFileSync(join(process.cwd(), sciezka), "utf8"));
 
@@ -23,6 +23,12 @@ export function daneProblemowTestowe(): DaneProblemow {
     nadrzedne: Object.fromEntries(dane.grupy.map((g) => [g.id, g.grupa_nadrzedna])),
     preferencje: Object.fromEntries(dane.dezyderaty_ogolne.map((d) => [d.prowadzacy, d.preferencja_dni])),
   };
+}
+
+/** Scoring data for the edit page: default weights, and the score the Python validator gives this plan. */
+export function ocenaTestowa(): DaneOceny {
+  const { nadrzedne, preferencje } = daneProblemowTestowe();
+  return { nadrzedne, preferencje, wagi: {}, wynikPoGenerowaniu: 5088 };
 }
 
 /** A fresh context on every call, so tests can change it freely. */

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Czestotliwosc, Forma } from "@/lib/plan";
 import { razem, type KontekstEdycji, type Przydzial, type TypPowiazania, type ZajeciaPlanu } from "@/lib/plan-edycja";
+import type { DaneOceny } from "@/lib/plan-problemy";
 import type { Database } from "@/lib/supabase/database.types";
 
 export type WynikKontekstu =
@@ -8,7 +9,8 @@ export type WynikKontekstu =
   | { status: "brak-planu" }
   /** The active plan has no such class. */
   | { status: "brak-zajec" }
-  | { status: "ok"; kontekst: KontekstEdycji };
+  /** `ocena` scores the plan before and after the edit (spec 15); the Server Action needs only `kontekst`. */
+  | { status: "ok"; kontekst: KontekstEdycji; ocena: DaneOceny };
 
 type WierszPlanu = {
   zajecia_id: string;
@@ -74,7 +76,7 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
 
   const { data: zadania, error } = await supabase
     .from("generation_jobs")
-    .select("id, zmiany_reczne")
+    .select("id, zmiany_reczne, parametry, wynik_miekkich")
     .eq("status", "done")
     .order("zakonczono", { ascending: false })
     .limit(1);
@@ -82,7 +84,7 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
   if (!zadania || zadania.length === 0) return { status: "brak-planu" };
   const job = zadania[0];
 
-  const [plan, sale, blokady, rada, grupy, prowadzacy] = await Promise.all([
+  const [plan, sale, blokady, rada, grupy, prowadzacy, preferencje] = await Promise.all([
     supabase
       .from("plan_zajec")
       .select(
@@ -101,8 +103,9 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
     supabase.from("sale").select("id, typ, pojemnosc, wyposazenie, dostepna_do_planowania").order("id"),
     supabase.from("blokady_stale").select("grupa_id, dzien, slot_od, slot_do"),
     supabase.from("rada_wydzialu").select("dzien, slot_od, slot_do"),
-    supabase.from("grupy_plan").select("id, nazwa, rocznik_id"),
+    supabase.from("grupy_plan").select("id, nazwa, rocznik_id, grupa_nadrzedna"),
     supabase.from("prowadzacy_plan").select("id, nazwa, czlonek_rady_wydzialu"),
+    supabase.from("dezyderaty_ogolne").select("prowadzacy_id, preferencja_dni"),
   ]);
   if (plan.error) throw blad("planu", plan.error);
   if (sale.error) throw blad("sal", sale.error);
@@ -110,6 +113,7 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
   if (rada.error) throw blad("terminów Rady Wydziału", rada.error);
   if (grupy.error) throw blad("grup", grupy.error);
   if (prowadzacy.error) throw blad("prowadzących", prowadzacy.error);
+  if (preferencje.error) throw blad("dezyderatów", preferencje.error);
 
   const wiersze = plan.data as unknown as WierszPlanu[];
   const zajecia: Record<string, ZajeciaPlanu> = {};
@@ -172,5 +176,12 @@ export async function getKontekstEdycji(supabase: SupabaseClient<Database>, zaje
     for (const r of rada.data ?? []) for (let s = r.slot_od; s <= r.slot_do; s++) dodaj(prow, r.dzien, s);
   }
 
-  return { status: "ok", kontekst };
+  const ocena: DaneOceny = {
+    nadrzedne: Object.fromEntries((grupy.data ?? []).map((g) => [g.id, g.grupa_nadrzedna])),
+    preferencje: Object.fromEntries((preferencje.data ?? []).map((p) => [p.prowadzacy_id, p.preferencja_dni])),
+    wagi: (job.parametry as { wagi?: Record<string, number> } | null)?.wagi ?? {},
+    wynikPoGenerowaniu: job.wynik_miekkich,
+  };
+
+  return { status: "ok", kontekst, ocena };
 }

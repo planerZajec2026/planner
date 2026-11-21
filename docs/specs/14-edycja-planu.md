@@ -18,7 +18,7 @@ Po każdej zmianie plan nadal spełnia wszystkie ograniczenia twarde 1–10 ze s
 - przeciąganie zajęć w kalendarzu (drag and drop),
 - historia zmian i cofanie do terminu z generatora,
 - zapis mimo konfliktu („wymuś”),
-- przeliczanie kary miękkich po edycji (pokazywana kara dotyczy planu z generatora; [spec 15](15-postep-i-problemy.md) liczy ją od nowa na liście „Do poprawy”),
+- przeliczanie kary miękkich po edycji: dodał je [spec 15](15-postep-i-problemy.md) („Kara po ręcznych zmianach”),
 - zmiana prowadzącego, grup, liczby spotkań lub długości zajęć: to dane wejściowe, zmienia się je importem,
 - dodawanie i usuwanie zajęć z planu,
 - logowanie (spec 11): do tego czasu edytować może każdy, kto otworzy aplikację, tak samo jak import i generator.

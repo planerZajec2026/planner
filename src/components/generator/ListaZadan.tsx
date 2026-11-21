@@ -97,13 +97,17 @@ function ZadanieKarta({ zadanie: z, najnowszeGotowe, teraz }: { zadanie: Zadanie
         <>
           <div className="summary-stats" style={{ marginLeft: 0 }}>
             <Stat wartosc={String(naruszenia)} etykieta="naruszeń twardych" />
-            <Stat wartosc={z.wynikMiekkich?.toLocaleString("pl-PL") ?? "–"} etykieta="kara miękkich (mniej = lepiej)" />
+            <Stat
+              wartosc={z.wynikMiekkich?.toLocaleString("pl-PL") ?? "–"}
+              etykieta={najnowszeGotowe ? "kara po wygenerowaniu" : "kara miękkich (mniej = lepiej)"}
+            />
             {z.raport.dolna_granica != null && (
               <Stat wartosc={z.raport.dolna_granica.toLocaleString("pl-PL")} etykieta="dolna granica kary" />
             )}
             {z.raport.czas_s != null && <Stat wartosc={`${Math.round(z.raport.czas_s)} s`} etykieta="czas liczenia" />}
           </div>
-          {z.raport.miekkie && (
+          {/* The active plan shows its current breakdown below, manual edits included. */}
+          {z.raport.miekkie && !najnowszeGotowe && (
             <div className="tag-row">
               {Object.entries(z.raport.miekkie).map(([klucz, wartosc]) => (
                 <Tag key={klucz}>
@@ -114,7 +118,7 @@ function ZadanieKarta({ zadanie: z, najnowszeGotowe, teraz }: { zadanie: Zadanie
           )}
           {najnowszeGotowe && (
             // Its own boundary: the job list shows up at once, the evaluation of the plan follows.
-            <Suspense fallback={<p className="postep-opis">Szukanie miejsc do poprawy…</p>}>
+            <Suspense fallback={<p className="postep-opis">Liczenie kary planu i miejsc do poprawy…</p>}>
               <ProblemyPlanu jobId={z.id} wagi={z.wagi} wynikPoGenerowaniu={z.wynikMiekkich} />
             </Suspense>
           )}

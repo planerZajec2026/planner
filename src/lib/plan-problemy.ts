@@ -4,7 +4,7 @@
 import { WAGI } from "./generator";
 import { countPl } from "./pl";
 import { dzienLabel, type Etykiety } from "./plan";
-import { opisTerminu, opisZajec, type Przydzial, type SalaPlanu, type ZajeciaPlanu } from "./plan-edycja";
+import { opisTerminu, opisZajec, type KontekstEdycji, type Przydzial, type SalaPlanu, type ZajeciaPlanu } from "./plan-edycja";
 
 export const LIMIT_SLOTOW_W_DNIU = 8;
 export const PIERWSZY_SLOT_POZNY = 10;
@@ -62,6 +62,36 @@ export type ProblemyPlanu = {
 };
 
 export const DOMYSLNE_WAGI: Record<string, number> = Object.fromEntries(WAGI.map((w) => [w.klucz, w.domyslna]));
+
+/** What scoring needs on top of the edit context, so the editor can show the penalty before and after a move. */
+export type DaneOceny = Pick<DaneProblemow, "nadrzedne" | "preferencje"> & {
+  /** The job's weights that differ from the defaults. */
+  wagi: Record<string, number>;
+  /** `generation_jobs.wynik_miekkich`: the score of the plan as the generator left it. */
+  wynikPoGenerowaniu: number | null;
+};
+
+/** The edit context's plan scored as it is now, or with `zmiany` (new placements of some classes) applied. */
+export function ocenaPlanu(k: KontekstEdycji, o: DaneOceny, zmiany: Przydzial[] = []): ProblemyPlanu {
+  const nowe = new Map(zmiany.map((p) => [p.zajeciaId, p]));
+  return problemyPlanu(
+    {
+      zajecia: k.zajecia,
+      plan: k.plan.map((p) => nowe.get(p.zajeciaId) ?? p),
+      sale: k.sale,
+      nadrzedne: o.nadrzedne,
+      preferencje: o.preferencje,
+      etykiety: k.etykiety,
+    },
+    o.wagi,
+  );
+}
+
+/** Weighted penalty of each kind of soft constraint, as `wynik` adds them up. */
+export function karaWgRodzaju(miekkie: Record<Rodzaj, number>, wagi: Record<string, number>): Record<Rodzaj, number> {
+  const w = { ...DOMYSLNE_WAGI, ...wagi };
+  return Object.fromEntries(RODZAJE.map((r) => [r, (w[r] ?? 0) * miekkie[r]])) as Record<Rodzaj, number>;
+}
 
 /** Python's `round()`: halves go to the even neighbour. */
 export function zaokraglij(x: number): number {

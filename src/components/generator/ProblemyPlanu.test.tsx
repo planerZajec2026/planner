@@ -36,6 +36,14 @@ describe("ListaProblemow", () => {
   it("shows the score after generation when manual edits changed it", () => {
     render(<ListaProblemow problemy={problemy} wynikPoGenerowaniu={6000} />);
     expect(screen.getByText(/teraz 5088, po wygenerowaniu 6000/)).toBeInTheDocument();
+    expect(screen.getByText("zmiana od wygenerowania").nextSibling).toHaveTextContent("−912");
+  });
+
+  it("shows the current score and its breakdown by kind", () => {
+    render(<ListaProblemow problemy={problemy} wynikPoGenerowaniu={5088} />);
+    expect(screen.getByText("kara teraz (z ręcznymi zmianami)").nextSibling).toHaveTextContent("5088");
+    expect(screen.queryByText("zmiana od wygenerowania")).toBeNull();
+    expect(screen.getByText(/^Godziny skrajne: /)).toHaveTextContent(`Godziny skrajne: ${problemy.miekkie.poza_godzinami}`);
   });
 
   it("says so when there is nothing to improve", () => {
