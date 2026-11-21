@@ -20,6 +20,7 @@ import {
   podpisDnia,
   poczatekSlotu,
   sortujWgCzasu,
+  szczegolyZajec,
   wTygodniu,
   type KalendarzDzien,
   type PlanWiersz,
@@ -153,6 +154,30 @@ describe("doEventow", () => {
   it("używa identyfikatorów, gdy brakuje etykiet", () => {
     const [e] = doEventow([wiersz()], { grupy: {}, prowadzacy: {} });
     expect(e.meta).toBe("INF1-R1-ALL · A281 · P39");
+  });
+
+  it("daje szczegóły do okienka zajęć", () => {
+    const [e] = doEventow([wiersz()], etykiety);
+    expect(e.szczegoly).toEqual([
+      { etykieta: "Forma", wartosc: "Wykład" },
+      { etykieta: "Sala", wartosc: "A281" },
+      { etykieta: "Prowadzi", wartosc: "dr P39" },
+      { etykieta: "Grupa", wartosc: "INF1-R1 · Cały rocznik" },
+      { etykieta: "Tygodnie", wartosc: "co tydzień" },
+    ]);
+  });
+});
+
+describe("szczegolyZajec", () => {
+  it("odmienia etykiety dla kilku osób i grup i oznacza zmianę ręczną", () => {
+    const w = wiersz({ prowadzacy: ["P1", "P2"], grupy: ["G1", "G2"], edytowano: "2026-11-16T10:00:00+00:00" });
+    expect(szczegolyZajec(w, { grupy: { G1: "Grupa 1" }, prowadzacy: { P1: "dr P1" } })).toEqual(
+      expect.arrayContaining([
+        { etykieta: "Prowadzący", wartosc: "dr P1, P2" },
+        { etykieta: "Grupy", wartosc: "Grupa 1, G2" },
+        { etykieta: "Termin", wartosc: "zmieniony ręcznie" },
+      ]),
+    );
   });
 });
 

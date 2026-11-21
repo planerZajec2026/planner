@@ -1,5 +1,6 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeAll, describe, expect, it } from "vitest";
 import { parseISODate } from "@/lib/dates";
 import { WeekCalendar, type CalendarEvent } from "./WeekCalendar";
 
@@ -75,6 +76,63 @@ describe("WeekCalendar", () => {
     const headers = [...container.querySelectorAll(".day-header")];
     expect(headers.map((h) => h.textContent)).toEqual(["Pon05.01", "Wt", "Śr08.01", "Czw", "Pt"]);
     expect(headers.some((h) => h.classList.contains("weekend"))).toBe(false);
+  });
+
+  it("shows a one-slot (45 min) class as a compact block without the type tag", () => {
+    const { container } = render(
+      <WeekCalendar events={[ev("a", 1, "08:15", "09:00"), ev("b", 1, "09:15", "11:00")]} weekStart={weekStart} />,
+    );
+    const [krotkie, dlugie] = blocks(container);
+    expect(krotkie).toHaveClass("compact");
+    expect(krotkie.querySelector(".block-tag")).toBeNull();
+    expect(krotkie).toHaveTextContent("Wykład: Zajęcia a");
+    expect(dlugie).not.toHaveClass("compact");
+    expect(dlugie.querySelector(".block-tag")).toHaveTextContent("Wykład");
+  });
+
+  describe("details popup", () => {
+    // jsdom has <dialog> but not its modal API.
+    beforeAll(() => {
+      HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
+        this.open = true;
+      };
+      HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+        this.open = false;
+        this.dispatchEvent(new Event("close"));
+      };
+    });
+
+    const szczegoly = [
+      { etykieta: "Sala", wartosc: "A283" },
+      { etykieta: "Prowadzi", wartosc: "prof. P16" },
+    ];
+
+    it("opens on click with the day, date, time and details", async () => {
+      const user = userEvent.setup();
+      render(<WeekCalendar events={[{ ...ev("a", 4, "13:15", "14:00"), szczegoly }]} weekStart={weekStart} />);
+      expect(screen.queryByRole("dialog")).toBeNull();
+
+      await user.click(screen.getByRole("button", { name: /Zajęcia a/ }));
+      const dialog = screen.getByRole("dialog", { name: "Zajęcia a" });
+      expect(dialog).toHaveTextContent("Czwartek 15.10, 13:15–14:00 (45 min)");
+      expect(within(dialog).getByText("A283")).toBeInTheDocument();
+      expect(within(dialog).getByText("prof. P16")).toBeInTheDocument();
+    });
+
+    it("closes with the close button", async () => {
+      const user = userEvent.setup();
+      render(<WeekCalendar events={[{ ...ev("a", 4, "13:15", "14:00"), szczegoly }]} weekStart={weekStart} />);
+      await user.click(screen.getByRole("button", { name: /Zajęcia a/ }));
+      await user.click(screen.getByRole("button", { name: "Zamknij" }));
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+
+    it("falls back to the block's meta line when an event has no details", async () => {
+      const user = userEvent.setup();
+      render(<WeekCalendar events={[ev("a", 1, "10:15", "12:00")]} weekStart={weekStart} />);
+      await user.click(screen.getByRole("button", { name: /Zajęcia a/ }));
+      expect(screen.getByRole("dialog")).toHaveTextContent("SzczegółyB21 · dr Test");
+    });
   });
 
   it("places events in the column of their day when only some days are shown", () => {

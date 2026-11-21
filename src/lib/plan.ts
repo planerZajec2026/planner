@@ -1,6 +1,6 @@
 // Domain logic of the generated timetable (spec 13): slots, weeks, filters and calendar events.
 // Pure functions only, so they are unit-tested without a database. Data comes from src/lib/data/plan.ts.
-import type { CalendarEvent } from "@/components/calendar/WeekCalendar";
+import type { CalendarEvent, Szczegol } from "@/components/calendar/WeekCalendar";
 import { addDays, DNI_PELNE, parseISODate, shortDate, toISODate } from "./dates";
 import type { DzienTygodnia, TypZajec } from "./types";
 
@@ -151,6 +151,7 @@ export function doEventow(wiersze: PlanWiersz[], etykiety: Etykiety): CalendarEv
       typ: formaNaTyp(w.forma),
       tytul: w.przedmiot,
       meta: `${grupy} · ${w.sala} · ${prowadzacy}`,
+      szczegoly: szczegolyZajec(w, etykiety),
     };
   });
 }
@@ -358,6 +359,23 @@ export function spotkaniaDoEventow(spotkania: Spotkanie[], etykiety: Etykiety, o
       typ: formaNaTyp(w.forma),
       tytul: w.przedmiot,
       meta: opis(w),
+      szczegoly: szczegolyZajec(w, etykiety),
     };
   });
+}
+
+/** Everything the calendar's class popup lists below the time: form, room, people, groups and weeks. */
+export function szczegolyZajec(w: PlanWiersz, etykiety: Etykiety): Szczegol[] {
+  const szczegoly: Szczegol[] = [
+    { etykieta: "Forma", wartosc: FORMA_LABEL[w.forma] ?? w.forma },
+    { etykieta: "Sala", wartosc: w.sala },
+    {
+      etykieta: w.prowadzacy.length > 1 ? "Prowadzący" : "Prowadzi",
+      wartosc: w.prowadzacy.map((p) => etykiety.prowadzacy[p] ?? p).join(", "),
+    },
+    { etykieta: w.grupy.length > 1 ? "Grupy" : "Grupa", wartosc: w.grupy.map((g) => etykiety.grupy[g] ?? g).join(", ") },
+    { etykieta: "Tygodnie", wartosc: opisTygodni(w) },
+  ];
+  if (w.edytowano) szczegoly.push({ etykieta: "Termin", wartosc: "zmieniony ręcznie" });
+  return szczegoly;
 }
