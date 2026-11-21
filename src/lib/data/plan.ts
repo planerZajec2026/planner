@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { StanBazy } from "@/lib/czyszczenie-bazy";
 import { etykietaGrupy } from "@/lib/labels";
 import { wierszZBazy, type Etykiety, type KalendarzDzien, type PlanRowDb, type PlanWiersz } from "@/lib/plan";
 import { odczytajPostep, type Postep } from "@/lib/postep";
@@ -147,6 +148,24 @@ export async function getZmianyReczne(): Promise<number> {
     .limit(1);
   if (error) throw new Error(`Nie udało się pobrać planu: ${error.message}`);
   return data?.[0]?.zmiany_reczne ?? 0;
+}
+
+/** Rows of the main tables, for the confirmation of clearing the database (spec 17). */
+export async function getStanBazy(): Promise<StanBazy> {
+  const supabase = await createClient();
+  const policz = async (tabela: "zajecia_plan" | "grupy_plan" | "sale" | "prowadzacy_plan" | "generation_jobs") => {
+    const { count, error } = await supabase.from(tabela).select("*", { count: "exact", head: true });
+    if (error) throw new Error(`Nie udało się sprawdzić danych: ${error.message}`);
+    return count ?? 0;
+  };
+  const [zajecia, grupy, sale, prowadzacy, plany] = await Promise.all([
+    policz("zajecia_plan"),
+    policz("grupy_plan"),
+    policz("sale"),
+    policz("prowadzacy_plan"),
+    policz("generation_jobs"),
+  ]);
+  return { zajecia, grupy, sale, prowadzacy, plany };
 }
 
 /** How many classes to schedule are loaded; 0 means the input data has not been loaded yet. */

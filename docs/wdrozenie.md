@@ -60,7 +60,7 @@ Decyzja o płatnościach należy do właściciela projektu; kod od niej nie zale
 - **Aplikacja:** każdy PR dostaje adres Preview od Vercela. Po scaleniu do `main` Vercel buduje wersję produkcyjną, a Deployment Checks czekają na zielone `CI`.
 - **Schemat bazy:** nowa migracja w `supabase/migrations/` (spec 08). Po scaleniu do `main` uruchamia się `deploy-db.yml`: czeka na zatwierdzenie w środowisku `production`, pokazuje oczekujące migracje (`db push --dry-run`) i je stosuje. Nigdy nie wypychaj migracji ręcznie.
 - **Kolejność:** aplikacja i baza wdrażają się niezależnie, w dowolnej kolejności. Dlatego migracje muszą być wstecznie zgodne (expand → migrate → contract).
-- **Dane wejściowe:** strony czytają wszystko z bazy (spec 13). Na świeżym projekcie baza jest pusta, a dane wgrywa się na stronie Import danych albo jednorazowo seedem: Actions → Deploy database → Run workflow, zaznacz `seed` (seed wywołuje `wgraj_dane_planu` z danymi z `requirements/`). Bez tej opcji workflow nigdy nie zmienia danych.
+- **Dane wejściowe:** strony czytają wszystko z bazy (spec 13). Na świeżym projekcie baza jest pusta, a dane wgrywa się na stronie Import danych albo jednorazowo seedem: Actions → Deploy database → Run workflow, zaznacz `seed` (seed wywołuje `wgraj_dane_planu` z danymi z `requirements/`). Bez tej opcji workflow nigdy nie zmienia danych. Całą bazę czyści się na stronie Import danych → Strefa zagrożenia (spec 17), po wpisaniu frazy potwierdzenia.
 - **Klucz do zapisu:** import danych i przycisk „Generuj" zapisują do bazy przez Server Action z kluczem `service_role`. Ustaw `SUPABASE_SERVICE_ROLE_KEY` (secret key z Supabase → Settings → API Keys) w Vercelu dla Production i Preview, **bez** prefiksu `NEXT_PUBLIC_` i nigdy w repo. Worker planu działa poza Vercelem i łączy się z bazą przez `DATABASE_URL` (niżej).
 - **Migracja usuwająca stary model** (`usun_stary_model`) kasuje tabele makiety ze spec 08; w chmurze zawierały tylko makietę, bo seed nie był tam wgrywany.
 
@@ -91,6 +91,7 @@ npx supabase migration list
 
 ## Bezpieczeństwo
 
+- Do czasu logowania (spec 11) import danych i czyszczenie bazy (spec 17) może wywołać każdy, kto otworzy aplikację. Fraza potwierdzenia chroni przed pomyłką, nie przed złą wolą; kopię danych trzyma `requirements/dane_planu.json`.
 - Do przeglądarki trafiają tylko `NEXT_PUBLIC_SUPABASE_URL` i klucz publishable. Oba są publiczne z założenia; dane chroni RLS (spec 08).
 - `SUPABASE_SERVICE_ROLE_KEY` omija RLS. Jest tylko w Vercelu jako zmienna po stronie serwera (bez `NEXT_PUBLIC_`) i używają go wyłącznie Server Actions importu i generatora. Nigdy w repo ani w kodzie przeglądarki.
 - Hasło do bazy zna tylko środowisko `production` na GitHubie (`deploy-db.yml` i `solver-worker.yml`).

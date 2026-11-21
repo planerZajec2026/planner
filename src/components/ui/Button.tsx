@@ -2,7 +2,7 @@ import type Link from "next/link";
 import type { ButtonHTMLAttributes, ComponentProps } from "react";
 import { AppLink } from "./AppLink";
 
-type Variant = "primary" | "secondary" | "danger-ghost";
+type Variant = "primary" | "secondary" | "danger" | "danger-ghost";
 
 function classes(variant: Variant, className?: string) {
   return ["btn", `btn-${variant}`, className].filter(Boolean).join(" ");
