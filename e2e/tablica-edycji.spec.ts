@@ -81,3 +81,16 @@ test("the filter shows one instructor or room and keeps the selected class", asy
   await expect(page).toHaveURL(/sala=A283/);
   await expect(page.locator(".tablica-kafelek .meta").first()).not.toContainText("A283");
 });
+
+test.describe("on a laptop screen", () => {
+  test.use({ viewport: { width: 1280, height: 720 } });
+
+  test("selecting a class at the bottom of the board keeps a single scrollbar", async ({ page }) => {
+    await page.goto(ADRES);
+    await page.locator(".content").evaluate((main) => main.scrollTo(0, main.scrollHeight));
+    await page.locator(".tablica-kafelek").last().click();
+    await expect(page.getByText(/^Edycja zajęć Z\d+/)).toBeVisible();
+    // Only main.content scrolls; the window never does (a hidden live region used to stick out below it).
+    expect(await page.evaluate(() => document.scrollingElement!.scrollHeight)).toBeLessThanOrEqual(720);
+  });
+});
