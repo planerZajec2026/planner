@@ -1,0 +1,3094 @@
+{
+ "meta": {
+  "opis": "Dane testowe UAT (~10% danych produkcyjnych): Informatyka I st., rok II, semestr zimowy 2026/27. Zagęszczone źródła konfliktów: wspólni studenci grup, przeciążeni prowadzący, wykluczenia, blokady, mało sal.",
+  "wersja": "1.0-uat",
+  "data": "2026-11-21",
+  "tabele": {
+   "kalendarz": "Dni semestru zimowego 2026/27. plan_dnia = wg planu którego dnia (1=pn..5=pt) odbywają się zajęcia; nr_tygodnia = numer wystąpienia tego dnia planu (1-14).",
+   "sloty": "Siatka godzin: 12 slotów po 45 min, przerwy 15 min.",
+   "sale": "Sale wydziału. Tylko sale z dostepna_do_planowania = true (lub wskazane w zajecia.dozwolone_sale).",
+   "prowadzacy": "Prowadzący (pseudonimy). Członkowie rady mają zablokowany termin z arkusza rada_wydzialu.",
+   "roczniki": "Roczniki studiów (studia stacjonarne). Liczby studentów są szacunkowe.",
+   "grupy": "Grupy studenckie. podzial = podział rocznika; grupy w tym samym podziale są rozłączne.",
+   "studenci": "Anonimowi studenci.",
+   "studenci_grupy": "Przynależność studentów do grup (źródło prawdy o kolizjach).",
+   "kolizje_grup": "Pary grup, które mają wspólnych studentów (wyliczone ze studenci_grupy).",
+   "przedmioty": "Przedmioty w podziale na roczniki.",
+   "zajecia": "Zajęcia do zaplanowania. Jeden wiersz = cykl spotkań (ten sam dzień, godzina i sala przez cały cykl).",
+   "blokady_stale": "Terminy ustalone poza wydziałem (np. WF) – grupa jest wtedy zajęta.",
+   "rada_wydzialu": "Stały termin Rady Wydziału i Senatu.",
+   "dezyderaty_terminy": "Z druku dezyderatów: godziny wykluczone (max 12 h na osobę) i Rada Wydziału.",
+   "dezyderaty_ogolne": "Z druku dezyderatów: powód wykluczeń, preferencja (zajęcia skumulowane / nieskumulowane), inne uwagi.",
+   "dezyderaty_sale": "Z druku dezyderatów: wymagania co do sali i sprzętu."
+  }
+ },
+ "kalendarz": [
+  {
+   "data": "2026-10-01",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Inauguracja roku akademickiego – zajęcia od 2 X"
+  },
+  {
+   "data": "2026-10-02",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 1,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-05",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 1,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-06",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 1,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-07",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 1,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-08",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 1,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-09",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 2,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-12",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 2,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-13",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 2,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-14",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 2,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-15",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 2,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-16",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 3,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-19",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 3,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-20",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 3,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-21",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 3,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-22",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 3,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-23",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 4,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-26",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 4,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-27",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 4,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-28",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 4,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-29",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 4,
+   "opis": ""
+  },
+  {
+   "data": "2026-10-30",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 5,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-02",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Dzień rektorski"
+  },
+  {
+   "data": "2026-11-03",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 5,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-04",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 5,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-05",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 5,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-06",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 6,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-09",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 5,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-10",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 6,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-11",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Narodowe Święto Niepodległości"
+  },
+  {
+   "data": "2026-11-12",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 6,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-13",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 7,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-16",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 6,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-17",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 7,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-18",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 6,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-19",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 7,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-20",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 8,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-23",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 7,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-24",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 8,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-25",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 7,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-26",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 8,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-27",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 9,
+   "opis": ""
+  },
+  {
+   "data": "2026-11-30",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 8,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-01",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 9,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-02",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 8,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-03",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 9,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-04",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 10,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-07",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 9,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-08",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 10,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-09",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 9,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-10",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 10,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-11",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 11,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-14",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 10,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-15",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 11,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-16",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 10,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-17",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 11,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-18",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 12,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-21",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 11,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-22",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 12,
+   "opis": ""
+  },
+  {
+   "data": "2026-12-23",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-24",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-25",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-28",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-29",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-30",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2026-12-31",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2027-01-01",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2027-01-04",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2027-01-05",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2027-01-06",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "wolne",
+   "plan_dnia": null,
+   "nr_tygodnia": null,
+   "opis": "Zimowa przerwa świąteczna"
+  },
+  {
+   "data": "2027-01-07",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 12,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-08",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "odpracowanie",
+   "plan_dnia": 3,
+   "nr_tygodnia": 11,
+   "opis": "Zajęcia wg planu środy (odrabianie)"
+  },
+  {
+   "data": "2027-01-11",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 12,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-12",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 13,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-13",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 12,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-14",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 13,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-15",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 13,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-18",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 1,
+   "nr_tygodnia": 13,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-19",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 2,
+   "nr_tygodnia": 14,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-20",
+   "dzien_tygodnia": "środa",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 3,
+   "nr_tygodnia": 13,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-21",
+   "dzien_tygodnia": "czwartek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 4,
+   "nr_tygodnia": 14,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-22",
+   "dzien_tygodnia": "piątek",
+   "typ_dnia": "zajęcia",
+   "plan_dnia": 5,
+   "nr_tygodnia": 14,
+   "opis": ""
+  },
+  {
+   "data": "2027-01-25",
+   "dzien_tygodnia": "poniedziałek",
+   "typ_dnia": "odpracowanie",
+   "plan_dnia": 1,
+   "nr_tygodnia": 14,
+   "opis": "Dodatkowy poniedziałek (odrabianie 2 XI) – już w okresie sesji"
+  },
+  {
+   "data": "2027-01-26",
+   "dzien_tygodnia": "wtorek",
+   "typ_dnia": "odpracowanie",
+   "plan_dnia": 3,
+   "nr_tygodnia": 14,
+   "opis": "Zajęcia wg planu środy (odrabianie 11 XI) – już w okresie sesji"
+  }
+ ],
+ "sloty": [
+  {
+   "slot": 1,
+   "od": "8:15",
+   "do": "9:00"
+  },
+  {
+   "slot": 2,
+   "od": "9:15",
+   "do": "10:00"
+  },
+  {
+   "slot": 3,
+   "od": "10:15",
+   "do": "11:00"
+  },
+  {
+   "slot": 4,
+   "od": "11:15",
+   "do": "12:00"
+  },
+  {
+   "slot": 5,
+   "od": "12:15",
+   "do": "13:00"
+  },
+  {
+   "slot": 6,
+   "od": "13:15",
+   "do": "14:00"
+  },
+  {
+   "slot": 7,
+   "od": "14:15",
+   "do": "15:00"
+  },
+  {
+   "slot": 8,
+   "od": "15:15",
+   "do": "16:00"
+  },
+  {
+   "slot": 9,
+   "od": "16:15",
+   "do": "17:00"
+  },
+  {
+   "slot": 10,
+   "od": "17:15",
+   "do": "18:00"
+  },
+  {
+   "slot": 11,
+   "od": "18:15",
+   "do": "19:00"
+  },
+  {
+   "slot": 12,
+   "od": "19:15",
+   "do": "20:00"
+  }
+ ],
+ "sale": [
+  {
+   "id": "A225",
+   "nazwa": null,
+   "budynek": "A",
+   "typ": "sala_dydaktyczna",
+   "pojemnosc": 12,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 31.6,
+   "wyposazenie": [
+    "projektor",
+    "tablica_suchościeralna",
+    "tablica_multimedialna"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Opis wyposażenia: projektor, 2 tablice suchościeralne, tablica multimedialna"
+  },
+  {
+   "id": "A272",
+   "nazwa": null,
+   "budynek": "A",
+   "typ": "sala_dydaktyczna",
+   "pojemnosc": 40,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 63.7,
+   "wyposazenie": [
+    "projektor",
+    "ekran",
+    "tablica_suchościeralna"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Opis wyposażenia: projektor, ekran, 2 tablice suchościeralne"
+  },
+  {
+   "id": "A283",
+   "nazwa": "Mała Aula",
+   "budynek": "A",
+   "typ": "aula",
+   "pojemnosc": 156,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 209.3,
+   "wyposazenie": [
+    "projektor",
+    "ekran",
+    "tablica_tryptyk"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Pojemność w źródle: 156+ 32 na bokach; Opis wyposażenia: 1 projektor podsufitowy, 1 ekran, 1 tablica tryptyk, 2 tablice pojedyncze"
+  },
+  {
+   "id": "A121",
+   "nazwa": null,
+   "budynek": "A",
+   "typ": "pracownia_komputerowa",
+   "pojemnosc": 25,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 63.7,
+   "wyposazenie": [
+    "projektor",
+    "ekran",
+    "tablica_suchościeralna"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Opis wyposażenia: projektor, ekran, 2 tablice suchościeralne"
+  },
+  {
+   "id": "A122",
+   "nazwa": null,
+   "budynek": "A",
+   "typ": "pracownia_komputerowa",
+   "pojemnosc": 25,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 63.7,
+   "wyposazenie": [
+    "projektor",
+    "ekran",
+    "tablica_tryptyk"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Opis wyposażenia: projektor, ekran, tablica tryptyk"
+  },
+  {
+   "id": "A234",
+   "nazwa": null,
+   "budynek": "A",
+   "typ": "pracownia_komputerowa",
+   "pojemnosc": 20,
+   "pojemnosc_szacowana": false,
+   "metraz_m2": 59.7,
+   "wyposazenie": [
+    "projektor",
+    "ekran",
+    "tablica_suchościeralna",
+    "MAC"
+   ],
+   "przeznaczenie": null,
+   "dostepna_do_planowania": true,
+   "uwagi": "Pojemność w źródle: 20 stanowisk MAC; Opis wyposażenia: projektor, ekran, 2 tablice suchościeralne"
+  }
+ ],
+ "prowadzacy": [
+  {
+   "id": "P08",
+   "stopien": "mgr",
+   "nazwa": "mgr P08",
+   "jednostka": "WFiIS",
+   "czlonek_rady_wydzialu": true
+  },
+  {
+   "id": "P16",
+   "stopien": "prof.",
+   "nazwa": "prof. P16",
+   "jednostka": "WFiIS",
+   "czlonek_rady_wydzialu": true
+  },
+  {
+   "id": "P17",
+   "stopien": "mgr",
+   "nazwa": "mgr P17",
+   "jednostka": "SJO",
+   "czlonek_rady_wydzialu": true
+  },
+  {
+   "id": "P25",
+   "stopien": "dr",
+   "nazwa": "dr P25",
+   "jednostka": "WFiIS",
+   "czlonek_rady_wydzialu": true
+  },
+  {
+   "id": "P32",
+   "stopien": "prof.",
+   "nazwa": "prof. P32",
+   "jednostka": "WFiIS",
+   "czlonek_rady_wydzialu": true
+  }
+ ],
+ "roczniki": [
+  {
+   "id": "INF1-R2",
+   "kierunek": "Informatyka",
+   "stopien_studiow": "I",
+   "rok": 2,
+   "semestr": 3,
+   "nazwa": "Informatyka I st., rok II, sem. III",
+   "liczba_studentow": 72,
+   "syntetyczny": false
+  }
+ ],
+ "grupy": [
+  {
+   "id": "INF1-R2-ALL",
+   "rocznik": "INF1-R2",
+   "nazwa": "Cały rocznik",
+   "typ": "rocznik",
+   "podzial": null,
+   "grupa_nadrzedna": null,
+   "liczba_studentow": 72
+  },
+  {
+   "id": "INF1-R2-G1",
+   "rocznik": "INF1-R2",
+   "nazwa": "Grupa 1",
+   "typ": "grupa",
+   "podzial": "grupy laboratoryjne",
+   "grupa_nadrzedna": "INF1-R2-ALL",
+   "liczba_studentow": 24
+  },
+  {
+   "id": "INF1-R2-G2",
+   "rocznik": "INF1-R2",
+   "nazwa": "Grupa 2",
+   "typ": "grupa",
+   "podzial": "grupy laboratoryjne",
+   "grupa_nadrzedna": "INF1-R2-ALL",
+   "liczba_studentow": 24
+  },
+  {
+   "id": "INF1-R2-G3",
+   "rocznik": "INF1-R2",
+   "nazwa": "Grupa 3",
+   "typ": "grupa",
+   "podzial": "grupy laboratoryjne",
+   "grupa_nadrzedna": "INF1-R2-ALL",
+   "liczba_studentow": 24
+  },
+  {
+   "id": "INF1-R2-OPC-SPI",
+   "rocznik": "INF1-R2",
+   "nazwa": "Opcja: Środowisko pracy informatyka",
+   "typ": "opcja",
+   "podzial": "przedmiot do wyboru",
+   "grupa_nadrzedna": "INF1-R2-ALL",
+   "liczba_studentow": 24
+  }
+ ],
+ "studenci": [
+  {
+   "id": "INF1-R2-S001",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S002",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S003",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S004",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S005",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S006",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S007",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S008",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S009",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S010",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S011",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S012",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S013",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S014",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S015",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S016",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S017",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S018",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S019",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S020",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S021",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S022",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S023",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S024",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S025",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S026",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S027",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S028",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S029",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S030",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S031",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S032",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S033",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S034",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S035",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S036",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S037",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S038",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S039",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S040",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S041",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S042",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S043",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S044",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S045",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S046",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S047",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S048",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S049",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S050",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S051",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S052",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S053",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S054",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S055",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S056",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S057",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S058",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S059",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S060",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S061",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S062",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S063",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S064",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S065",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S066",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S067",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S068",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S069",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S070",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S071",
+   "rocznik": "INF1-R2"
+  },
+  {
+   "id": "INF1-R2-S072",
+   "rocznik": "INF1-R2"
+  }
+ ],
+ "studenci_grupy": [
+  {
+   "student": "INF1-R2-S001",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S001",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S001",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S002",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S002",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S002",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S003",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S003",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S003",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S004",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S004",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S004",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S005",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S005",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S005",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S006",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S006",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S006",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S007",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S007",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S007",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S008",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S008",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S008",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S009",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S009",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S009",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S010",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S010",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S010",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S011",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S011",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S011",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S012",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S012",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S012",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S013",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S013",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S013",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S014",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S014",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S014",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S015",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S015",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S015",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S016",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S016",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S016",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S017",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S017",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S017",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S018",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S018",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S018",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S019",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S019",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S019",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S020",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S020",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S020",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S021",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S021",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S022",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S022",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S022",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S023",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S023",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S023",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S024",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S024",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S024",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S025",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S025",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S025",
+   "grupa": "INF1-R2-OPC-SPI"
+  },
+  {
+   "student": "INF1-R2-S026",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S026",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S027",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S027",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S028",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S028",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S029",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S029",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S030",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S030",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S031",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S031",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S032",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S032",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S033",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S033",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S034",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S034",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S035",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S035",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S036",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S036",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S037",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S037",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S038",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S038",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S039",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S039",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S040",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S040",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S041",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S041",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S042",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S042",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S043",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S043",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S044",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S044",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S045",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S045",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S046",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S046",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S047",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S047",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S048",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S048",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S049",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S049",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S050",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S050",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S051",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S051",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S052",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S052",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S053",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S053",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S054",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S054",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S055",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S055",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S056",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S056",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S057",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S057",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S058",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S058",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S059",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S059",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S060",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S060",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S061",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S061",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S062",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S062",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S063",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S063",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S064",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S064",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S065",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S065",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S066",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S066",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S067",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S067",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S068",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S068",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S069",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S069",
+   "grupa": "INF1-R2-G2"
+  },
+  {
+   "student": "INF1-R2-S070",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S070",
+   "grupa": "INF1-R2-G1"
+  },
+  {
+   "student": "INF1-R2-S071",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S071",
+   "grupa": "INF1-R2-G3"
+  },
+  {
+   "student": "INF1-R2-S072",
+   "grupa": "INF1-R2-ALL"
+  },
+  {
+   "student": "INF1-R2-S072",
+   "grupa": "INF1-R2-G2"
+  }
+ ],
+ "kolizje_grup": [
+  {
+   "grupa_a": "INF1-R2-ALL",
+   "grupa_b": "INF1-R2-G1",
+   "wspolni_studenci": 24
+  },
+  {
+   "grupa_a": "INF1-R2-ALL",
+   "grupa_b": "INF1-R2-G2",
+   "wspolni_studenci": 24
+  },
+  {
+   "grupa_a": "INF1-R2-ALL",
+   "grupa_b": "INF1-R2-G3",
+   "wspolni_studenci": 24
+  },
+  {
+   "grupa_a": "INF1-R2-ALL",
+   "grupa_b": "INF1-R2-OPC-SPI",
+   "wspolni_studenci": 24
+  },
+  {
+   "grupa_a": "INF1-R2-G1",
+   "grupa_b": "INF1-R2-OPC-SPI",
+   "wspolni_studenci": 8
+  },
+  {
+   "grupa_a": "INF1-R2-G2",
+   "grupa_b": "INF1-R2-OPC-SPI",
+   "wspolni_studenci": 8
+  },
+  {
+   "grupa_a": "INF1-R2-G3",
+   "grupa_b": "INF1-R2-OPC-SPI",
+   "wspolni_studenci": 8
+  }
+ ],
+ "przedmioty": [
+  {
+   "id": "PRZ-INF1-R2-01",
+   "rocznik": "INF1-R2",
+   "nazwa": "Algorytmy i struktury danych I"
+  },
+  {
+   "id": "PRZ-INF1-R2-02",
+   "rocznik": "INF1-R2",
+   "nazwa": "Lektorat – język angielski II"
+  },
+  {
+   "id": "PRZ-INF1-R2-03",
+   "rocznik": "INF1-R2",
+   "nazwa": "Metody probabilistyczne i statystyka"
+  },
+  {
+   "id": "PRZ-INF1-R2-05",
+   "rocznik": "INF1-R2",
+   "nazwa": "Podstawy grafiki komputerowej"
+  },
+  {
+   "id": "PRZ-INF1-R2-08",
+   "rocznik": "INF1-R2",
+   "nazwa": "Systemy baz danych"
+  },
+  {
+   "id": "PRZ-INF1-R2-10",
+   "rocznik": "INF1-R2",
+   "nazwa": "Środowisko pracy informatyka"
+  }
+ ],
+ "zajecia": [
+  {
+   "id": "Z056",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-01",
+   "przedmiot": "Algorytmy i struktury danych I",
+   "forma": "W",
+   "forma_opis": "wykład",
+   "grupy": [
+    "INF1-R2-ALL"
+   ],
+   "liczba_studentow": 72,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P32"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "aula",
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty, co tydzień zamiast co 2 tygodnie."
+  },
+  {
+   "id": "Z057",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-01",
+   "przedmiot": "Algorytmy i struktury danych I",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G1"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P32"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty, co tydzień zamiast co 2 tygodnie."
+  },
+  {
+   "id": "Z058",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-01",
+   "przedmiot": "Algorytmy i struktury danych I",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G2"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P32"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty, co tydzień zamiast co 2 tygodnie."
+  },
+  {
+   "id": "Z059",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-01",
+   "przedmiot": "Algorytmy i struktury danych I",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G3"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P32"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty, co tydzień zamiast co 2 tygodnie."
+  },
+  {
+   "id": "Z060",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-02",
+   "przedmiot": "Lektorat – język angielski II",
+   "forma": "LEK",
+   "forma_opis": "lektorat",
+   "grupy": [
+    "INF1-R2-G1"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P17"
+   ],
+   "godziny_programowe": 60,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": "POW-14",
+   "typ_powiazania": "rozne_dni",
+   "tygodnie_niedostepne": [],
+   "uwagi": "60 h = 2 spotkania po 2 sloty w tygodniu, w różne dni."
+  },
+  {
+   "id": "Z061",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-02",
+   "przedmiot": "Lektorat – język angielski II",
+   "forma": "LEK",
+   "forma_opis": "lektorat",
+   "grupy": [
+    "INF1-R2-G1"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P17"
+   ],
+   "godziny_programowe": 60,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": "POW-14",
+   "typ_powiazania": "rozne_dni",
+   "tygodnie_niedostepne": [],
+   "uwagi": null
+  },
+  {
+   "id": "Z062",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-02",
+   "przedmiot": "Lektorat – język angielski II",
+   "forma": "LEK",
+   "forma_opis": "lektorat",
+   "grupy": [
+    "INF1-R2-G2"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": "Fizyka",
+   "dodatkowi_studenci": 15,
+   "prowadzacy": [
+    "P17"
+   ],
+   "godziny_programowe": 60,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": "POW-15",
+   "typ_powiazania": "rozne_dni",
+   "tygodnie_niedostepne": [],
+   "uwagi": "60 h = 2 spotkania po 2 sloty w tygodniu, w różne dni."
+  },
+  {
+   "id": "Z063",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-02",
+   "przedmiot": "Lektorat – język angielski II",
+   "forma": "LEK",
+   "forma_opis": "lektorat",
+   "grupy": [
+    "INF1-R2-G2"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": "Fizyka",
+   "dodatkowi_studenci": 15,
+   "prowadzacy": [
+    "P17"
+   ],
+   "godziny_programowe": 60,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": "POW-15",
+   "typ_powiazania": "rozne_dni",
+   "tygodnie_niedostepne": [],
+   "uwagi": null
+  },
+  {
+   "id": "Z066",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-03",
+   "przedmiot": "Metody probabilistyczne i statystyka",
+   "forma": "W",
+   "forma_opis": "wykład",
+   "grupy": [
+    "INF1-R2-ALL"
+   ],
+   "liczba_studentow": 72,
+   "laczone_z": "Fizyka",
+   "dodatkowi_studenci": 40,
+   "prowadzacy": [
+    "P16"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "aula",
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [
+    "tablica_tryptyk"
+   ],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z082",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-05",
+   "przedmiot": "Podstawy grafiki komputerowej",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G1"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P25"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z083",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-05",
+   "przedmiot": "Podstawy grafiki komputerowej",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G2"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P25"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z084",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-05",
+   "przedmiot": "Podstawy grafiki komputerowej",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G3"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P25"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z091",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-08",
+   "przedmiot": "Systemy baz danych",
+   "forma": "W",
+   "forma_opis": "wykład",
+   "grupy": [
+    "INF1-R2-ALL"
+   ],
+   "liczba_studentow": 72,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P08"
+   ],
+   "godziny_programowe": 14,
+   "liczba_spotkan": 7,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_2_tygodnie",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "aula",
+    "sala_dydaktyczna"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [
+    5
+   ],
+   "uwagi": "Tydzień 5 niedostępny (wyjazd prowadzącego)."
+  },
+  {
+   "id": "Z092",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-08",
+   "przedmiot": "Systemy baz danych",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G1"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P08"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z093",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-08",
+   "przedmiot": "Systemy baz danych",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G2"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P08"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z094",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-08",
+   "przedmiot": "Systemy baz danych",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-G3"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P08"
+   ],
+   "godziny_programowe": 42,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 3,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "UAT: spotkania po 3 sloty."
+  },
+  {
+   "id": "Z096",
+   "rocznik": "INF1-R2",
+   "przedmiot_id": "PRZ-INF1-R2-10",
+   "przedmiot": "Środowisko pracy informatyka",
+   "forma": "LI",
+   "forma_opis": "laboratorium informatyczne",
+   "grupy": [
+    "INF1-R2-OPC-SPI"
+   ],
+   "liczba_studentow": 24,
+   "laczone_z": null,
+   "dodatkowi_studenci": 0,
+   "prowadzacy": [
+    "P25"
+   ],
+   "godziny_programowe": 28,
+   "liczba_spotkan": 14,
+   "sloty_na_spotkanie": 2,
+   "czestotliwosc": "co_tydzien",
+   "tydzien_od": 1,
+   "tydzien_do": 14,
+   "typy_sal": [
+    "pracownia_komputerowa"
+   ],
+   "dozwolone_sale": [
+    "A122"
+   ],
+   "wymagane_wyposazenie": [],
+   "tryb": "stacjonarny",
+   "powiazanie": null,
+   "typ_powiazania": null,
+   "tygodnie_niedostepne": [],
+   "uwagi": "Wymaga oprogramowania zainstalowanego tylko w A122."
+  }
+ ],
+ "blokady_stale": [
+  {
+   "grupa": "INF1-R2-ALL",
+   "dzien": 4,
+   "slot_od": 1,
+   "slot_do": 4,
+   "opis": "WF (Studium WF i Sportu) 7.30-12.00 – termin ustalony poza wydziałem, nie podlega planowaniu"
+  },
+  {
+   "grupa": "INF1-R2-OPC-SPI",
+   "dzien": 1,
+   "slot_od": 1,
+   "slot_do": 4,
+   "opis": "Zajęcia opcji ŚPI na innym wydziale – termin ustalony poza wydziałem, nie podlega planowaniu"
+  },
+  {
+   "grupa": "INF1-R2-G3",
+   "dzien": 5,
+   "slot_od": 9,
+   "slot_do": 12,
+   "opis": "Praktyki zawodowe grupy 3 – termin ustalony poza wydziałem, nie podlega planowaniu"
+  },
+  {
+   "grupa": "INF1-R2-G1",
+   "dzien": 3,
+   "slot_od": 1,
+   "slot_do": 3,
+   "opis": "Zajęcia grupy 1 na Wydziale Matematyki – termin ustalony poza wydziałem, nie podlega planowaniu"
+  },
+  {
+   "grupa": "INF1-R2-G2",
+   "dzien": 2,
+   "slot_od": 1,
+   "slot_do": 4,
+   "opis": "Zajęcia grupy 2 w Centrum Językowym – termin ustalony poza wydziałem, nie podlega planowaniu"
+  }
+ ],
+ "rada_wydzialu": [
+  {
+   "dzien": 2,
+   "slot_od": 9,
+   "slot_do": 10,
+   "opis": "Rada Wydziału + Senat – termin zablokowany dla członków rady (prowadzacy.czlonek_rady_wydzialu = true)"
+  }
+ ],
+ "dezyderaty_terminy": [
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 7,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 8,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 4,
+   "slot": 9,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 4,
+   "slot": 10,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 4,
+   "slot": 11,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 4,
+   "slot": 12,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 5,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 5,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 5,
+   "slot": 7,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 5,
+   "slot": 8,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 9,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P08",
+   "dzien": 2,
+   "slot": 10,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 1,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 2,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 3,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 4,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 3,
+   "slot": 9,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 3,
+   "slot": 10,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 3,
+   "slot": 11,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 3,
+   "slot": 12,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 4,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 4,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 4,
+   "slot": 7,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 4,
+   "slot": 8,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 9,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P16",
+   "dzien": 2,
+   "slot": 10,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 1,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 2,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 3,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 4,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 1,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 1,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 2,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 3,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 4,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 5,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 2,
+   "slot": 9,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P17",
+   "dzien": 2,
+   "slot": 10,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 1,
+   "slot": 9,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 1,
+   "slot": 10,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 1,
+   "slot": 11,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 1,
+   "slot": 12,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 3,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 3,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 3,
+   "slot": 7,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 3,
+   "slot": 8,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 5,
+   "slot": 1,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 5,
+   "slot": 2,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 5,
+   "slot": 3,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 5,
+   "slot": 4,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 2,
+   "slot": 9,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P25",
+   "dzien": 2,
+   "slot": 10,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 1,
+   "slot": 5,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 1,
+   "slot": 6,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 1,
+   "slot": 7,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 1,
+   "slot": 8,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 3,
+   "slot": 1,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 3,
+   "slot": 2,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 3,
+   "slot": 3,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 3,
+   "slot": 4,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 5,
+   "slot": 9,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 5,
+   "slot": 10,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 5,
+   "slot": 11,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 5,
+   "slot": 12,
+   "typ": "wykluczony"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 2,
+   "slot": 9,
+   "typ": "rada_wydzialu"
+  },
+  {
+   "prowadzacy": "P32",
+   "dzien": 2,
+   "slot": 10,
+   "typ": "rada_wydzialu"
+  }
+ ],
+ "dezyderaty_ogolne": [
+  {
+   "prowadzacy": "P08",
+   "liczba_godzin_wykluczonych": 12,
+   "powod_wykluczen": "zajęcia na innym kierunku (Fizyka)",
+   "preferencja_dni": "nieskumulowane",
+   "inne_uwagi": null
+  },
+  {
+   "prowadzacy": "P16",
+   "liczba_godzin_wykluczonych": 12,
+   "powod_wykluczen": "zajęcia w szkole doktorskiej",
+   "preferencja_dni": "nieskumulowane",
+   "inne_uwagi": null
+  },
+  {
+   "prowadzacy": "P17",
+   "liczba_godzin_wykluczonych": 12,
+   "powod_wykluczen": "dojazd z innego miasta",
+   "preferencja_dni": "skumulowane",
+   "inne_uwagi": "Lektoraty najlepiej w dwa dni pod rząd."
+  },
+  {
+   "prowadzacy": "P25",
+   "liczba_godzin_wykluczonych": 12,
+   "powod_wykluczen": "posiedzenia komisji uczelnianej",
+   "preferencja_dni": "skumulowane",
+   "inne_uwagi": null
+  },
+  {
+   "prowadzacy": "P32",
+   "liczba_godzin_wykluczonych": 12,
+   "powod_wykluczen": "zajęcia w szkole doktorskiej",
+   "preferencja_dni": "brak",
+   "inne_uwagi": "Proszę o zajęcia w budynku A, jeśli to możliwe."
+  }
+ ],
+ "dezyderaty_sale": [
+  {
+   "prowadzacy": "P25",
+   "przedmiot": "Środowisko pracy informatyka",
+   "forma": "LI",
+   "rodzaj_sali_nr": "A122",
+   "sprzet": "oprogramowanie zainstalowane tylko w A122"
+  },
+  {
+   "prowadzacy": "P16",
+   "przedmiot": "Metody probabilistyczne i statystyka",
+   "forma": "W",
+   "rodzaj_sali_nr": "A283",
+   "sprzet": "tablica_tryptyk"
+  },
+  {
+   "prowadzacy": "P17",
+   "przedmiot": "Lektorat – język angielski II",
+   "forma": "LEK",
+   "rodzaj_sali_nr": "A272",
+   "sprzet": "głośniki"
+  }
+ ]
+}
