@@ -108,10 +108,31 @@ button { font-family:inherit; }
 .time-col { font-size:11.5px; color:var(--stone); text-align:right; padding-right:10px; transform:translateY(-8px); }
 .day-track { border-left:1px solid var(--silver); background-image: repeating-linear-gradient(to bottom, var(--silver) 0, var(--silver) 1px, transparent 1px, transparent 56px); }
 .day-track.weekend { background-color:rgba(239,246,254,0.65); }
-.class-block { border-radius:10px; background:var(--white); box-shadow:var(--shadow-card); padding:7px 9px; font-size:11.5px; line-height:1.3; margin:3px; display:flex; flex-direction:column; gap:4px; overflow:hidden; }
-.class-block .title { font-weight:600; font-size:12px; color:var(--ink); letter-spacing:-0.2px; }
-.class-block .meta { color:var(--slate); letter-spacing:-0.2px; }
-.class-block .block-tag { align-self:flex-start; font-size:10px; font-weight:500; background:var(--paper); color:var(--graphite); border-radius:9999px; padding:2px 8px; }
+.class-block { border:0; font:inherit; text-align:left; color:inherit; cursor:pointer; min-width:0; border-radius:10px; background:var(--white); box-shadow:var(--shadow-card); padding:7px 9px; font-size:11.5px; line-height:1.3; margin:3px; display:flex; flex-direction:column; gap:4px; overflow:hidden; transition:box-shadow var(--dur-fast) var(--ease-out); }
+.class-block:hover { box-shadow:var(--shadow-hover); }
+.class-block:focus-visible { outline:2px solid var(--action-blue); outline-offset:1px; }
+/* A block never grows with its text: the title stops at two lines and the meta at one; the popup has the rest. */
+.class-block .title { font-weight:600; font-size:12px; color:var(--ink); letter-spacing:-0.2px; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; flex:none; }
+.class-block .meta { color:var(--slate); letter-spacing:-0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:none; }
+.class-block .block-tag { align-self:flex-start; max-width:100%; box-sizing:border-box; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:10px; font-weight:500; background:var(--paper); color:var(--graphite); border-radius:9999px; padding:2px 8px; flex:none; }
+/* One 45-minute slot is 36px tall: room for exactly two single lines. */
+.class-block.compact { padding:3px 8px; gap:1px; justify-content:center; line-height:1.2; }
+.class-block.compact .title { -webkit-line-clamp:1; line-clamp:1; }
+.class-block.compact .meta { font-size:11px; }
+
+.class-dialog { border:0; padding:0; border-radius:12px; background:var(--white); color:var(--graphite); box-shadow:rgba(34,42,53,0.18) 0px 12px 32px 0px; width:min(420px, calc(100vw - 32px)); max-height:calc(100dvh - 32px); }
+.class-dialog::backdrop { background:rgba(16,16,16,0.35); }
+.class-dialog[open] { animation:vt-fade-in var(--dur-enter) var(--ease-out); }
+.class-dialog-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:10px; }
+.class-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.class-dialog-head .block-tag { font-size:11px; font-weight:500; background:var(--paper); color:var(--graphite); border-radius:9999px; padding:3px 10px; }
+.class-dialog-head .btn-icon { cursor:pointer; }
+.class-dialog h2 { font-size:18px; line-height:1.3; letter-spacing:-0.3px; }
+.class-dialog-termin { margin:0; font-size:14px; font-weight:500; color:var(--ink); }
+.class-dialog-list { margin:4px 0 0; display:grid; grid-template-columns:auto 1fr; gap:8px 16px; font-size:13.5px; }
+.class-dialog-list > div { display:contents; }
+.class-dialog-list dt { color:var(--slate); }
+.class-dialog-list dd { margin:0; color:var(--graphite); overflow-wrap:anywhere; }
 
 .card-grid { position:relative; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px,100%), 1fr)); gap:16px; }
 .instructor-card { background:var(--white); border-radius:12px; box-shadow:var(--shadow-card); padding:20px; display:flex; flex-direction:column; gap:12px; }

@@ -22,7 +22,11 @@ export type CalendarEvent = {
   typ: TypZajec;
   tytul: string;
   meta: string;
+  /** Rows of the popup that opens on click, below the day and time; without them the popup shows `meta`. */
+  szczegoly?: Szczegol[];
 };
+
+export type Szczegol = { etykieta: string; wartosc: string };
 
 type WeekCalendarProps = {
   events: CalendarEvent[];
@@ -45,6 +49,8 @@ const SLOTS_PER_HOUR = 60 / SLOT_MINUTES;
 const SLOT_HEIGHT = 56 / SLOTS_PER_HOUR;
 /** Grid row 1 is the day header. */
 const FIRST_SLOT_ROW = 2;
+/** Classes this short (one 45-minute slot) have room for two lines only, so their block drops the type tag. */
+const COMPACT_MINUTES = 60;
 
 /** Monday–Sunday timetable grid: a time column plus 7 day columns, 15-minute rows. */
 export function WeekCalendar({
@@ -61,6 +67,9 @@ export function WeekCalendar({
   const to = Math.max(hourTo, ...events.map((e) => Math.ceil(timeToMinutes(e.do) / 60)));
   const hours = Array.from({ length: to - from }, (_, i) => from + i);
   const lastRow = FIRST_SLOT_ROW + hours.length * SLOTS_PER_HOUR;
+
+  const subtitle = (dzien: DzienTygodnia) =>
+    daySubtitles?.[dzien] ?? (weekStart ? shortDate(addDays(weekStart, dzien - 1)) : "");
 
   const slotRow = (minutes: number, round: (n: number) => number) =>
     FIRST_SLOT_ROW + round((minutes - from * 60) / SLOT_MINUTES);
@@ -82,9 +91,7 @@ export function WeekCalendar({
             style={{ gridColumn: column(dzien), gridRow: 1 }}
           >
             {DNI_KROTKIE[dzien - 1]}
-            <span className="sub">
-              {daySubtitles?.[dzien] ?? (weekStart ? shortDate(addDays(weekStart, dzien - 1)) : "")}
-            </span>
+            <span className="sub">{subtitle(dzien)}</span>
           </div>
         ))}
 
@@ -106,8 +113,9 @@ export function WeekCalendar({
           />
         ))}
 
-        {DAYS.flatMap((dzien) =>
-          layoutDay(events.filter((e) => e.dzien === dzien)).map((e) => {
+        {DAYS.flatMap((dzien) => {
+          const dayLabel = [DNI_PELNE[dzien - 1], subtitle(dzien)].filter(Boolean).join(" ");
+          return layoutDay(events.filter((e) => e.dzien === dzien)).map((e) => {
             const style: CSSProperties = {
               gridColumn: column(dzien),
               gridRow: `${slotRow(e.start, Math.floor)} / ${Math.max(slotRow(e.end, Math.ceil), slotRow(e.start, Math.floor) + 1)}`,
@@ -124,11 +132,14 @@ export function WeekCalendar({
                 tytul={e.tytul}
                 meta={e.meta}
                 srLabel={`${DNI_PELNE[dzien - 1]}, ${e.od}–${e.do}: `}
+                termin={`${dayLabel}, ${e.od}–${e.do} (${e.end - e.start} min)`}
+                szczegoly={e.szczegoly ?? [{ etykieta: "Szczegóły", wartosc: e.meta }]}
+                compact={e.end - e.start <= COMPACT_MINUTES}
                 style={style}
               />
             );
-          }),
-        )}
+          });
+        })}
       </div>
     </div>
   );

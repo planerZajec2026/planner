@@ -26,6 +26,9 @@ Show the weekly timetable (Monday–Sunday) for one group. The group is picked b
   - day headers "Pon 12.10" … "Niedz 18.10", with weekend headers and tracks in blue;
   - each class is placed from `od`/`do`. Support non-full hours by using 15-minute grid rows, or by absolute positioning within the day track.
 - `ClassBlock`: type tag (Wykład / Ćwiczenia / Laboratorium / Seminarium), subject title, and meta line "sala · prowadzący".
+  - A block never grows with its text: the title stops at two lines and the meta at one, both with an ellipsis.
+  - A class of one 45-minute slot (36px) is compact: no tag (it stays for screen readers), title and meta on one line each.
+  - The block is a button. Clicking it opens a modal `<dialog>` with the type, title, day, date, time and length, then form, room, instructors, groups and weeks (`szczegolyZajec` in `src/lib/plan.ts`). Escape, the close button or a click on the backdrop closes it, and focus returns to the block.
 - Week parity: a class with `powtarzalnosc = parzyste` appears only in even ISO weeks, and `nieparzyste` only in odd ones.
 - Empty state when the group has no classes: "Brak zajęć w tym tygodniu."
 

@@ -18,6 +18,20 @@ test("INF1-R1-G1 shows its own classes and those of its year, from the generated
   await expect(page.locator(".day-header")).toHaveText(["Pon12.10", "Wt13.10", "Śr14.10", "Czw15.10", "Pt16.10", "Sob17.10", "Niedz18.10"]);
 });
 
+test("clicking a class opens its details; Escape closes them", async ({ page }) => {
+  await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2026-10-12");
+  const blok = page.getByRole("button", { name: /Piątek, 14:15–16:00: .*Analiza matematyczna I/ });
+  await blok.click();
+
+  const okno = page.getByRole("dialog", { name: "Analiza matematyczna I" });
+  await expect(okno).toContainText("Piątek 16.10, 14:15–16:00 (105 min)");
+  await expect(okno.locator("dd")).toContainText(["Wykład", "A283", "prof. P39"]);
+
+  await page.keyboard.press("Escape");
+  await expect(okno).toHaveCount(0);
+  await expect(blok).toBeFocused();
+});
+
 test("make-up days follow the plan of another weekday: Friday 8 January holds Wednesday's classes", async ({ page }) => {
   await page.goto("/harmonogram?grupa=INF1-R1-G1&tydzien=2027-01-04");
   const blocks = await classBlocks(page);
